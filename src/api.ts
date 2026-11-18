@@ -43,7 +43,7 @@ export async function interrogate(
   if (usingMock) {
     await wait(mockNet === 'slow' ? 4200 : 900)
     if (mockNet === 'error') {
-      throw new Error("서버가 응답하지 않았습니다 (503). 질문은 위에 그대로 남아 있습니다. '다시 보내기'를 눌러 주세요.")
+      throw new Error("서버가 응답하지 않았습니다 (503). 도 씨가 묵비권을 너무 열심히 행사한 모양입니다. 질문은 위에 남아 있으니 '다시 보내기'를 눌러 주세요.")
     }
     return scriptedReply(question)
   }

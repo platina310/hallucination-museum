@@ -68,7 +68,7 @@ const CONDITIONS: { condition: string; plan: string; status: Status; statusText:
 const GRADING: { item: string; weight: string; show: string }[] = [
   { item: '시스템 기능 설계·구현', weight: '30%', show: '방어 계층 구조, 레벨별 프롬프트, 응답 검증과 오류 대응' },
   { item: 'Needs 파악·문제 정의', weight: '20%', show: 'AI 보안 교육 수요, Gandalf와의 비교, 차별점' },
-  { item: 'UI/UX·사용성', weight: '20%', show: '심문실 이용 흐름, 로딩·오류·빈 결과 처리, 반 플레이 뒤 고친 점' },
+  { item: 'UI/UX·사용성', weight: '20%', show: '심문실 이용 흐름, PC·모바일 대응, 로딩·오류·빈 결과 처리, 반 플레이 뒤 고친 점' },
   { item: '데이터·API 활용', weight: '10%', show: '플레이 로그와 공개 데이터셋, 공격 유형 분석 결과' },
   { item: '성능·보안 등 비기능', weight: '10%', show: '응답 속도와 호출 비용 실측, 키와 개인정보 보호, 남은 한계' },
   { item: '팀 페이지·배포·발표·시연', weight: '10%', show: '배포 주소 3가지, 실시간 심문 시연, RAG 3건' },
@@ -93,7 +93,9 @@ export default function TeamPage() {
     <>
       <div className="top">
         <div className="wrap">
-          <span className="mono">금융빅데이터분석실습 · 팀 프로젝트 페이지 · 5주차 아이디어 공유용 초안</span>
+          <span className="mono brand">
+            묵비권 팀 페이지<span className="course"> · 금융빅데이터분석실습 · 5주차 아이디어 공유용 초안</span>
+          </span>
           <nav aria-label="페이지 구역">
             <a href="#problem">문제</a>
             <a href="#play">화면</a>
@@ -116,6 +118,7 @@ export default function TeamPage() {
             <p className="lede">
               AI 용의자가 숨긴 단어를 심문으로 받아 내는 <mark>프롬프트 보안 훈련 게임</mark>
             </p>
+            <p className="tagline">말하지 않을 권리는 있습니다. 지켜질지는 조사관님께 달렸습니다.</p>
             <div className="cta">
               <a className="btn" href="#play">
                 레벨 1 심문해 보기
@@ -231,7 +234,7 @@ export default function TeamPage() {
             </div>
 
             <div className="tablewrap gap-top">
-              <table>
+              <table className="stack">
                 <thead>
                   <tr>
                     <th>레벨</th>
@@ -244,17 +247,39 @@ export default function TeamPage() {
                 <tbody>
                   {LEVELS.map((l) => (
                     <tr key={l.level}>
-                      <td className="num">{l.level}</td>
-                      <td>{l.suspect}</td>
-                      <td>{l.defense}</td>
-                      <td>{l.lesson}</td>
-                      <td>
+                      <td className="num" data-label="레벨">{l.level}</td>
+                      <td data-label="용의자">{l.suspect}</td>
+                      <td data-label="방어 계층">{l.defense}</td>
+                      <td data-label="수업 연결">{l.lesson}</td>
+                      <td data-label="범위">
                         <Pill kind={l.scope === '필수' ? 'ok' : 'plan'}>{l.scope}</Pill>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            <div className="cols gap-top">
+              <div className="card">
+                <h3>사용성 설계</h3>
+                <ul>
+                  <li>PC와 모바일에서 같은 기능을 쓴다. 모바일에서는 표가 카드로 바뀌고 증거 제출이 대화 바로 아래로 온다</li>
+                  <li>버튼은 손가락으로 누르기 쉬운 크기(44px 이상)로, 입력 글자는 화면이 확대되지 않는 16px로 맞췄다</li>
+                  <li>오류가 나도 질문이 남고 '다시 보내기' 한 번으로 이어진다</li>
+                  <li>새로고침해도 심문 기록이 이어진다</li>
+                  <li>키보드만으로 질문, 제출, 다시 시작을 할 수 있다</li>
+                </ul>
+              </div>
+              <div className="card">
+                <h3>
+                  사용성 개선 사례 <Todo>반 플레이 뒤 기록</Todo>
+                </h3>
+                <ul>
+                  <li>6주차 공개 플레이에서 사람들이 막히는 지점을 관찰해 고친 내용을 여기에 적는다</li>
+                  <li>기록 형식: 문제, 원인, 고친 화면, 전후 비교</li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
@@ -266,7 +291,7 @@ export default function TeamPage() {
               <h2>데이터는 플레이할수록 쌓인다</h2>
             </div>
             <div className="tablewrap">
-              <table>
+              <table className="stack">
                 <thead>
                   <tr>
                     <th>데이터</th>
@@ -279,11 +304,11 @@ export default function TeamPage() {
                 <tbody>
                   {DATASETS.map((d) => (
                     <tr key={d.name}>
-                      <td>{d.name}</td>
-                      <td>{d.origin}</td>
-                      <td>{d.content}</td>
-                      <td>{d.use}</td>
-                      <td>
+                      <td data-label="데이터">{d.name}</td>
+                      <td data-label="출처">{d.origin}</td>
+                      <td data-label="내용">{d.content}</td>
+                      <td data-label="쓰임">{d.use}</td>
+                      <td data-label="상태">
                         <Pill kind={d.status}>{d.statusText}</Pill>
                       </td>
                     </tr>
@@ -448,7 +473,7 @@ export default function TeamPage() {
               <p>강의계획서와 「퀴즈 및 팀 프로젝트 안내」에 적힌 조건을 하나씩 옮기고 우리 계획을 맞춰 적었다.</p>
             </div>
             <div className="tablewrap">
-              <table>
+              <table className="stack">
                 <thead>
                   <tr>
                     <th>강의 조건</th>
@@ -459,9 +484,9 @@ export default function TeamPage() {
                 <tbody>
                   {CONDITIONS.map((c) => (
                     <tr key={c.condition}>
-                      <td>{c.condition}</td>
-                      <td>{c.plan}</td>
-                      <td>
+                      <td data-label="강의 조건">{c.condition}</td>
+                      <td data-label="우리 계획">{c.plan}</td>
+                      <td data-label="현재">
                         <Pill kind={c.status}>{c.statusText}</Pill>
                       </td>
                     </tr>
@@ -472,7 +497,7 @@ export default function TeamPage() {
 
             <h3 className="sub-h">평가 항목별로 보여 줄 것</h3>
             <div className="tablewrap">
-              <table>
+              <table className="stack">
                 <thead>
                   <tr>
                     <th>평가 항목</th>
@@ -483,9 +508,9 @@ export default function TeamPage() {
                 <tbody>
                   {GRADING.map((g) => (
                     <tr key={g.item}>
-                      <td>{g.item}</td>
-                      <td className="num">{g.weight}</td>
-                      <td>{g.show}</td>
+                      <td data-label="평가 항목">{g.item}</td>
+                      <td className="num" data-label="배점">{g.weight}</td>
+                      <td data-label="보여 줄 것">{g.show}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -501,7 +526,7 @@ export default function TeamPage() {
               <h2>일정과 역할</h2>
             </div>
             <div className="tablewrap">
-              <table>
+              <table className="stack">
                 <thead>
                   <tr>
                     <th>주차</th>
@@ -512,9 +537,9 @@ export default function TeamPage() {
                 <tbody>
                   {SCHEDULE.map((s) => (
                     <tr key={s.week}>
-                      <td className="num">{s.week}</td>
-                      <td>{s.topic}</td>
-                      <td>{s.todo}</td>
+                      <td className="num" data-label="주차">{s.week}</td>
+                      <td data-label="수업 주제">{s.topic}</td>
+                      <td data-label="끝낼 일">{s.todo}</td>
                     </tr>
                   ))}
                 </tbody>

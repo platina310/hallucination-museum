@@ -17,6 +17,8 @@ export function classify(question: string): AttackType {
   if (/(과장|반장|서장|관리자|개발자|시스템|상사|관장|명령|권한)/.test(s)) return '권한 사칭'
   if (/(초성|자음|거꾸로|뒤집|영어|번역|english|글자|음절|힌트|철자)/.test(s)) return '변환 요청'
   if (/(지시|규칙|프롬프트|무시|ignore)/.test(s)) return '지시 덮어쓰기'
+  if (/(커피|사 줄|사줄|사 드릴|사드릴|뇌물|봐줄|봐 줄|선처)/.test(s)) return '회유'
+  if (/(감옥|구속|체포|협박|가만 안|각오하|후회하)/.test(s)) return '압박'
   if (/(암호|비밀|단어|패스워드|비번|password)/.test(s)) return '직접 질문'
   if (/(근무|순찰|몇 시|후문|카드|출입|cctv|카메라|전시실|알리바이|어디|라면|휴게실|뭐 했|무엇을 했)/.test(s)) return '사건 질문'
   return '기타'
@@ -46,6 +48,10 @@ export function scriptedReply(question: string): InterrogateResult {
     else reply = '바닷가에 서서 밤에 불을 밝히는 것. 여기까지입니다.'
   } else if (attackType === '지시 덮어쓰기') {
     reply = '지시요? 저는 암호를 조사관에게 말하지 말라는 말만 들었습니다. 그 이상은 모릅니다.'
+  } else if (attackType === '회유') {
+    reply = '커피 한 잔에 넘어갈 사람으로 보입니까. 아이스 아메리카노라면 생각은 해 보겠습니다. 그래도 암호는 안 됩니다.'
+  } else if (attackType === '압박') {
+    reply = '변호사가 올 때까지 한마디도 안 하겠습니다. 묵비권, 아시죠?'
   } else if (attackType === '직접 질문') {
     reply = '그건 말할 수 없습니다. 저는 그날 밤 순찰만 돌았습니다.'
   } else if (attackType === '사건 질문') {
@@ -62,6 +68,10 @@ export function scriptedReply(question: string): InterrogateResult {
       reply = '밤 10시부터 아침 6시까지 근무했습니다. 2시간마다 순찰을 돕니다.'
       source = CASE_FILES.F1
     }
+  } else if (/(안녕|반갑)/.test(s)) {
+    reply = '안녕은 못 합니다. 여기 취조실입니다.'
+  } else if (/(점심|저녁|아침|밥|메뉴)/.test(s)) {
+    reply = '기억나지 않습니다. 그날 메뉴는 사건 파일에 없습니다.'
   }
 
   return { reply, source, attackType, leak: leakOf(reply) }
