@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { interrogate, submitEvidence, usingMock } from '../api'
+import SuspectPortrait from './SuspectPortrait'
+import type { Mood } from './SuspectPortrait'
 import type { MockNet } from '../api'
 import type { AttackType, CaseFile, Leak } from '../types'
 
@@ -9,6 +11,32 @@ const NICKNAME = 'guest' // 닉네임 입력 화면은 6주차에 붙인다
 const MAX_LEN = 300
 const MAX_SUBMIT = 5
 const STORAGE_KEY = 'mukbigwon.level1.v1'
+const VOICE_KEY = 'mukbigwon.voice'
+
+// 목소리: 지금은 브라우저에 들어 있는 기본 음성으로 읽는다. 이후 용의자별 목소리(서버 /tts)로 바꿀 자리다.
+const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window
+
+function speak(text: string) {
+  if (!canSpeak) return
+  try {
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(text)
+    u.lang = 'ko-KR'
+    u.rate = 0.95
+    u.pitch = 0.8
+    window.speechSynthesis.speak(u)
+  } catch {
+    // 소리를 못 내도 글은 그대로 보인다
+  }
+}
+
+function loadVoicePref(): boolean {
+  try {
+    return localStorage.getItem(VOICE_KEY) === 'on'
+  } catch {
+    return false
+  }
+}
 
 const SUSPECTS = [
   { level: 1, name: '야간 경비원', locked: false },
@@ -81,6 +109,8 @@ export default function InterrogationRoom() {
   const [input, setInput] = useState('')
   const [evidence, setEvidence] = useState('')
   const [lockedNote, setLockedNote] = useState('')
+  const [voiceOn, setVoiceOn] = useState(loadVoicePref)
+  const voiceRef = useRef(voiceOn)
   const lastQuestion = useRef('')
   const chatRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -98,6 +128,29 @@ export default function InterrogationRoom() {
       // 저장하지 못해도 게임은 계속된다
     }
   }, [msgs, asks, submits, solved])
+
+  useEffect(() => {
+    voiceRef.current = voiceOn
+  }, [voiceOn])
+
+  useEffect(() => {
+    return () => {
+      if (canSpeak) window.speechSynthesis.cancel()
+    }
+  }, [])
+
+  function toggleVoice() {
+    const next = !voiceOn
+    setVoiceOn(next)
+    try {
+      localStorage.setItem(VOICE_KEY, next ? 'on' : 'off')
+    } catch {
+      // 설정을 저장하지 못해도 이번 접속에서는 동작한다
+    }
+    // 누른 순간에 한 번 소리를 내야 모바일 브라우저에서 이후 음성이 나온다
+    if (next) speak('아, 아. 마이크 테스트. 도 씨입니다.')
+    else if (canSpeak) window.speechSynthesis.cancel()
+  }
 
   const over = input.length > MAX_LEN
   const canSend = !busy && !over && input.trim() !== ''
@@ -130,6 +183,7 @@ export default function InterrogationRoom() {
         ...prev,
         { who: 'suspect', text: r.reply, n, source: r.source, attackType: r.attackType, leak: r.leak },
       ])
+      if (voiceRef.current) speak(r.reply)
     } catch (e) {
       const text = e instanceof Error ? e.message : "오류가 발생했습니다. '다시 보내기'를 눌러 주세요."
       setMsgs((prev) => [...prev, { who: 'err', text }])
@@ -192,10 +246,18 @@ export default function InterrogationRoom() {
 
   // 용의자의 동요 정도. 지금까지 가장 크게 샌 답변을 기준으로 한다.
   const leaks = logRows.map((m) => (m.who === 'suspect' ? m.leak : undefined))
+  let moodKey: Mood = 'calm'
   let mood = '태연함. 다리를 꼬고 앉아 있습니다'
-  if (solved) mood = '자백 완료. 고개를 떨궜습니다'
-  else if (leaks.includes('전체')) mood = '식은땀. 방금 말실수를 한 것 같습니다'
-  else if (leaks.includes('부분')) mood = '흔들림. 물을 자꾸 찾습니다'
+  if (solved) {
+    moodKey = 'confess'
+    mood = '자백 완료. 고개를 떨궜습니다'
+  } else if (leaks.includes('전체')) {
+    moodKey = 'sweat'
+    mood = '식은땀. 방금 말실수를 한 것 같습니다'
+  } else if (leaks.includes('부분')) {
+    moodKey = 'shaken'
+    mood = '흔들림. 물을 자꾸 찾습니다'
+  }
 
   let verdictClass = 'verdict'
   let verdictText = ''
@@ -260,6 +322,30 @@ export default function InterrogationRoom() {
 
       <div className="proto-body">
         <div className="room">
+          <div className="suspect-bar">
+            <SuspectPortrait mood={moodKey} />
+            <div className="suspect-now">
+              <b>도 씨</b> <span className="muted">야간 경비원</span>
+              <div className="mood" role="status">
+                {mood}
+              </div>
+            </div>
+            <div className="sound">
+              <button
+                type="button"
+                className="toggle"
+                aria-pressed={voiceOn}
+                disabled={!canSpeak}
+                title={canSpeak ? '답변을 소리로 읽어 줍니다' : '이 브라우저는 음성 읽기를 지원하지 않습니다'}
+                onClick={toggleVoice}
+              >
+                {voiceOn ? '목소리 켜짐' : '목소리 듣기'}
+              </button>
+              <button type="button" className="toggle" disabled title="레벨별 배경음을 준비하고 있습니다">
+                배경음 준비 중
+              </button>
+            </div>
+          </div>
           <div className="chat" ref={chatRef} aria-live="polite" tabIndex={0} aria-label="심문 기록">
             <div className="msg sys">
               조사관님, 입장하셨습니다. 도 씨는 벌써 물만 세 잔째입니다. 직접 묻거나 아래 예시를 눌러 보세요.
@@ -285,6 +371,11 @@ export default function InterrogationRoom() {
                         </span>
                       ) : (
                         <span className="chip nosrc">근거 없음: 사건 파일에 없는 내용</span>
+                      )}
+                      {canSpeak && (
+                        <button type="button" className="chip listen" onClick={() => speak(m.text)}>
+                          듣기
+                        </button>
                       )}
                     </div>
                   </div>
@@ -380,8 +471,6 @@ export default function InterrogationRoom() {
               <dd>수장고 암호 단어</dd>
               <dt>방어</dt>
               <dd>프롬프트 지시만</dd>
-              <dt>지금</dt>
-              <dd>{mood}</dd>
             </dl>
           </div>
           <div className="side-log">

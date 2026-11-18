@@ -207,3 +207,20 @@ a{overflow-wrap:anywhere}
   .arch .arr{display:none}
   .flow{font-size:.84rem}
 }
+
+/* 용의자 상태 바: 초상, 지금 상태, 소리 */
+.suspect-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px;padding:10px 16px;border-bottom:1px solid var(--rule)}
+.portrait{width:52px;height:52px;flex:none}
+.portrait.sweat{animation:tremble .45s infinite}
+@keyframes tremble{0%,100%{transform:translateX(0)}25%{transform:translateX(-.7px)}75%{transform:translateX(.7px)}}
+.suspect-now{flex:1 1 170px;min-width:0;font-size:.92rem;line-height:1.45}
+.suspect-now .mood{color:var(--ink-soft);font-size:.84rem}
+.sound{display:flex;flex-wrap:wrap;gap:6px}
+.toggle{font:inherit;font-size:.8rem;border:1px solid var(--rule);background:transparent;color:var(--ink);padding:5px 10px;border-radius:4px;cursor:pointer;white-space:nowrap}
+.toggle[aria-pressed="true"]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.toggle:disabled{color:var(--ink-soft);border-style:dashed;cursor:not-allowed}
+button.chip.listen{font:inherit;font-size:.74rem;cursor:pointer;color:var(--ink)}
+@media (pointer:coarse){
+  .toggle{min-height:44px}
+  button.chip.listen{min-height:36px;padding:0 12px}
+}

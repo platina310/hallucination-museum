@@ -81,6 +81,14 @@ const SCHEDULE: { week: number; topic: string; todo: string }[] = [
   { week: 8, topic: '기말 발표', todo: '팀 페이지로 발표 15분, 질의응답 5분' },
 ]
 
+// 비주얼·음성·음악과 개발 도구. 프로토타입에는 자리와 기본 동작만 넣어 두었다.
+const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
+  { item: '용의자 초상', now: '표정이 네 단계로 바뀌는 그림. 답변이 샐수록 표정이 무너진다', next: '용의자 5명의 초상과 표정', tool: '이미지 생성 도구 (미정)' },
+  { item: '용의자 목소리', now: '브라우저 기본 음성으로 답변 읽기. 기본은 꺼짐', next: '용의자마다 다른 목소리. 키는 서버에 두고 FastAPI가 호출', tool: 'ElevenLabs' },
+  { item: '배경음과 효과음', now: '버튼 자리만 표시', next: '레벨별 배경음, 돌파했을 때의 효과음', tool: 'Suno' },
+  { item: '개발 자동화', now: 'Claude로 화면 구현과 동작 확인', next: '반복 작업과 교차 검증을 명령줄 에이전트에 맡긴다', tool: 'Codex exec, agy (Antigravity CLI)' },
+]
+
 // 배포 후 주소를 넣는다. 빈 문자열이면 "배포 후 기입"으로 표시된다.
 const LINKS: { label: string; url: string }[] = [
   { label: 'GitHub 저장소', url: 'https://github.com/platina310/mukbigwon' },
@@ -269,6 +277,7 @@ export default function TeamPage() {
                   <li>오류가 나도 질문이 남고 '다시 보내기' 한 번으로 이어진다</li>
                   <li>새로고침해도 심문 기록이 이어진다</li>
                   <li>키보드만으로 질문, 제출, 다시 시작을 할 수 있다</li>
+                  <li>소리는 선택 사항이다. 글만으로 모든 기능을 쓸 수 있고, 목소리는 사용자가 켰을 때만 나온다</li>
                 </ul>
               </div>
               <div className="card">
@@ -384,6 +393,30 @@ export default function TeamPage() {
                   <li>호출 한도 초과와 시간 초과는 화면에 원인과 다시 시도 방법을 알린다</li>
                 </ul>
               </div>
+            </div>
+
+            <h3 className="sub-h">비주얼·음성·음악과 개발 도구</h3>
+            <div className="tablewrap">
+              <table className="stack">
+                <thead>
+                  <tr>
+                    <th>요소</th>
+                    <th>지금 프로토타입</th>
+                    <th>이후 계획</th>
+                    <th>쓸 도구</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MEDIA.map((m) => (
+                    <tr key={m.item}>
+                      <td data-label="요소">{m.item}</td>
+                      <td data-label="지금">{m.now}</td>
+                      <td data-label="이후 계획">{m.next}</td>
+                      <td data-label="쓸 도구">{m.tool}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
