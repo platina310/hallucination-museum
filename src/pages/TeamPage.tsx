@@ -55,7 +55,7 @@ const CONDITIONS: { condition: string; plan: string; status: Status; statusText:
   { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 호출. 4주차 실습 서버 구조를 이어 쓴다', status: 'plan', statusText: '6주차' },
   { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '프런트 Vercel, 백엔드 Render, DB Supabase', status: 'plan', statusText: '계획' },
   { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '로그 테이블, 사건 파일과 공격 임베딩', status: 'plan', statusText: '계획' },
-  { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '레벨별 프롬프트와 돌파율 변화를 README에 기록', status: 'plan', statusText: '계획' },
+  { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '저장소를 만들고 실행 방법을 README에 적었다. 레벨별 프롬프트와 돌파율 변화는 이어서 기록', status: 'ok', statusText: '저장소 생성' },
   { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 이 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
   { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '사건 파일 근거 답변 2건, 유사 공격 차단 1건', status: 'plan', statusText: '계획' },
   { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '이 페이지의 문제, 화면, 데이터, AI 계획 구역', status: 'ok', statusText: '초안' },
@@ -83,7 +83,7 @@ const SCHEDULE: { week: number; topic: string; todo: string }[] = [
 
 // 배포 후 주소를 넣는다. 빈 문자열이면 "배포 후 기입"으로 표시된다.
 const LINKS: { label: string; url: string }[] = [
-  { label: 'GitHub 저장소', url: '' },
+  { label: 'GitHub 저장소', url: 'https://github.com/platina310/mukbigwon' },
   { label: '서비스 웹 주소 (React, 팀 페이지 포함)', url: '' },
   { label: 'Swagger UI 주소 (FastAPI /docs)', url: '' },
 ]
