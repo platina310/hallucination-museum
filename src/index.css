@@ -224,3 +224,32 @@ button.chip.listen{font:inherit;font-size:.74rem;cursor:pointer;color:var(--ink)
   .toggle{min-height:44px}
   button.chip.listen{min-height:36px;padding:0 12px}
 }
+
+/* 임무 안내, 다음 수, 힌트: 처음 온 사람이 할 일을 알 수 있게 */
+.mission{padding:14px 16px;border-bottom:1.5px solid var(--ink)}
+.mission-goal{font-size:1.05rem;font-weight:500}
+.mission-goal b{font-family:var(--f-mono);font-size:.78rem;border:1px solid var(--seal);color:var(--seal);padding:1px 7px;border-radius:3px;margin-right:6px;font-weight:500}
+.steps{list-style:none;padding:0;margin:10px 0 0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;counter-reset:st}
+.steps li{counter-increment:st;margin:0;border:1px solid var(--rule);padding:7px 10px;font-size:.86rem;color:var(--ink-soft);line-height:1.45}
+.steps li::before{content:counter(st);font-family:var(--f-mono);font-size:.74rem;display:inline-block;width:1.5em;height:1.5em;line-height:1.5em;text-align:center;border:1px solid currentColor;border-radius:50%;margin-right:6px}
+.steps li.now{border-color:var(--ink);color:var(--ink);font-weight:600;background:var(--paper)}
+.steps li.done{color:var(--ok);border-color:var(--ok)}
+.steps li.done::before{content:"✓"}
+.mission-why{margin-top:8px;font-size:.84rem;color:var(--ink-soft)}
+.coach{padding:10px 16px;border-top:1px solid var(--rule);display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:var(--paper)}
+.coach p{flex:1 1 240px;font-size:.9rem;line-height:1.5}
+.coach p b{font-family:var(--f-mono);font-size:.74rem;font-weight:500;color:var(--seal);margin-right:6px}
+.hints{flex:1 1 100%;font-size:.86rem;color:var(--ink);padding-left:1.3em}
+.examples{align-items:center}
+.examples-label{flex:1 1 100%;font-size:.78rem;color:var(--ink-soft)}
+.examples .tag{font-size:.7rem;color:var(--ink-soft);border-right:1px solid var(--rule);padding-right:6px;margin-right:2px}
+.side-evidence.ready{box-shadow:inset 3px 0 0 var(--seal)}
+.top nav a.nav-game{color:var(--seal);font-weight:600}
+.game{padding:20px 0 48px}
+.game-title{font-size:1.3rem;margin-bottom:14px}
+@media (max-width:640px){
+  .steps{grid-template-columns:minmax(0,1fr)}
+}
+
+.levels{border-bottom:1.5px solid var(--ink)}
+.proto-bar{border-bottom:1px solid var(--rule)}

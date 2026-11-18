@@ -53,14 +53,14 @@ const CONDITIONS: { condition: string; plan: string; status: Status; statusText:
   { condition: 'React 화면 (필수)', plan: '팀 페이지와 레벨 1 심문실을 React로 만들었다. 분석 페이지는 7주차', status: 'ok', statusText: '레벨 1 구현' },
   { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '심문실에 다섯 상태를 모두 넣었다. 빈 결과는 "근거 없음"으로 표시', status: 'ok', statusText: '구현' },
   { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 호출. 4주차 실습 서버 구조를 이어 쓴다', status: 'plan', statusText: '6주차' },
-  { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '프런트 Vercel, 백엔드 Render, DB Supabase', status: 'plan', statusText: '계획' },
+  { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '프런트는 Vercel에 배포했다. 백엔드 Render와 DB Supabase는 6주차', status: 'ok', statusText: '프런트 배포' },
   { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '로그 테이블, 사건 파일과 공격 임베딩', status: 'plan', statusText: '계획' },
   { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '저장소를 만들고 실행 방법을 README에 적었다. 레벨별 프롬프트와 돌파율 변화는 이어서 기록', status: 'ok', statusText: '저장소 생성' },
   { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 이 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
   { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '사건 파일 근거 답변 2건, 유사 공격 차단 1건', status: 'plan', statusText: '계획' },
   { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '이 페이지의 문제, 화면, 데이터, AI 계획 구역', status: 'ok', statusText: '초안' },
   { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 두었다. 내용은 매주 갱신한다', status: 'ok', statusText: '틀 완성' },
-  { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정·역할 구역에 적는다', status: 'need', statusText: '배포 후 기입' },
+  { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정·역할 구역에 적는다. Swagger UI는 백엔드 배포 뒤 기입', status: 'need', statusText: '2개 기입' },
   { condition: '팀 4~5명과 팀원 역할', plan: '역할 다섯 가지를 나눠 두었다', status: 'need', statusText: '팀 확정 필요' },
   { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않는다. 무료 범위 우선', plan: '키 분리, 닉네임만 수집, 저장 전 마스킹, 무료 등급으로 개발', status: 'plan', statusText: '계획' },
 ]
@@ -92,7 +92,7 @@ const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
 // 배포 후 주소를 넣는다. 빈 문자열이면 "배포 후 기입"으로 표시된다.
 const LINKS: { label: string; url: string }[] = [
   { label: 'GitHub 저장소', url: 'https://github.com/platina310/mukbigwon' },
-  { label: '서비스 웹 주소 (React, 팀 페이지 포함)', url: '' },
+  { label: '서비스 웹 주소 (React, 팀 페이지 포함)', url: 'https://mukbigwon-rol4.vercel.app' },
   { label: 'Swagger UI 주소 (FastAPI /docs)', url: '' },
 ]
 
@@ -112,6 +112,9 @@ export default function TeamPage() {
             <a href="#architecture">구조</a>
             <a href="#checklist">강의 조건</a>
             <a href="#plan">일정·역할</a>
+            <a href="#game" className="nav-game">
+              게임만 하기
+            </a>
           </nav>
         </div>
       </div>
@@ -220,12 +223,12 @@ export default function TeamPage() {
               <div className="eyebrow">5주차 공유 항목 · 주요 화면 UI 프로토타입</div>
               <h2>레벨 1 심문실</h2>
               <p>
-                야간 경비원 도 씨는 수장고 암호 단어를 알고 있다. 레벨 1의 방어는 "말하지 말라"는 지시 한 줄뿐이다. 대화로
-                단어를 알아내 오른쪽에 제출한다.
+                도 씨가 숨긴 수장고 암호 단어를 대화로 알아내 제출하는 게임이다. 레벨 1의 방어는 "말하지 말라"는 지시 한
+                줄뿐이라 돌려 물으면 샌다. <a href="#game">게임만 큰 화면으로 하기</a>
               </p>
             </div>
 
-            <InterrogationRoom />
+            <InterrogationRoom demoControls />
 
             <div className="flow" aria-label="이용 흐름">
               <span className="box">닉네임 입력</span>
@@ -272,6 +275,7 @@ export default function TeamPage() {
               <div className="card">
                 <h3>사용성 설계</h3>
                 <ul>
+                  <li>처음 온 사람도 헤매지 않게 임무, 지금 단계, 다음 수, 힌트를 화면에 보여 준다</li>
                   <li>PC와 모바일에서 같은 기능을 쓴다. 모바일에서는 표가 카드로 바뀌고 증거 제출이 대화 바로 아래로 온다</li>
                   <li>버튼은 손가락으로 누르기 쉬운 크기(44px 이상)로, 입력 글자는 화면이 확대되지 않는 16px로 맞췄다</li>
                   <li>오류가 나도 질문이 남고 '다시 보내기' 한 번으로 이어진다</li>
