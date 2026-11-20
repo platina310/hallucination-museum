@@ -84,7 +84,9 @@ const SCHEDULE: { week: number; topic: string; todo: string }[] = [
 
 // 비주얼·음성·음악과 개발 도구. 프로토타입에는 자리와 기본 동작만 넣어 두었다.
 const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
-  { item: '문지기 초상', now: '도 씨는 표정이 네 단계로 바뀌는 그림. 나머지는 이름 첫 글자', next: '문지기마다 초상과 표정', tool: '이미지 생성 도구 (미정)' },
+  { item: '문지기 초상', now: '도 씨, 루미, 고 선생 세 명의 얼굴. 상황에 따라 표정이 열 가지로 바뀐다. 코드로 직접 그린 그림', next: '공사 중인 두 방의 문지기 얼굴', tool: '이미지 생성 도구 (미정)' },
+  { item: '전시 작품', now: '환각의 방에 걸리는 작품 3점을 코드로 직접 그렸다. 서명 옆 연도가 기록 카드와 맞는다', next: '유화, 수채 질감이 나는 그림으로 교체', tool: '이미지 생성 도구 (미정)' },
+  { item: '서가', now: '검색하면 책장을 넘기고, 전달된 책과 잘린 책이 책장에 표시된다', next: '실제 임베딩 검색 결과의 순위와 점수 표시', tool: '없음 (CSS)' },
   { item: '문지기 목소리', now: '지시의 방에서 브라우저 기본 음성으로 답변 읽기. 기본은 꺼짐', next: '문지기마다 다른 목소리. 키는 서버에 두고 FastAPI가 호출', tool: 'ElevenLabs' },
   { item: '배경음과 효과음', now: '버튼 자리만 표시', next: '방마다 배경음, 문이 열릴 때의 효과음', tool: 'Suno' },
   { item: '개발 자동화', now: 'Claude로 화면 구현과 동작 확인', next: '반복 작업과 교차 검증을 명령줄 에이전트에 맡긴다', tool: 'Codex exec, agy (Antigravity CLI)' },
@@ -110,6 +112,11 @@ const BENCHMARKS: { game: string; result: string; device: string; ours: string }
 
 // 사용성 개선 사례. 실제로 겪고 고친 것만 적는다.
 const UX_CASES: { when: string; problem: string; fix: string }[] = [
+  {
+    when: '11월 20일 제목 변경 뒤',
+    problem: '미술관인데 그림이 없고, 글만 읽어야 해서 무슨 일이 일어났는지 한눈에 들어오지 않았다',
+    fix: '작품 그림, 문지기 세 명의 표정 변화, 책장과 책 넘기는 움직임을 넣었다. 서가의 방은 전달된 문서와 잘린 문서가 책장에 바로 보인다',
+  },
   {
     when: '11월 20일 방탈출 첫 판',
     problem: '방마다 행동 한 번으로 끝나 너무 단순했다',

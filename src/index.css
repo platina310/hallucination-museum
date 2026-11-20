@@ -386,3 +386,59 @@ button.chip.listen{font:inherit;font-size:.74rem;cursor:pointer;color:var(--ink)
 
 /* 두 줄 도장: 환각 / 미술관 */
 .stamp.two-line{font-size:clamp(2.6rem,8vw,4.2rem);line-height:1.08;padding:.2em .36em .24em;text-align:center}
+
+/* ── 그림 요소: 문지기 초상, 전시 작품, 책장 ── */
+.portrait{width:68px;height:68px}
+.portrait.small{width:34px;height:34px}
+.portrait .pop{transform-box:fill-box;transform-origin:50% 62%;animation:pop .5s cubic-bezier(.3,1.5,.5,1)}
+@keyframes pop{0%{transform:scale(.84) rotate(-5deg)}55%{transform:scale(1.05) rotate(2deg)}100%{transform:none}}
+.portrait.sweat,.portrait.startled{animation:tremble .4s infinite}
+.portrait .drop{animation:drip 1.4s ease-in infinite}
+.portrait .drop.late{animation-delay:.7s}
+@keyframes drip{0%{transform:translateY(-3px);opacity:0}20%{opacity:1}100%{transform:translateY(10px);opacity:0}}
+.portrait .dart{animation:dart 2.4s steps(1) infinite}
+@keyframes dart{0%,100%{transform:translateX(0)}30%{transform:translateX(-3.4px)}65%{transform:translateX(.6px)}}
+.portrait .scan{animation:scan .9s ease-in-out infinite alternate}
+@keyframes scan{from{transform:translateX(-1.8px)}to{transform:translateX(1.8px)}}
+.door-guard{display:flex;align-items:center;gap:8px}
+.portrait-empty{width:34px;height:34px;flex:none;border-radius:50%;border:1.5px dashed var(--rule);display:grid;place-items:center;font-family:var(--f-mono);font-size:.9rem;color:var(--ink-soft)}
+@media (min-width:700px){.portrait{width:78px;height:78px}.portrait.small{width:34px;height:34px}}
+
+.art-wall{margin:0;padding:20px 16px 14px;border-bottom:1px solid var(--rule);display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:12px 18px;background:radial-gradient(110% 95% at 50% 0%,color-mix(in srgb,var(--mark) 24%,transparent),transparent 72%),var(--paper)}
+.art-frame{flex:0 1 auto;max-width:100%;padding:7px;background:linear-gradient(135deg,#6f5527,#d6b56a 35%,#8b6c33 62%,#e2c57e);box-shadow:0 1px 0 #0004,0 14px 20px -10px #000a;transform-origin:50% -24px;animation:hang .6s cubic-bezier(.3,1.4,.5,1)}
+.art-frame svg{display:block;height:clamp(176px,46vw,236px);width:auto;max-width:100%;background:#f4efe4;outline:1px solid #0005}
+.art-frame.water svg{border:9px solid #fbf9f3}
+.art-frame.acrylic{padding:5px;background:linear-gradient(135deg,#1a1a1a,#444 50%,#1a1a1a)}
+@keyframes hang{0%{opacity:0;transform:translateY(-12px) rotate(-3deg)}55%{opacity:1;transform:rotate(1.2deg)}100%{transform:none}}
+.art-label{flex:0 0 auto;display:grid;border:1px solid var(--rule);background:var(--sheet);padding:6px 10px;font-size:.76rem;line-height:1.5;box-shadow:0 2px 0 var(--rule)}
+.art-label b{font-family:var(--f-display);font-size:.98rem}
+.art-label span{color:var(--ink-soft)}
+
+.bookcase{padding:14px 16px 10px;border-bottom:1px solid var(--rule);background:var(--paper)}
+.spines{display:flex;align-items:flex-end;justify-content:center;gap:3px;height:76px;padding:0 6px;border-bottom:5px solid var(--ink)}
+.spine{flex:1 1 0;min-width:0;max-width:34px;position:relative;display:grid;place-items:end center;border-radius:2px 2px 0 0;background:var(--ink-soft);transition:transform .4s cubic-bezier(.3,1.5,.5,1),background-color .2s}
+.spine:nth-child(3n){background:color-mix(in srgb,var(--ink-soft) 62%,var(--paper))}
+.spine:nth-child(4n+1){background:color-mix(in srgb,var(--ink) 78%,var(--paper))}
+.spine::before{content:"";position:absolute;left:22%;right:22%;top:8px;height:2px;background:var(--paper);opacity:.65;box-shadow:0 5px 0 var(--paper)}
+.spine.given{background:var(--seal);transform:translateY(-12px)}
+.spine.given b{font-family:var(--f-mono);font-size:.74rem;color:var(--sheet);padding-bottom:5px}
+.spine.cut{background:repeating-linear-gradient(135deg,var(--mark) 0 4px,var(--sheet) 4px 8px);outline:1.5px solid var(--ink);outline-offset:-1.5px}
+.spine.cut::before{display:none}
+.spines.busy .spine{animation:rummage .5s ease-in-out infinite alternate}
+@keyframes rummage{from{transform:none}to{transform:translateY(-7px)}}
+.bookcase-ends{display:flex;justify-content:space-between;margin-top:5px;font-family:var(--f-mono);font-size:.7rem;color:var(--ink-soft)}
+.bookcase-legend{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:4px;font-size:.78rem;color:var(--ink-soft)}
+.bookcase-legend .key{display:inline-block;width:12px;height:12px;border-radius:2px}
+.bookcase-legend .key.given{background:var(--seal)}
+.bookcase-legend .key.cut{margin-left:8px;background:repeating-linear-gradient(135deg,var(--mark) 0 3px,var(--sheet) 3px 6px);outline:1px solid var(--ink)}
+
+.msg.flipping{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+.msg.flipping .who{flex-basis:100%}
+.book{position:relative;flex:none;display:inline-block;width:48px;height:32px;perspective:170px}
+.book .page,.book .leaf{position:absolute;top:0;bottom:0;width:50%;border:1.5px solid var(--ink);background:repeating-linear-gradient(var(--sheet) 0 5px,var(--rule) 5px 6px)}
+.book .page.left{left:0;border-radius:3px 0 0 3px;border-right-width:.75px}
+.book .page.right,.book .leaf{left:50%;border-radius:0 3px 3px 0;border-left-width:.75px}
+.book .leaf{transform-origin:left center;animation:flip 1.05s ease-in-out infinite}
+.book .leaf:nth-child(4){animation-delay:.35s}
+.book .leaf:nth-child(5){animation-delay:.7s}
+@keyframes flip{0%{transform:rotateY(0)}65%,100%{transform:rotateY(-180deg)}}

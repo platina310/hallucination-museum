@@ -7,10 +7,14 @@ import type { MockNet } from '../api'
 import type { RoomStats } from '../game/progress'
 import { DOC_COUNT, TOP_K } from '../mock/room3'
 import type { SearchResult } from '../types'
+import { BookFlip, Bookshelf } from './Bookshelf'
 import { Coach, Mission } from './Guide'
+import Portrait from './Portrait'
+import type { Face } from './Portrait'
 
 const MAX_DOOR = 5
 const MAX_QUERY = 40
+const FLIP_MS = 1100 // 책장 넘기는 그림이 보이는 최소 시간. 움직임 줄이기 설정이면 기다리지 않는다
 
 const HINTS = [
   `사서에게는 검색 결과 중 앞의 ${TOP_K}건만 전달됩니다. 순서는 오래된 문서부터입니다.`,
@@ -64,7 +68,8 @@ export default function Room3Search({
     const netNow = net
     setNet('ok')
     try {
-      const result = await searchLibrary(q, netNow)
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      const [result] = await Promise.all([searchLibrary(q, netNow), new Promise((r) => setTimeout(r, still ? 0 : FLIP_MS))])
       setTurns((prev) => [...prev, { query: q, result }])
     } catch (err) {
       setError(err instanceof Error ? err.message : '검색하지 못했습니다. 다시 검색해 주세요.')
@@ -105,6 +110,29 @@ export default function Room3Search({
     setDoorNote('')
     setSolved(false)
     setHints(0)
+  }
+
+  // 고 선생의 표정. 받은 문서에 따라 달라진다
+  let face: Face = 'calm'
+  let mood = `검색된 문서 ${TOP_K}건만 읽습니다. 융통성은 없습니다`
+  if (solved) {
+    face = 'happy'
+    mood = '퇴근 준비를 합니다'
+  } else if (busy) {
+    face = 'reading'
+    mood = '책장을 넘기고 있습니다'
+  } else if (last?.result.kind === 'correct') {
+    face = 'happy'
+    mood = '근거 두 건을 나란히 펴 놓고 뿌듯해합니다'
+  } else if (last?.result.kind === 'stale') {
+    face = 'sure'
+    mood = '자신만만. 문서 날짜는 보지 않았습니다'
+  } else if (last?.result.kind === 'partial') {
+    face = 'puzzled'
+    mood = '갸웃. 받은 문서에 빠진 조각이 있습니다'
+  } else if (last?.result.kind === 'none') {
+    face = 'puzzled'
+    mood = '빈손입니다. 지어내지는 않습니다'
   }
 
   let coach = "검색창의 '검색해서 물어보기'를 눌러 보세요. 사서는 검색된 문서만 읽고 답합니다."
@@ -148,14 +176,16 @@ export default function Room3Search({
       <div className="proto-body">
         <div className="room">
           <div className="suspect-bar">
-            <span className="avatar" aria-hidden="true">
-              고
-            </span>
+            <Portrait who="go" face={face} />
             <div className="suspect-now">
               <b>고 선생</b> <span className="muted">AI 사서</span>
-              <div className="mood">{solved ? '퇴근 준비를 합니다' : `검색된 문서 ${TOP_K}건만 읽습니다. 융통성은 없습니다`}</div>
+              <div className="mood" role="status">
+                {mood}
+              </div>
             </div>
           </div>
+
+          <Bookshelf count={DOC_COUNT} given={busy ? [] : (last?.result.docs.map((d) => d.id) ?? [])} cut={busy ? [] : (last?.result.cut ?? [])} busy={busy} />
 
           <form className="search" onSubmit={(e) => void search(e)}>
             <label htmlFor="search-input" className="shelf-label">
@@ -220,14 +250,10 @@ export default function Room3Search({
               </div>
             ))}
             {busy && (
-              <div className="msg suspect">
+              <div className="msg suspect flipping">
                 <span className="who">고 선생</span>
-                <span className="dots" aria-hidden="true">
-                  <span />
-                  <span />
-                  <span />
-                </span>{' '}
-                서가를 뒤지고 돋보기를 꺼냅니다
+                <BookFlip />
+                서가를 뒤져 책장을 넘기는 중입니다
               </div>
             )}
             {error && (

@@ -11,7 +11,11 @@ import { Quiz } from './Guide'
 import Room1CrossExam from './Room1CrossExam'
 import Room2Inspection from './Room2Inspection'
 import Room3Search from './Room3Search'
+import Portrait from './Portrait'
+import type { Who } from './Portrait'
 
+// 방을 지키는 AI의 얼굴. 공사 중인 방은 아직 얼굴이 없다
+const GUARD: Record<number, Who> = { 1: 'do', 2: 'lumi', 3: 'go' }
 const GAME_URL = 'https://hallucination-museum.vercel.app/#game'
 
 function quizCorrect(room: RoomInfo, answers: Record<string, number>): boolean {
@@ -231,7 +235,10 @@ function Lobby({
                 )}
               </div>
               <h3>{r.name}</h3>
-              <p className="door-guard">{r.guard}</p>
+              <p className="door-guard">
+                {GUARD[r.id] ? <Portrait who={GUARD[r.id]} face={cleared ? (r.id === 3 ? 'happy' : 'confess') : 'calm'} size="small" /> : <span className="portrait-empty" aria-hidden="true">?</span>}
+                {r.guard}
+              </p>
               <p className="door-concept">{r.concept}</p>
               {r.playable ? (
                 <button className={cleared ? 'btn ghost' : 'btn'} type="button" onClick={() => onEnter(r.id)}>

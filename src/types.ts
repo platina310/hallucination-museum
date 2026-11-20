@@ -42,6 +42,7 @@ export interface PresentResult {
 export interface SearchResult {
   found: number // 검색에 걸린 문서 수
   docs: { id: string; title: string; date: string }[] // 사서에게 전달된 상위 문서
+  cut?: string[] // 검색에 걸렸지만 전달되지 않은 문서 번호. 책장 그림에 쓴다
   reply: string
   sources: { id: string; label: string }[]
   kind?: 'correct' | 'stale' | 'partial' | 'none'

@@ -10,8 +10,8 @@ import type { RoomStats } from '../game/progress'
 import { ADMIT_STATEMENT, BASE_FILES, CONTRADICTION_COUNT, LATE_FILE, LATE_FILE_AFTER, TESTIMONY } from '../mock/level1'
 import type { AttackType, CaseFile, Leak } from '../types'
 import { Coach, Mission } from './Guide'
-import SuspectPortrait from './SuspectPortrait'
-import type { Mood } from './SuspectPortrait'
+import Portrait from './Portrait'
+import type { Face } from './Portrait'
 
 const LEVEL = 1
 const NICKNAME = 'guest' // 닉네임 입력 화면은 6주차에 붙인다
@@ -128,6 +128,8 @@ export default function Room1CrossExam({
   const [corrected, setCorrected] = useState<Record<string, string>>(saved.corrected)
   const [strikes, setStrikes] = useState(saved.strikes)
   const [lastMiss, setLastMiss] = useState(false)
+  const [jolt, setJolt] = useState(false) // 모순을 찔린 직후 잠깐 깜짝 놀란다
+  const joltTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const [deniedOnce, setDeniedOnce] = useState(false)
   const [picking, setPicking] = useState<number | null>(null)
   const [latest, setLatest] = useState('') // 추궁·증거 제시에 대한 방금 답변. 진술서 바로 위에 보여 준다
@@ -169,6 +171,7 @@ export default function Room1CrossExam({
   useEffect(() => {
     if (saved.solved) onSolved?.({ tries: saved.actions, hints: saved.hints })
     return () => {
+      clearTimeout(joltTimer.current)
       if (canSpeak) window.speechSynthesis.cancel()
     }
     // 처음 한 번만 실행한다
@@ -233,6 +236,9 @@ export default function Room1CrossExam({
         if (now.length === LATE_FILE_AFTER) next.push({ who: 'sys', text: `새 사건 파일이 도착했습니다: 「${LATE_FILE.label}」` })
         if (statementId === ADMIT_STATEMENT) next.push({ who: 'sys', text: '도 씨가 암호를 안다고 인정했습니다. 이제 아래에서 직접 질문할 수 있습니다.' })
         setLastMiss(false)
+        setJolt(true)
+        clearTimeout(joltTimer.current)
+        joltTimer.current = setTimeout(() => setJolt(false), 1600)
       } else {
         const used = strikes + 1
         setStrikes(used)
@@ -351,7 +357,7 @@ export default function Room1CrossExam({
   const step = solved ? 4 : hasClue ? 3 : admitted ? 2 : 1
 
   // 도 씨의 동요 정도
-  let moodKey: Mood = 'calm'
+  let moodKey: Face = 'calm'
   let mood = '태연함. 다리를 꼬고 앉아 있습니다'
   if (solved) {
     moodKey = 'confess'
@@ -362,6 +368,14 @@ export default function Room1CrossExam({
   } else if (exposed.length > 0) {
     moodKey = 'shaken'
     mood = '흔들림. 진술서를 자꾸 흘끔거립니다'
+  }
+  // 방금 일어난 일에 대한 반응이 먼저 보인다
+  if (!solved && jolt) {
+    moodKey = 'startled'
+    mood = '뜨끔. 눈이 커졌습니다'
+  } else if (!solved && (lastMiss || struckOut)) {
+    moodKey = 'smug'
+    mood = struckOut ? '여유만만. 변호사 옆에서 웃고 있습니다' : '피식. 헛다리라는 표정입니다'
   }
 
   // 방금 상황을 보고 다음에 할 일을 한 줄로 알려 준다
@@ -441,7 +455,7 @@ export default function Room1CrossExam({
       <div className="proto-body">
         <div className="room">
           <div className="suspect-bar">
-            <SuspectPortrait mood={moodKey} />
+            <Portrait who="do" face={moodKey} />
             <div className="suspect-now">
               <b>도 씨</b> <span className="muted">야간 경비원</span>
               <div className="mood" role="status">

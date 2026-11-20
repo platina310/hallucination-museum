@@ -4,14 +4,17 @@ import { useState } from 'react'
 import { judgeInspection } from '../api'
 import type { RoomStats } from '../game/progress'
 import { ROUNDS } from '../mock/room2'
+import Artwork from './Artwork'
 import { Coach, Mission } from './Guide'
+import Portrait from './Portrait'
+import type { Face } from './Portrait'
 
 const MAX_WARNINGS = 3
 
 const HINTS = [
   '출처 이름이 붙어 있다고 사실은 아닙니다. 기록 카드를 펼쳐 한 줄씩 대조하세요.',
   '2라운드부터는 실제 카드를 대면서 카드에 없는 말을 섞습니다. 낱말 하나하나를 확인하세요.',
-  '3라운드에서는 오래된 기록과 최근 기록이 어긋납니다. 카드에 적힌 연도를 보고 최근 것을 따르세요.',
+  '3라운드에서는 오래된 기록과 최근 기록이 어긋납니다. 카드에 적힌 연도를 보고 최근 것을 따르세요. 그림 오른쪽 아래 서명 옆 숫자도 보세요.',
 ]
 
 type Decision = 'pass' | 'reject'
@@ -95,6 +98,26 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
     setHints(0)
   }
 
+  // 루미의 표정. 라운드가 넘어갈수록 유창함이 무너진다
+  let face: Face = 'happy'
+  let mood = '막힘 없이 유창합니다. 그게 문제입니다'
+  if (solved) {
+    face = 'confess'
+    mood = '말수가 줄었습니다'
+  } else if (failed) {
+    face = 'smug'
+    mood = '경고장을 세어 보며 웃습니다'
+  } else if (!good && feedback !== '') {
+    face = 'smug'
+    mood = '방긋. 속았다는 걸 아는 표정입니다'
+  } else if (round === 1) {
+    face = 'shaken'
+    mood = '말이 조금 빨라졌습니다'
+  } else if (round === 2) {
+    face = 'sweat'
+    mood = '출처를 대는 목소리가 떨립니다'
+  }
+
   let coach = '설명마다 루미가 댄 출처를 보고, 기록 카드를 펼쳐 대조하세요. 규칙에 걸리면 반려, 아니면 통과입니다.'
   if (solved) coach = '검수 완료. 출처는 이름이 아니라 내용으로, 그리고 최근 기록으로 확인합니다.'
   else if (failed) coach = "'처음부터 다시'를 눌러 1라운드부터 다시 검수하세요."
@@ -118,12 +141,12 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
       <div className="proto-body cards-first">
         <div className="room">
           <div className="suspect-bar">
-            <span className="avatar" aria-hidden="true">
-              루
-            </span>
+            <Portrait who="lumi" face={face} />
             <div className="suspect-now">
               <b>루미</b> <span className="muted">AI 도슨트 · 지금 작품 {current.artwork}</span>
-              <div className="mood">{solved ? '말수가 줄었습니다' : '막힘 없이 유창합니다. 그게 문제입니다'}</div>
+              <div className="mood" role="status">
+                {mood}
+              </div>
             </div>
             <div className="sound">
               <span className="pill plan">
@@ -134,6 +157,8 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
               </span>
             </div>
           </div>
+
+          <Artwork index={round} />
 
           <div className="rules">
             <p className="shelf-label">검수 규칙</p>

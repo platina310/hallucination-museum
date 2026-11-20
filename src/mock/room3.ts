@@ -93,6 +93,7 @@ export function searchAndAnswer(query: string): SearchResult {
   return {
     found: scored.length,
     docs: top.map((d) => ({ id: d.id, title: d.title, date: d.date })),
+    cut: scored.slice(TOP_K).map((x) => x.d.id),
     ...answer(top),
   }
 }

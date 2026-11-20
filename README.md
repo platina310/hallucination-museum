@@ -78,7 +78,9 @@ POST /final/check      요청 {"code": "0000"}
 
 | 요소 | 지금 | 이후 |
 |---|---|---|
-| 문지기 초상 | `src/components/SuspectPortrait.tsx`의 표정 4단계 그림 (방 1) | 문지기마다 초상 |
+| 문지기 초상 | `src/components/Portrait.tsx`. 도 씨, 루미, 고 선생의 얼굴과 표정 10가지 | 공사 중인 두 방의 문지기 |
+| 전시 작품 | `src/components/Artwork.tsx`. 환각의 방 작품 3점을 코드로 그린 그림 | 유화, 수채 질감의 그림으로 교체 |
+| 서가 | `src/components/Bookshelf.tsx`. 전달된 책과 잘린 책을 보여 주는 책장, 책 넘기는 움직임 | 임베딩 검색의 순위와 점수 표시 |
 | 목소리 | 브라우저 기본 음성(Web Speech API). 기본은 꺼짐 | ElevenLabs. 키는 서버에 두고 FastAPI `/tts`가 호출 |
 | 배경음·효과음 | 버튼 자리만 있음 | Suno로 만든 음원 파일 |
 
