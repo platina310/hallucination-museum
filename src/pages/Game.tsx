@@ -6,7 +6,7 @@ export default function Game() {
     <>
       <div className="top">
         <div className="wrap">
-          <span className="mono brand">묵비권 · AI 방탈출</span>
+          <span className="mono brand">환각 미술관 · AI 방탈출</span>
           <nav aria-label="화면 이동">
             <a href="#team">팀 페이지 보기</a>
           </nav>
@@ -14,7 +14,7 @@ export default function Game() {
       </div>
       <main className="game">
         <div className="wrap">
-          <h1 className="sr-only">묵비권 AI 방탈출</h1>
+          <h1 className="sr-only">환각 미술관 AI 방탈출</h1>
           <EscapeGame />
         </div>
       </main>

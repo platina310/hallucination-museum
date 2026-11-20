@@ -383,3 +383,6 @@ button.chip.listen{font:inherit;font-size:.74rem;cursor:pointer;color:var(--ink)
 
 .testimony .latest{margin-top:8px;border-left:3px solid var(--ink);padding:4px 0 4px 10px;font-size:.92rem;line-height:1.5}
 .testimony .latest b{font-family:var(--f-mono);font-size:.74rem;font-weight:500;color:var(--ink-soft);margin-right:6px}
+
+/* 두 줄 도장: 환각 / 미술관 */
+.stamp.two-line{font-size:clamp(2.6rem,8vw,4.2rem);line-height:1.08;padding:.2em .36em .24em;text-align:center}

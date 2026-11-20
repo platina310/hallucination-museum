@@ -12,7 +12,7 @@ import Room1CrossExam from './Room1CrossExam'
 import Room2Inspection from './Room2Inspection'
 import Room3Search from './Room3Search'
 
-const GAME_URL = 'https://mukbigwon-rol4.vercel.app/#game'
+const GAME_URL = 'https://hallucination-museum.vercel.app/#game'
 
 function quizCorrect(room: RoomInfo, answers: Record<string, number>): boolean {
   return room.quiz !== undefined && answers[room.id] === room.quiz.answer
@@ -132,7 +132,7 @@ function Lobby({
 
   // 정답을 드러내지 않는 결과 카드
   const shareText = [
-    '묵비권 · AI 방탈출 탈출 성공',
+    '환각 미술관 · AI 방탈출 탈출 성공',
     ...playable.map((r) => `${r.name} ${starText(starsOf(r.id, progress.stats[r.id]))}`),
     `시도 ${tries}회 · 힌트 ${hints}개`,
     postDone === playable.length ? `퀴즈 ${preRight}/${playable.length} → ${postRight}/${playable.length}` : '',

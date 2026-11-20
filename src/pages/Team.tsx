@@ -92,8 +92,8 @@ const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
 
 // 배포 후 주소를 넣는다. 빈 문자열이면 "배포 후 기입"으로 표시된다.
 const LINKS: { label: string; url: string }[] = [
-  { label: 'GitHub 저장소', url: 'https://github.com/platina310/mukbigwon' },
-  { label: '서비스 웹 주소 (React, 팀 페이지 포함)', url: 'https://mukbigwon-rol4.vercel.app' },
+  { label: 'GitHub 저장소', url: 'https://github.com/platina310/hallucination-museum' },
+  { label: '서비스 웹 주소 (React, 팀 페이지 포함)', url: 'https://hallucination-museum.vercel.app' },
   { label: 'Swagger UI 주소 (FastAPI /docs)', url: '' },
 ]
 
@@ -128,7 +128,7 @@ export default function Team() {
       <div className="top">
         <div className="wrap">
           <span className="mono brand">
-            묵비권 팀 페이지<span className="course"> · 금융빅데이터분석실습 · 5주차 아이디어 공유용 초안</span>
+            환각 미술관 팀 페이지<span className="course"> · 금융빅데이터분석실습 · 5주차 아이디어 공유용 초안</span>
           </span>
           <nav aria-label="페이지 구역">
             <a href="#problem">문제</a>
@@ -148,14 +148,16 @@ export default function Team() {
       <header className="hero">
         <div className="wrap hero-grid">
           <div>
-            <div className="stamp" aria-hidden="true">
-              묵비권
+            <div className="stamp two-line" aria-hidden="true">
+              환각
+              <br />
+              미술관
             </div>
-            <h1 className="sr-only">묵비권</h1>
+            <h1 className="sr-only">환각 미술관</h1>
             <p className="lede">
               AI가 지키는 방을 말과 추리로 뚫으며 <mark>LLM의 원리를 배우는 방탈출</mark>
             </p>
-            <p className="tagline">AI에게는 말하지 않을 권리가 있습니다. 다만 허점도 많습니다.</p>
+            <p className="tagline">이 미술관의 AI들은 막힘 없이 말합니다. 전부 맞는 말은 아닙니다.</p>
             <div className="cta">
               <a className="btn" href="#play">
                 방탈출 해 보기
