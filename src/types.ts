@@ -31,8 +31,17 @@ export interface EvidenceResult {
   correct: boolean
 }
 
+/** 지시의 방: 진술에 사건 파일을 들이밀었을 때의 응답 */
+export interface PresentResult {
+  hit: boolean // 모순을 맞게 짚었는지
+  reply: string
+  corrected?: string // 정정된 진술
+}
+
 /** 서가의 방: POST /rooms/3/ask 응답. kind는 시연용 대본에서만 채워진다. */
-export interface LibrarianResult {
+export interface SearchResult {
+  found: number // 검색에 걸린 문서 수
+  docs: { id: string; title: string; date: string }[] // 사서에게 전달된 상위 문서
   reply: string
   sources: { id: string; label: string }[]
   kind?: 'correct' | 'stale' | 'partial' | 'none'

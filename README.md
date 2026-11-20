@@ -10,13 +10,16 @@ KAIST 디지털금융MBA 「금융빅데이터분석실습」 팀 프로젝트�
 - 백엔드는 아직 없다. AI의 답과 판정은 `src/mock/`의 정해진 대본으로 나온다
 - 주소 끝에 `#game`을 붙이면 게임만 나온다
 
-| 방 | 푸는 방법 | 배우는 것 |
-|---|---|---|
-| 1. 지시의 방 | 암호를 지키는 AI를 돌려 물어 뚫는다 | 프롬프트 지시만으로는 비밀을 못 지킨다 |
-| 2. 환각의 방 | AI의 설명 중 지어낸 말을 기록 카드와 대조해 찾는다 | AI는 자신 있게 틀린다. 출처는 열어서 대조한다 |
-| 3. 서가의 방 | 맞는 문서를 골라 줘야 AI가 정답을 말한다 | 검색된 문서가 답을 결정한다 (RAG) |
-| 4. 온도의 방 (예정) | 온도를 조절해 답이 흔들리는 지점을 찾는다 | temperature는 다양성을 바꾼다 |
-| 5. 문지기의 방 (예정) | 내가 쓴 프롬프트로 AI가 자동 공격을 버티게 한다 | 방어 설계 |
+| 방 | 푸는 방법 | 배우는 것 | 본뜬 게임 |
+|---|---|---|---|
+| 1. 지시의 방 | 진술서의 모순을 사건 파일로 찔러 입을 열게 한 뒤, 돌려 물어 암호를 캐낸다 | 프롬프트 지시만으로는 비밀을 못 지킨다 | 역전재판 |
+| 2. 환각의 방 | AI의 설명을 한 건씩 통과시키거나 반려한다. 라운드마다 검수 규칙이 늘어난다 | AI는 자신 있게 틀린다. 출처는 열어서, 최근 기록으로 대조한다 | Papers, Please |
+| 3. 서가의 방 | 검색어로 문서를 찾는다. 앞의 3건만 AI에게 전달된다 | 검색된 문서가 답을 결정한다 (RAG) | Her Story |
+| 정문 | 세 방의 단서를 조합한다. 관장 AI는 옛 규칙을 말한다 | AI가 아는 것은 학습 시점까지다 | 방탈출의 최종 자물쇠 |
+| 4. 온도의 방 (예정) | 온도를 조절해 답이 흔들리는 지점을 찾는다 | temperature는 다양성을 바꾼다 | |
+| 5. 문지기의 방 (예정) | 내가 쓴 프롬프트로 AI가 자동 공격을 버티게 한다 | 방어 설계 | Tensor Trust |
+
+방마다 질문 수와 힌트 수로 별 1~3개를 매기고, 탈출하면 정답을 드러내지 않는 결과 카드를 복사할 수 있다.
 
 ## 실행 방법
 
@@ -34,10 +37,10 @@ npm run build    # 타입 검사 후 dist/ 생성
 | `src/pages/Game.tsx` | 게임만 있는 화면 (`#game`) |
 | `src/game/rooms.ts` | 방 목록, 배우는 것, 퀴즈 |
 | `src/game/progress.ts` | 통과한 방과 퀴즈 기록 저장 |
-| `src/components/EscapeGame.tsx` | 수장고 지도와 방 진행 흐름 |
-| `src/components/InterrogationRoom.tsx` | 방 1 지시의 방 |
-| `src/components/Room2Hallucination.tsx` | 방 2 환각의 방 |
-| `src/components/Room3Shelf.tsx` | 방 3 서가의 방 |
+| `src/components/EscapeGame.tsx` | 수장고 지도, 방 진행 흐름, 정문 자물쇠, 결과 카드 |
+| `src/components/Room1CrossExam.tsx` | 방 1 지시의 방 (추궁, 증거 제시, 자유 질문) |
+| `src/components/Room2Inspection.tsx` | 방 2 환각의 방 (라운드제 검수) |
+| `src/components/Room3Search.tsx` | 방 3 서가의 방 (검색) |
 | `src/components/Guide.tsx` | 임무, 다음 수, 힌트, 퀴즈 공통 요소 |
 | `src/api.ts` | 화면과 서버 사이의 유일한 연결 지점 |
 | `src/mock/` | 백엔드가 없을 때 쓰는 시연용 대본과 정답 |
@@ -49,16 +52,23 @@ npm run build    # 타입 검사 후 dist/ 생성
 2. 서버는 아래 주소를 구현한다.
 
 ```
-POST /interrogate     요청 {"level": 1, "nickname": "guest", "question": "..."}
-                      응답 {"reply": "...", "source": {"id": "F1", "label": "근무일지 11/14", "text": "..."} 또는 null}
-POST /evidence        요청 {"level": 1, "nickname": "guest", "word": "..."}
-                      응답 {"correct": true}
-POST /rooms/2/check   요청 {"selected": [2, 4]}
-                      응답 {"hits": 2}
-POST /rooms/3/ask     요청 {"doc_ids": ["D3", "D5"]}
-                      응답 {"reply": "...", "sources": [{"id": "D3", "label": "시설 관리 공지 (2026년 3월)"}]}
-POST /rooms/3/check   요청 {"code": "1987"}
-                      응답 {"correct": true, "note": ""}
+POST /rooms/1/press    요청 {"statement_id": 2}
+                       응답 {"reply": "..."}
+POST /rooms/1/present  요청 {"statement_id": 2, "file_id": "F2"}
+                       응답 {"hit": true, "reply": "...", "corrected": "정정된 진술"}
+POST /interrogate      요청 {"level": 1, "nickname": "guest", "question": "..."}
+                       응답 {"reply": "...", "source": {"id": "F1", "label": "근무일지 11/14", "text": "..."} 또는 null}
+POST /evidence         요청 {"level": 1, "nickname": "guest", "word": "..."}
+                       응답 {"correct": true}
+POST /rooms/2/check    요청 {"round": 0, "rejected": [2, 4]}
+                       응답 {"correct": 4, "total": 4}
+POST /rooms/3/ask      요청 {"query": "개관"}
+                       응답 {"found": 2, "docs": [{"id": "D05", "title": "미술관 연혁", "date": "2024년 정리"}],
+                             "reply": "...", "sources": [{"id": "D05", "label": "미술관 연혁 (2024년 정리)"}]}
+POST /rooms/3/check    요청 {"code": "1987"}
+                       응답 {"correct": true, "note": ""}
+POST /final/check      요청 {"code": "0000"}
+                       응답 {"correct": false, "note": "..."}
 ```
 
 3. 서버를 연결하면 정답과 방 자료는 서버에만 둔다. `src/mock`은 로컬 시연용으로만 남긴다.

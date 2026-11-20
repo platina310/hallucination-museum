@@ -51,14 +51,14 @@ const DATASETS: { name: string; origin: string; content: string; use: string; st
 
 // 강의계획서와 「퀴즈 및 팀 프로젝트 안내」의 조건. 진행 상황이 바뀌면 status와 statusText를 고친다.
 const CONDITIONS: { condition: string; plan: string; status: Status; statusText: string }[] = [
-  { condition: 'React 화면 (필수)', plan: '팀 페이지, 수장고 지도, 방 3개를 React로 만들었다. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개 구현' },
+  { condition: 'React 화면 (필수)', plan: '팀 페이지, 수장고 지도, 방 3개, 정문 자물쇠를 React로 만들었다. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개 구현' },
   { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태를 모두 넣었다. 빈 결과는 "근거 없음"으로 표시', status: 'ok', statusText: '구현' },
   { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 호출. 지금은 정해진 대본으로 답한다', status: 'plan', statusText: '6주차' },
   { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '프런트는 Vercel에 배포했다. 백엔드 Render와 DB Supabase는 6주차', status: 'ok', statusText: '프런트 배포' },
   { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '로그와 퀴즈 테이블, 서가 문서 임베딩', status: 'plan', statusText: '계획' },
   { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '저장소를 만들고 실행 방법을 README에 적었다. 방별 프롬프트와 탈출률 변화는 이어서 기록', status: 'ok', statusText: '저장소 생성' },
   { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 이 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
-  { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 정답 조합, 오래된 문서로 틀리는 사례, 자료 없음 사례', status: 'plan', statusText: '대본으로 시연 가능' },
+  { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 정답이 나오는 검색어, 오래된 문서가 걸려 틀리는 검색어, 자료 없음이 나오는 검색어', status: 'plan', statusText: '대본으로 시연 가능' },
   { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '이 페이지의 문제, 화면, 데이터, AI 계획 구역', status: 'ok', statusText: '초안' },
   { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 두었다. 내용은 매주 갱신한다', status: 'ok', statusText: '틀 완성' },
   { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정·역할 구역에 적는다. Swagger UI는 백엔드 배포 뒤 기입', status: 'need', statusText: '2개 기입' },
@@ -76,7 +76,7 @@ const GRADING: { item: string; weight: string; show: string }[] = [
 ]
 
 const SCHEDULE: { week: number; topic: string; todo: string }[] = [
-  { week: 5, topic: 'RAG', todo: '아이디어 공유. 서가의 방 문서를 임베딩해 실제 검색으로 바꾸기' },
+  { week: 5, topic: 'RAG', todo: '아이디어 공유. 서가의 방 낱말 검색을 임베딩 검색으로 바꾸기' },
   { week: 6, topic: 'Claude Code', todo: '방 1~3을 FastAPI와 Gemini에 연결. 로그와 퀴즈 저장. 반에 링크 공개' },
   { week: 7, topic: 'MCP와 품질 개선', todo: '분석 페이지. 속도·비용·보안 점검. 여유가 있으면 방 4~5' },
   { week: 8, topic: '기말 발표', todo: '팀 페이지로 발표 15분, 질의응답 5분' },
@@ -97,8 +97,24 @@ const LINKS: { label: string; url: string }[] = [
   { label: 'Swagger UI 주소 (FastAPI /docs)', url: '' },
 ]
 
+// 성공한 게임에서 가져온 장치. 수치의 출처는 페이지 맨 아래에 있다.
+const BENCHMARKS: { game: string; result: string; device: string; ours: string }[] = [
+  { game: 'Papers, Please', result: '10년간 500만 장 판매', device: '날마다 서류 규칙이 늘고 어려워진다', ours: '환각의 방: 라운드마다 검수 규칙 추가' },
+  { game: 'Her Story', result: '검색을 게임으로 만든 대표작', device: '검색 결과를 앞의 5건만 보여 준다', ours: '서가의 방: 앞의 3건만 AI에게 전달' },
+  { game: '역전재판', result: '장수 시리즈', device: '증언을 추궁하고 증거로 모순을 찌른다', ours: '지시의 방: 추궁과 증거 제시' },
+  { game: 'Return of the Obra Dinn', result: '추리 게임의 기준작', device: '정답이 모여야 한꺼번에 확정해 준다', ours: '환각의 방: 맞은 건수만 알려 준다' },
+  { game: 'Wordle', result: '한 달 새 30만 명에서 200만 명 이상', device: '정답을 드러내지 않는 결과 공유', ours: '탈출 결과를 별점 카드로 복사' },
+  { game: 'Tensor Trust', result: '공격 56만 건, 방어 11만 건이 연구 데이터가 됨', device: '플레이어끼리 공격과 방어. 판정은 문자열 비교', ours: '문지기의 방 (7주차). 판정은 코드가 한다' },
+  { game: 'Lakera Gandalf', result: '같은 장르의 영어 게임', device: 'AI가 지키는 암호를 말로 뚫는다. 보안 한 주제', ours: '방마다 다른 LLM 개념, 학습 효과 측정' },
+]
+
 // 사용성 개선 사례. 실제로 겪고 고친 것만 적는다.
 const UX_CASES: { when: string; problem: string; fix: string }[] = [
+  {
+    when: '11월 20일 방탈출 첫 판',
+    problem: '방마다 행동 한 번으로 끝나 너무 단순했다',
+    fix: '성공한 게임 7종을 벤치마킹해 방을 여러 단계로 나누고, 세 방의 단서를 조합하는 정문 자물쇠를 추가했다',
+  },
   {
     when: '11월 18일 첫 시험 플레이',
     problem: '화면에 들어갔지만 무엇을 물어야 하는지, 목적이 무엇인지 알 수 없었다',
@@ -162,7 +178,7 @@ export default function Team() {
             </div>
             <div className="row">
               <div className="k">방</div>
-              <div className="v">5개. 방마다 AI 하나가 문을 지키고, LLM 개념 하나를 배운다</div>
+              <div className="v">5개와 정문. 방마다 AI 하나가 문을 지키고, LLM 개념 하나를 배운다</div>
             </div>
             <div className="row">
               <div className="k">플레이어</div>
@@ -224,6 +240,30 @@ export default function Team() {
                 </ul>
               </div>
             </div>
+
+            <h3 className="sub-h">성공한 게임에서 가져온 장치</h3>
+            <div className="tablewrap">
+              <table className="stack">
+                <thead>
+                  <tr>
+                    <th>게임</th>
+                    <th>성과</th>
+                    <th>깊이를 만드는 장치</th>
+                    <th>우리 게임에 옮긴 것</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {BENCHMARKS.map((b) => (
+                    <tr key={b.game}>
+                      <td data-label="게임">{b.game}</td>
+                      <td data-label="성과">{b.result}</td>
+                      <td data-label="장치">{b.device}</td>
+                      <td data-label="우리 게임">{b.ours}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 
@@ -233,7 +273,7 @@ export default function Team() {
               <div className="eyebrow">5주차 공유 항목 · 주요 화면 UI 프로토타입</div>
               <h2>수장고 방탈출</h2>
               <p>
-                방 세 개를 지금 바로 해 볼 수 있다. 백엔드 연결 전이라 AI의 답은 정해진 대본으로 나온다.{' '}
+                방 세 개와 정문 자물쇠를 지금 바로 해 볼 수 있다. 백엔드 연결 전이라 AI의 답은 정해진 대본으로 나온다.{' '}
                 <a href="#game">게임만 큰 화면으로 하기</a>
               </p>
             </div>
@@ -249,7 +289,9 @@ export default function Team() {
               <span className="arr">→</span>
               <span className="box">배운 것과 같은 퀴즈</span>
               <span className="arr">→</span>
-              <span className="box">탈출 결과</span>
+              <span className="box">정문 자물쇠</span>
+              <span className="arr">→</span>
+              <span className="box">탈출 결과와 별점</span>
               <span className="arr">→</span>
               <span className="box">분석 페이지</span>
             </div>
@@ -393,9 +435,9 @@ export default function Team() {
               <div className="card">
                 <h3>RAG</h3>
                 <ul>
-                  <li>서가의 방 문서를 청킹·임베딩해 pgvector에 저장한다. 사서는 건네받은 문서만 근거로 답한다</li>
+                  <li>서가의 방 문서를 청킹·임베딩해 pgvector에 저장한다. 검색된 상위 3건만 근거로 사서가 답한다</li>
                   <li>지시의 방 사건 파일도 같은 방식으로 검색해 답변에 출처를 붙인다</li>
-                  <li>8주차 시연 3건: 정답이 나오는 문서 조합, 오래된 문서로 틀리는 사례, 자료 없음 사례</li>
+                  <li>8주차 시연 3건: 정답이 나오는 검색어, 오래된 문서가 걸려 틀리는 검색어, 자료 없음이 나오는 검색어</li>
                 </ul>
               </div>
               <div className="card">
@@ -411,6 +453,7 @@ export default function Team() {
                   <li>문이 열리는지는 제출한 값을 코드가 대조해서만 판정한다</li>
                   <li>근거 문서가 없으면 "자료 없음"으로 답한다</li>
                   <li>환각의 방의 지어낸 설명은 미리 정해 둔다. 실제 환각에 맡기면 풀 수 없는 문제가 나올 수 있다</li>
+                  <li>환각의 방은 맞은 건수만 알려 주고 어느 건이 틀렸는지는 알려 주지 않는다. 찍어서 통과하는 것을 막는다</li>
                   <li>스키마 검증에 실패하면 한 번 다시 요청하고, 또 실패하면 정해 둔 안전 응답을 보낸다</li>
                   <li>호출 한도 초과와 시간 초과는 화면에 원인과 다시 시도 방법을 알린다</li>
                 </ul>
@@ -475,7 +518,7 @@ export default function Team() {
                 <h3>요청 한 건의 처리 순서</h3>
                 <ol>
                   <li>길이와 닉네임당 횟수 검사</li>
-                  <li>방 규칙 적용. 서가의 방은 건넨 문서만 근거로 삼는다</li>
+                  <li>방 규칙 적용. 서가의 방은 검색된 상위 3건만 근거로 삼는다</li>
                   <li>근거 문서 검색</li>
                   <li>LLM 호출과 스키마 검증</li>
                   <li>출력 검사. 정답이 그대로 새지 않게 가린다</li>
@@ -486,19 +529,19 @@ export default function Team() {
                 <h3>API</h3>
                 <ul>
                   <li>
-                    <span className="mono">POST /interrogate</span> 지시의 방 질문에 진술과 근거를 돌려준다
+                    <span className="mono">POST /rooms/1/press</span>, <span className="mono">/present</span> 진술 추궁과 증거 제시
                   </li>
                   <li>
-                    <span className="mono">POST /evidence</span> 지시의 방 암호를 판정한다
+                    <span className="mono">POST /interrogate</span>, <span className="mono">/evidence</span> 지시의 방 질문과 암호 판정
                   </li>
                   <li>
-                    <span className="mono">POST /rooms/2/check</span> 지목한 설명을 판정한다
+                    <span className="mono">POST /rooms/2/check</span> 검수 결과에서 맞은 건수를 돌려준다
                   </li>
                   <li>
-                    <span className="mono">POST /rooms/3/ask</span> 건넨 문서로 사서가 답한다
+                    <span className="mono">POST /rooms/3/ask</span> 검색된 상위 3건으로 사서가 답한다
                   </li>
                   <li>
-                    <span className="mono">POST /rooms/3/check</span> 비상문 비밀번호를 판정한다
+                    <span className="mono">POST /rooms/3/check</span>, <span className="mono">/final/check</span> 비상문과 정문 암호 판정
                   </li>
                   <li>
                     <span className="mono">GET /stats</span> 분석 페이지용 집계
@@ -665,6 +708,16 @@ export default function Team() {
             <li>
               <a href="https://www.lakera.ai/news/defcon-welcomes-mosscap-lakeras-ai-security-game-to-tackle-top-llm-vulnerabilities">
                 Lakera 보도자료: OWASP LLM Top 10의 프롬프트 인젝션 순위 언급
+              </a>
+            </li>
+            <li>
+              벤치마킹 수치:{' '}
+              <a href="https://www.engadget.com/indie-favorite-papers-please-has-sold-5-million-copies-171537016.html">Engadget (Papers, Please)</a>,{' '}
+              <a href="https://killscreen.com/listening-her-story-looking-right-questions">Kill Screen (Her Story)</a>,{' '}
+              <a href="https://filmstories.co.uk/?p=83249">Film Stories (Obra Dinn)</a>,{' '}
+              <a href="https://pressbooks.cuny.edu/inspire/part/the-wordle-effect-how-five-letters-changed-the-internet/">CUNY (Wordle)</a>,{' '}
+              <a href="https://proceedings.iclr.cc/paper_files/paper/2024/hash/519c51529c3544b3430bd8b17d400365-Abstract-Conference.html">
+                ICLR 2024 (Tensor Trust)
               </a>
             </li>
             <li>

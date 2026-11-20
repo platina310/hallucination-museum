@@ -1,37 +1,87 @@
-// 환각의 방 자료. 백엔드가 없을 때 쓰는 시연용이다.
+// 방 2 환각의 방 자료. 백엔드가 없을 때 쓰는 시연용이다.
 // 지어낸 설명은 미리 정해 둔다. 실제 환각에 맡기면 풀 수 없는 문제가 나올 수 있기 때문이다.
 export interface RecordCard {
-  id: string
   label: string
   text: string
 }
 
-export interface Statement {
+export interface Claim {
   id: number
   text: string
   cite: string // 도슨트가 대는 출처 이름
 }
 
-export const CARDS: RecordCard[] = [
-  { id: 'K1', label: '작품 대장', text: '「새벽 항구」. 1962년 작. 캔버스에 유화. 가로 91cm, 세로 65cm. 1988년 기증으로 소장.' },
-  { id: 'K2', label: '대여 기록', text: '「새벽 항구」 대여 1건. 2019년 부산 순회전. 그 밖의 외부 대여 없음.' },
-  { id: 'K3', label: '보존 일지', text: '2021년 3월 표면 세척. 같은 달 액자 교체. 이후 특이 사항 없음.' },
-  { id: 'K4', label: '전시실 배치도', text: '3전시실 북쪽 벽. 조도 150럭스. 관람 거리 1.5m.' },
-]
-
-export const STATEMENTS: Statement[] = [
-  { id: 1, text: '「새벽 항구」는 1962년에 그려진 유화입니다.', cite: '작품 대장' },
-  { id: 2, text: '작가는 이 그림을 파리 유학 시절에 완성했습니다.', cite: '작가 노트' },
-  { id: 3, text: '2019년에는 부산 순회전에 대여되었습니다.', cite: '대여 기록' },
-  { id: 4, text: '1970년 국제 비엔날레에서 금상을 받은 작품이기도 합니다.', cite: '작품 대장' },
-  { id: 5, text: '2021년에는 표면을 세척하고 액자를 바꿨습니다.', cite: '보존 일지' },
-]
-
-const FABRICATED = [2, 4]
-
-/** 지목한 설명 가운데 실제로 지어낸 말이 몇 개인지 센다 */
-export function countHits(selected: number[]): number {
-  return selected.filter((id) => FABRICATED.includes(id)).length
+export interface Round {
+  artwork: string
+  newRule: string
+  cards: RecordCard[]
+  claims: Claim[]
 }
 
-export const FABRICATED_COUNT = FABRICATED.length
+// 라운드마다 검수 규칙이 하나씩 늘고, 앞 규칙도 계속 적용된다.
+export const ROUNDS: Round[] = [
+  {
+    artwork: '「새벽 항구」',
+    newRule: '출처가 기록 카드 목록에 없으면 반려한다',
+    cards: [
+      { label: '작품 대장', text: '「새벽 항구」. 1962년 작. 캔버스에 유화. 가로 91cm. 1988년 기증으로 소장.' },
+      { label: '대여 기록', text: '대여 1건. 2019년 부산 순회전.' },
+      { label: '보존 일지', text: '2021년 3월 표면 세척. 같은 달 액자 교체.' },
+    ],
+    claims: [
+      { id: 1, text: '1962년에 그려진 유화입니다.', cite: '작품 대장' },
+      { id: 2, text: '작가는 이 그림을 파리 유학 시절에 완성했습니다.', cite: '작가 노트' },
+      { id: 3, text: '2019년에는 부산 순회전에 대여되었습니다.', cite: '대여 기록' },
+      { id: 4, text: "당시 평론가들이 '올해의 발견'이라 불렀습니다.", cite: '미술 연감' },
+    ],
+  },
+  {
+    artwork: '「겨울 과수원」',
+    newRule: '출처가 있어도 카드에 그 내용이 없으면 반려한다',
+    cards: [
+      { label: '작품 대장', text: '「겨울 과수원」. 1974년 작. 종이에 수채. 가로 54cm. 2001년 구입으로 소장.' },
+      { label: '대여 기록', text: '대여 2건. 2015년 광주, 2022년 도쿄.' },
+      { label: '보존 일지', text: '2018년 5월 배접 보강. 2023년 액자 유리 교체.' },
+    ],
+    claims: [
+      { id: 1, text: '1974년에 그린 수채화입니다.', cite: '작품 대장' },
+      { id: 2, text: '2001년에 작가 유족이 기증했습니다.', cite: '작품 대장' },
+      { id: 3, text: '도쿄에 대여된 적이 있습니다.', cite: '대여 기록' },
+      { id: 4, text: '2020년에는 전면 복원을 거쳤습니다.', cite: '보존 일지' },
+      { id: 5, text: '작가가 생전에 가장 아낀 작품으로 알려져 있습니다.', cite: '작가 회고록' },
+    ],
+  },
+  {
+    artwork: '「붉은 계단」',
+    newRule: '기록끼리 어긋나면 날짜가 최근인 기록을 따른다',
+    cards: [
+      { label: '작품 대장 (1998년 작성)', text: '「붉은 계단」. 1981년 작. 캔버스에 아크릴. 2전시실 상설 전시.' },
+      { label: '재감정 보고서 (2025년)', text: '제작 연도를 1983년으로 정정함. 서명 옆 연기를 다시 판독한 결과.' },
+      { label: '전시실 배치도 (2026년)', text: '「붉은 계단」은 4전시실 동쪽 벽.' },
+      { label: '대여 기록', text: '대여 없음.' },
+    ],
+    claims: [
+      { id: 1, text: '1981년 작품입니다.', cite: '작품 대장 (1998년 작성)' },
+      { id: 2, text: '캔버스에 아크릴로 그렸습니다.', cite: '작품 대장 (1998년 작성)' },
+      { id: 3, text: '지금은 4전시실에 걸려 있습니다.', cite: '전시실 배치도 (2026년)' },
+      { id: 4, text: '2전시실 상설 전시작입니다.', cite: '작품 대장 (1998년 작성)' },
+      { id: 5, text: '해외에 세 번 대여되었습니다.', cite: '대여 기록' },
+      { id: 6, text: '재감정에서 제작 연도가 1983년으로 정정됐습니다.', cite: '재감정 보고서 (2025년)' },
+    ],
+  },
+]
+
+// 라운드별로 반려해야 하는 설명 번호
+const REJECT: number[][] = [
+  [2, 4],
+  [2, 4, 5],
+  [1, 4, 5],
+]
+
+/** 통과·반려 처리 가운데 맞게 처리한 건수를 센다. 어느 것이 틀렸는지는 알려 주지 않는다. */
+export function judgeRound(round: number, rejected: number[]): { correct: number; total: number } {
+  const answer = REJECT[round] ?? []
+  const claims = ROUNDS[round]?.claims ?? []
+  const correct = claims.filter((c) => answer.includes(c.id) === rejected.includes(c.id)).length
+  return { correct, total: claims.length }
+}
