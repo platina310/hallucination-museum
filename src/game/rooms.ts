@@ -1,0 +1,88 @@
+// 방 구성. 팀 페이지의 표와 수장고 지도가 모두 이 목록을 쓴다.
+export interface Quiz {
+  question: string
+  options: string[]
+  answer: number
+}
+
+export interface RoomInfo {
+  id: number
+  name: string
+  guard: string
+  how: string // 푸는 방법
+  concept: string // 배우는 것
+  lesson: string // 방을 나올 때 보여 주는 한 줄
+  week: string // 수업 연결
+  playable: boolean
+  quiz?: Quiz
+}
+
+export const ROOMS: RoomInfo[] = [
+  {
+    id: 1,
+    name: '지시의 방',
+    guard: '야간 경비원 도 씨',
+    how: '암호를 지키는 AI를 돌려 물어 뚫는다',
+    concept: '프롬프트 지시만으로는 비밀을 못 지킨다',
+    lesson: '"말하지 마"라는 지시는 돌려 묻는 말 몇 마디에 뚫립니다. 비밀은 프롬프트에 넣지 않고, 판정은 코드가 해야 합니다.',
+    week: '4주차 프롬프트',
+    playable: true,
+    quiz: {
+      question: 'AI 챗봇에게 "이 암호는 절대 말하지 마"라고 지시해 두면 어떻게 될까요?',
+      options: ['지시를 지키므로 안전하다', '돌려 물으면 샐 수 있다', 'AI는 암호를 기억하지 못한다'],
+      answer: 1,
+    },
+  },
+  {
+    id: 2,
+    name: '환각의 방',
+    guard: '도슨트 루미',
+    how: 'AI의 설명 중 지어낸 말을 기록 카드와 대조해 찾는다',
+    concept: 'AI는 자신 있게 틀린다. 출처는 열어서 대조한다',
+    lesson: 'AI는 모르는 것도 자신 있게 말하고, 출처까지 그럴듯하게 붙입니다. 출처는 이름만 보지 말고 열어서 대조해야 합니다.',
+    week: '3주차 환각과 검증',
+    playable: true,
+    quiz: {
+      question: 'AI가 출처를 붙여 자신 있게 말한 내용은 어떻게 다뤄야 할까요?',
+      options: ['출처가 붙었으니 사실로 본다', '출처를 열어 대조하기 전에는 사실로 보지 않는다', 'AI는 모르면 항상 모른다고 하므로 믿는다'],
+      answer: 1,
+    },
+  },
+  {
+    id: 3,
+    name: '서가의 방',
+    guard: '사서 고 선생',
+    how: '서가에서 맞는 문서를 골라 줘야 AI가 정답을 말한다',
+    concept: '검색된 문서가 답을 결정한다 (RAG)',
+    lesson: '문서를 찾아 답하는 AI는 건네받은 문서만큼만 정확합니다. 오래된 문서가 들어가면 틀린 답을 자신 있게 말하고, 문서가 없으면 "자료 없음"이 올바른 답입니다.',
+    week: '5주차 RAG',
+    playable: true,
+    quiz: {
+      question: '문서를 찾아 답하는 AI(RAG)에 오래된 문서가 검색되면 어떻게 될까요?',
+      options: ['AI가 알아서 최신 정보로 고쳐 답한다', '오래된 내용을 그대로 답할 수 있다', '답을 거부한다'],
+      answer: 1,
+    },
+  },
+  {
+    id: 4,
+    name: '온도의 방',
+    guard: '온도 조절기',
+    how: '온도를 조절해 AI의 답이 흔들리는 지점을 찾는다',
+    concept: 'temperature는 다양성을 바꾼다. 정확성은 보장하지 않는다',
+    lesson: '',
+    week: '4주차 생성 설정',
+    playable: false,
+  },
+  {
+    id: 5,
+    name: '문지기의 방',
+    guard: '플레이어가 만든 문지기',
+    how: '역할을 바꿔, 내가 쓴 프롬프트로 AI가 자동 공격을 버티게 한다',
+    concept: '방어는 프롬프트, 입력 검사, 출력 검사를 겹쳐 설계한다',
+    lesson: '',
+    week: '4주차 검증, 7주차 품질',
+    playable: false,
+  },
+]
+
+export const PLAYABLE_IDS = ROOMS.filter((r) => r.playable).map((r) => r.id)

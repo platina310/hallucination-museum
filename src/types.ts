@@ -30,3 +30,10 @@ export interface InterrogateResult {
 export interface EvidenceResult {
   correct: boolean
 }
+
+/** 서가의 방: POST /rooms/3/ask 응답. kind는 시연용 대본에서만 채워진다. */
+export interface LibrarianResult {
+  reply: string
+  sources: { id: string; label: string }[]
+  kind?: 'correct' | 'stale' | 'partial' | 'none'
+}

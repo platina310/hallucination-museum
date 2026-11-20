@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import GamePage from './pages/GamePage'
-import TeamPage from './pages/TeamPage'
+import Game from './pages/Game'
+import Team from './pages/Team'
 
 // 주소 끝이 #game이면 게임만 보여 주고, 그 밖에는 팀 페이지를 보여 준다.
 function useHash() {
@@ -21,5 +21,5 @@ export default function App() {
     if (hash === '#game' || hash === '#team') window.scrollTo(0, 0)
   }, [hash])
 
-  return isGame ? <GamePage /> : <TeamPage />
+  return isGame ? <Game /> : <Team />
 }

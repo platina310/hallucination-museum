@@ -4,6 +4,7 @@ import { interrogate, submitEvidence, usingMock } from '../api'
 import SuspectPortrait from './SuspectPortrait'
 import type { Mood } from './SuspectPortrait'
 import type { MockNet } from '../api'
+import type { RoomStats } from '../game/progress'
 import type { AttackType, CaseFile, Leak } from '../types'
 
 const LEVEL = 1
@@ -37,14 +38,6 @@ function loadVoicePref(): boolean {
     return false
   }
 }
-
-const SUSPECTS = [
-  { level: 1, name: '야간 경비원', locked: false },
-  { level: 2, name: '매표소 직원', locked: true },
-  { level: 3, name: '큐레이터', locked: true },
-  { level: 4, name: '보안 책임자', locked: true },
-  { level: 5, name: '설계자', locked: true },
-]
 
 // 예시 질문. 꼬리표는 어떤 수법인지 알려 준다.
 const EXAMPLES = [
@@ -107,7 +100,14 @@ function rankOf(asks: number): string {
 }
 
 // demoControls: 발표용으로 서버 상태(정상·느림·오류)를 바꿔 보는 단추를 보여 줄지 여부
-export default function InterrogationRoom({ demoControls = false }: { demoControls?: boolean }) {
+// onSolved: 암호를 맞혀 방을 통과했을 때 방탈출 진행 상황에 알린다
+export default function InterrogationRoom({
+  demoControls = false,
+  onSolved,
+}: {
+  demoControls?: boolean
+  onSolved?: (stats: RoomStats) => void
+}) {
   const [saved] = useState(loadSaved)
   const [msgs, setMsgs] = useState<Msg[]>(saved.msgs)
   const [asks, setAsks] = useState(saved.asks)
@@ -120,7 +120,6 @@ export default function InterrogationRoom({ demoControls = false }: { demoContro
   const [net, setNet] = useState<MockNet>('ok')
   const [input, setInput] = useState('')
   const [evidence, setEvidence] = useState('')
-  const [lockedNote, setLockedNote] = useState('')
   const [voiceOn, setVoiceOn] = useState(loadVoicePref)
   const voiceRef = useRef(voiceOn)
   const lastQuestion = useRef('')
@@ -144,6 +143,13 @@ export default function InterrogationRoom({ demoControls = false }: { demoContro
   useEffect(() => {
     voiceRef.current = voiceOn
   }, [voiceOn])
+
+  // 이미 통과한 기록이 저장돼 있으면 진행 상황에도 반영한다
+  useEffect(() => {
+    if (saved.solved) onSolved?.({ tries: saved.asks, hints: saved.hints })
+    // 처음 한 번만 실행한다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -234,6 +240,7 @@ export default function InterrogationRoom({ demoControls = false }: { demoContro
       if (r.correct) {
         setSolved(true)
         setVerdict({ kind: 'none' })
+        onSolved?.({ tries: asks, hints })
       } else {
         setVerdict({ kind: 'wrong', remaining: MAX_SUBMIT - used })
       }
@@ -252,7 +259,6 @@ export default function InterrogationRoom({ demoControls = false }: { demoContro
     setVerdict({ kind: 'none' })
     setInput('')
     setEvidence('')
-    setLockedNote('')
   }
 
   const logRows = msgs.filter((m) => m.who === 'suspect')
@@ -297,7 +303,7 @@ export default function InterrogationRoom({ demoControls = false }: { demoContro
   let verdictText = ''
   if (solved) {
     verdictClass = 'verdict good'
-    verdictText = `일치합니다. 도 씨가 고개를 떨굽니다. 수사 등급은 ${rankOf(asks)}입니다 (질문 ${asks}회, 제출 ${submits}회). 레벨 2 매표소 직원은 6주차에 만납니다.`
+    verdictText = `일치합니다. 도 씨가 고개를 떨굽니다. 수사 등급은 ${rankOf(asks)}입니다 (질문 ${asks}회, 제출 ${submits}회). 문이 열립니다.`
   } else if (submits >= MAX_SUBMIT) {
     verdictClass = 'verdict bad'
     verdictText = "제출 기회를 다 썼습니다. 도 씨가 집에 갈 채비를 합니다. '처음부터 다시'를 눌러 주세요."
@@ -316,7 +322,7 @@ export default function InterrogationRoom({ demoControls = false }: { demoContro
   else if (busy) hint = '답변을 기다리는 중입니다.'
 
   return (
-    <div className="proto" id="proto">
+    <div className="proto">
       <div className="mission">
         <p className="mission-goal">
           <b>임무</b> 도 씨가 숨긴 <mark>수장고 암호 단어</mark>를 말로 알아내 제출하세요.
@@ -327,27 +333,6 @@ export default function InterrogationRoom({ demoControls = false }: { demoContro
           <li className={stepClass(3)}>알아낸 단어를 증거로 제출합니다</li>
         </ol>
         <p className="mission-why">AI에게 비밀을 맡기면 말 몇 마디에 샌다는 것을 직접 겪어 보는 훈련입니다.</p>
-      </div>
-
-      <div className="levels" role="group" aria-label="용의자 선택">
-        {SUSPECTS.map((s) => (
-          <button
-            key={s.level}
-            type="button"
-            className={s.locked ? 'level locked' : 'level current'}
-            aria-current={s.locked ? undefined : 'true'}
-            aria-disabled={s.locked}
-            onClick={() =>
-              setLockedNote(s.locked ? `${s.name}은 아직 대기실에서 변호사를 기다립니다. 6주차에 공개합니다.` : '')
-            }
-          >
-            <span className="mono">LV {s.level}</span> {s.name}
-            {s.locked && <span className="lock"> · 잠김</span>}
-          </button>
-        ))}
-      </div>
-      <div className="locked-note" role="status">
-        {lockedNote}
       </div>
 
       {usingMock && demoControls && (

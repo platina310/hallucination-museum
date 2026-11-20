@@ -1,7 +1,8 @@
 // 팀 프로젝트 페이지. 5주차 아이디어 공유와 8주차 발표를 이 페이지로 진행한다.
-// 표의 내용은 아래 배열만 고치면 된다.
+// 표의 내용은 아래 배열만 고치면 된다. 방 구성은 src/game/rooms.ts에 있다.
 import type { ReactNode } from 'react'
-import InterrogationRoom from '../components/InterrogationRoom'
+import EscapeGame from '../components/EscapeGame'
+import { ROOMS } from '../game/rooms'
 
 type Status = 'ok' | 'plan' | 'need'
 
@@ -13,20 +14,20 @@ function Todo({ children }: { children: ReactNode }) {
   return <span className="todo">{children}</span>
 }
 
-const LEVELS: { level: number; suspect: string; defense: string; lesson: string; scope: '필수' | '확장' }[] = [
-  { level: 1, suspect: '야간 경비원', defense: '프롬프트 지시만', lesson: '4주차 프롬프트', scope: '필수' },
-  { level: 2, suspect: '매표소 직원', defense: '프롬프트 강화. 역할 고정과 거절 예시', lesson: '4주차 프롬프트 개선', scope: '필수' },
-  { level: 3, suspect: '큐레이터', defense: '출력 검사. 응답에 단어나 변형이 있으면 서버가 차단', lesson: '4주차 스키마 검증', scope: '필수' },
-  { level: 4, suspect: '보안 책임자', defense: '입력 검사. 공격 의도를 분류해 차단', lesson: '4주차 분류 API', scope: '확장' },
-  { level: 5, suspect: '설계자', defense: '과거에 성공한 공격과 비슷한 입력을 검색해 차단', lesson: '5주차 RAG, pgvector', scope: '확장' },
-]
-
 const DATASETS: { name: string; origin: string; content: string; use: string; status: Status; statusText: string }[] = [
   {
     name: '플레이 로그',
     origin: '자체 수집. 반 공개 플레이',
-    content: '닉네임, 레벨, 질문, 응답, 차단 여부, 돌파 여부, 응답 시간, 토큰 수',
-    use: '분석 페이지, 레벨 5 방어',
+    content: '닉네임, 방, 입력, 응답, 시도 횟수, 힌트 사용, 탈출 여부, 걸린 시간',
+    use: '어떤 개념에서 막히는지 분석',
+    status: 'plan',
+    statusText: '6주차부터 수집',
+  },
+  {
+    name: '퀴즈 응답',
+    origin: '자체 수집. 방마다 입장 전과 탈출 후',
+    content: '같은 문제에 대한 두 번의 답',
+    use: '학습 효과 측정',
     status: 'plan',
     statusText: '6주차부터 수집',
   },
@@ -34,30 +35,30 @@ const DATASETS: { name: string; origin: string; content: string; use: string; st
     name: '영어 공격문',
     origin: 'Lakera Mosscap 데이터셋. Hugging Face, MIT 라이선스',
     content: 'DEF CON 31 게임에 제출된 프롬프트 공격문',
-    use: '한국어 공격과 유형 비교, 레벨 5 초기 자료',
+    use: '지시의 방 수법 비교, 문지기의 방 자동 공격 자료',
     status: 'plan',
     statusText: '내려받기 예정',
   },
   {
-    name: '사건 파일',
+    name: '방 자료',
     origin: '팀 작성',
-    content: '용의자별 근무일지, 출입기록, 진술 요지',
-    use: '용의자 답변의 근거 문서. 답변마다 출처 표시',
+    content: '사건 파일, 전시 기록 카드, 서가 문서',
+    use: 'AI 답변의 근거 문서. 답변마다 출처 표시',
     status: 'ok',
-    statusText: '레벨 1 초안',
+    statusText: '방 3개 초안',
   },
 ]
 
 // 강의계획서와 「퀴즈 및 팀 프로젝트 안내」의 조건. 진행 상황이 바뀌면 status와 statusText를 고친다.
 const CONDITIONS: { condition: string; plan: string; status: Status; statusText: string }[] = [
-  { condition: 'React 화면 (필수)', plan: '팀 페이지와 레벨 1 심문실을 React로 만들었다. 분석 페이지는 7주차', status: 'ok', statusText: '레벨 1 구현' },
-  { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '심문실에 다섯 상태를 모두 넣었다. 빈 결과는 "근거 없음"으로 표시', status: 'ok', statusText: '구현' },
-  { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 호출. 4주차 실습 서버 구조를 이어 쓴다', status: 'plan', statusText: '6주차' },
+  { condition: 'React 화면 (필수)', plan: '팀 페이지, 수장고 지도, 방 3개를 React로 만들었다. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개 구현' },
+  { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태를 모두 넣었다. 빈 결과는 "근거 없음"으로 표시', status: 'ok', statusText: '구현' },
+  { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 호출. 지금은 정해진 대본으로 답한다', status: 'plan', statusText: '6주차' },
   { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '프런트는 Vercel에 배포했다. 백엔드 Render와 DB Supabase는 6주차', status: 'ok', statusText: '프런트 배포' },
-  { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '로그 테이블, 사건 파일과 공격 임베딩', status: 'plan', statusText: '계획' },
-  { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '저장소를 만들고 실행 방법을 README에 적었다. 레벨별 프롬프트와 돌파율 변화는 이어서 기록', status: 'ok', statusText: '저장소 생성' },
+  { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '로그와 퀴즈 테이블, 서가 문서 임베딩', status: 'plan', statusText: '계획' },
+  { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '저장소를 만들고 실행 방법을 README에 적었다. 방별 프롬프트와 탈출률 변화는 이어서 기록', status: 'ok', statusText: '저장소 생성' },
   { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 이 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
-  { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '사건 파일 근거 답변 2건, 유사 공격 차단 1건', status: 'plan', statusText: '계획' },
+  { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 정답 조합, 오래된 문서로 틀리는 사례, 자료 없음 사례', status: 'plan', statusText: '대본으로 시연 가능' },
   { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '이 페이지의 문제, 화면, 데이터, AI 계획 구역', status: 'ok', statusText: '초안' },
   { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 두었다. 내용은 매주 갱신한다', status: 'ok', statusText: '틀 완성' },
   { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정·역할 구역에 적는다. Swagger UI는 백엔드 배포 뒤 기입', status: 'need', statusText: '2개 기입' },
@@ -66,26 +67,26 @@ const CONDITIONS: { condition: string; plan: string; status: Status; statusText:
 ]
 
 const GRADING: { item: string; weight: string; show: string }[] = [
-  { item: '시스템 기능 설계·구현', weight: '30%', show: '방어 계층 구조, 레벨별 프롬프트, 응답 검증과 오류 대응' },
-  { item: 'Needs 파악·문제 정의', weight: '20%', show: 'AI 보안 교육 수요, Gandalf와의 비교, 차별점' },
-  { item: 'UI/UX·사용성', weight: '20%', show: '심문실 이용 흐름, PC·모바일 대응, 로딩·오류·빈 결과 처리, 반 플레이 뒤 고친 점' },
-  { item: '데이터·API 활용', weight: '10%', show: '플레이 로그와 공개 데이터셋, 공격 유형 분석 결과' },
+  { item: '시스템 기능 설계·구현', weight: '30%', show: '방마다 다른 AI 활용 방식, 코드 판정 구조, 응답 검증과 오류 대응' },
+  { item: 'Needs 파악·문제 정의', weight: '20%', show: 'AI 기초 교육 수요, Gandalf와의 비교, 입장 전후 퀴즈로 잰 학습 효과' },
+  { item: 'UI/UX·사용성', weight: '20%', show: '임무와 다음 수 안내, PC·모바일 대응, 로딩·오류·빈 결과 처리, 고친 사례' },
+  { item: '데이터·API 활용', weight: '10%', show: '플레이 로그와 퀴즈 응답, 개념별로 막히는 지점 분석' },
   { item: '성능·보안 등 비기능', weight: '10%', show: '응답 속도와 호출 비용 실측, 키와 개인정보 보호, 남은 한계' },
-  { item: '팀 페이지·배포·발표·시연', weight: '10%', show: '배포 주소 3가지, 실시간 심문 시연, RAG 3건' },
+  { item: '팀 페이지·배포·발표·시연', weight: '10%', show: '배포 주소 3가지, 방 하나를 실시간으로 탈출, RAG 3건' },
 ]
 
 const SCHEDULE: { week: number; topic: string; todo: string }[] = [
-  { week: 5, topic: 'RAG', todo: '아이디어 공유. 사건 파일을 청킹·임베딩해 근거 답변 만들기' },
-  { week: 6, topic: 'Claude Code', todo: '레벨 1~3 풀스택 구현과 배포. 로그 저장. 반에 링크 공개' },
-  { week: 7, topic: 'MCP와 품질 개선', todo: '분석 페이지. 속도·비용·보안 점검. 여유가 있으면 레벨 4~5' },
+  { week: 5, topic: 'RAG', todo: '아이디어 공유. 서가의 방 문서를 임베딩해 실제 검색으로 바꾸기' },
+  { week: 6, topic: 'Claude Code', todo: '방 1~3을 FastAPI와 Gemini에 연결. 로그와 퀴즈 저장. 반에 링크 공개' },
+  { week: 7, topic: 'MCP와 품질 개선', todo: '분석 페이지. 속도·비용·보안 점검. 여유가 있으면 방 4~5' },
   { week: 8, topic: '기말 발표', todo: '팀 페이지로 발표 15분, 질의응답 5분' },
 ]
 
 // 비주얼·음성·음악과 개발 도구. 프로토타입에는 자리와 기본 동작만 넣어 두었다.
 const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
-  { item: '용의자 초상', now: '표정이 네 단계로 바뀌는 그림. 답변이 샐수록 표정이 무너진다', next: '용의자 5명의 초상과 표정', tool: '이미지 생성 도구 (미정)' },
-  { item: '용의자 목소리', now: '브라우저 기본 음성으로 답변 읽기. 기본은 꺼짐', next: '용의자마다 다른 목소리. 키는 서버에 두고 FastAPI가 호출', tool: 'ElevenLabs' },
-  { item: '배경음과 효과음', now: '버튼 자리만 표시', next: '레벨별 배경음, 돌파했을 때의 효과음', tool: 'Suno' },
+  { item: '문지기 초상', now: '도 씨는 표정이 네 단계로 바뀌는 그림. 나머지는 이름 첫 글자', next: '문지기마다 초상과 표정', tool: '이미지 생성 도구 (미정)' },
+  { item: '문지기 목소리', now: '지시의 방에서 브라우저 기본 음성으로 답변 읽기. 기본은 꺼짐', next: '문지기마다 다른 목소리. 키는 서버에 두고 FastAPI가 호출', tool: 'ElevenLabs' },
+  { item: '배경음과 효과음', now: '버튼 자리만 표시', next: '방마다 배경음, 문이 열릴 때의 효과음', tool: 'Suno' },
   { item: '개발 자동화', now: 'Claude로 화면 구현과 동작 확인', next: '반복 작업과 교차 검증을 명령줄 에이전트에 맡긴다', tool: 'Codex exec, agy (Antigravity CLI)' },
 ]
 
@@ -96,7 +97,16 @@ const LINKS: { label: string; url: string }[] = [
   { label: 'Swagger UI 주소 (FastAPI /docs)', url: '' },
 ]
 
-export default function TeamPage() {
+// 사용성 개선 사례. 실제로 겪고 고친 것만 적는다.
+const UX_CASES: { when: string; problem: string; fix: string }[] = [
+  {
+    when: '11월 18일 첫 시험 플레이',
+    problem: '화면에 들어갔지만 무엇을 물어야 하는지, 목적이 무엇인지 알 수 없었다',
+    fix: '임무 문장, 단계 표시, 방금 답변에 따른 다음 수 안내, 힌트를 추가했다. 이어서 목표가 분명한 방탈출 구조로 바꿨다',
+  },
+]
+
+export default function Team() {
   return (
     <>
       <div className="top">
@@ -127,12 +137,12 @@ export default function TeamPage() {
             </div>
             <h1 className="sr-only">묵비권</h1>
             <p className="lede">
-              AI 용의자가 숨긴 단어를 심문으로 받아 내는 <mark>프롬프트 보안 훈련 게임</mark>
+              AI가 지키는 방을 말과 추리로 뚫으며 <mark>LLM의 원리를 배우는 방탈출</mark>
             </p>
-            <p className="tagline">말하지 않을 권리는 있습니다. 지켜질지는 조사관님께 달렸습니다.</p>
+            <p className="tagline">AI에게는 말하지 않을 권리가 있습니다. 다만 허점도 많습니다.</p>
             <div className="cta">
               <a className="btn" href="#play">
-                레벨 1 심문해 보기
+                방탈출 해 보기
               </a>
               <a className="btn ghost" href="#checklist">
                 강의 조건 대조표
@@ -147,24 +157,24 @@ export default function TeamPage() {
               </span>
             </div>
             <div className="row">
-              <div className="k">사건</div>
-              <div className="v">한빛미술관 야간 도난 (팀이 지어낸 가상의 사건)</div>
+              <div className="k">무대</div>
+              <div className="v">한빛미술관 수장고 (팀이 지어낸 가상의 장소)</div>
             </div>
             <div className="row">
-              <div className="k">피조사자</div>
-              <div className="v">AI 용의자 5명. 각자 단서 단어 하나를 숨기고, 레벨이 오를수록 방어가 강해진다</div>
+              <div className="k">방</div>
+              <div className="v">5개. 방마다 AI 하나가 문을 지키고, LLM 개념 하나를 배운다</div>
             </div>
             <div className="row">
-              <div className="k">조사관</div>
-              <div className="v">플레이어. 대화로 단어를 알아내 증거로 제출한다</div>
+              <div className="k">플레이어</div>
+              <div className="v">야간 점검을 나왔다가 갇힌 조사관</div>
             </div>
             <div className="row">
               <div className="k">판정</div>
-              <div className="v">제출한 단어를 서버 코드가 대조한다. AI는 판정하지 않는다</div>
+              <div className="v">문이 열리는지는 서버 코드가 판정한다. AI는 판정하지 않는다</div>
             </div>
             <div className="row">
               <div className="k">남는 것</div>
-              <div className="v">한국어 공격 로그. 유형별로 분석해 공개하고, 최종 레벨의 방어에 다시 쓴다</div>
+              <div className="v">방별 탈출률, 막힌 지점, 입장 전후 퀴즈 정답률</div>
             </div>
           </div>
         </div>
@@ -175,23 +185,23 @@ export default function TeamPage() {
           <div className="wrap">
             <div className="sec-head">
               <div className="eyebrow">5주차 공유 항목 · 대상 사용자와 해결하려는 문제</div>
-              <h2>프롬프트 공격은 직접 뚫어 봐야 이해한다</h2>
+              <h2>LLM은 직접 속여 보고 속아 봐야 이해한다</h2>
             </div>
             <div className="cols">
               <div className="card">
                 <h3>대상 사용자</h3>
                 <ul>
-                  <li>사내 챗봇이나 AI 상담을 도입하는 회사의 임직원과 개발자</li>
-                  <li>이들을 교육하는 보안·준법 담당자</li>
+                  <li>업무에 생성형 AI를 쓰기 시작한 직장인과 학생</li>
+                  <li>사내에서 AI 기초 교육을 맡은 담당자</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>해결하려는 문제</h3>
                 <ul>
-                  <li>"AI에게 비밀을 맡기면 안 된다"는 원칙은 글로 읽어서는 설계에 반영되지 않는다</li>
-                  <li>어떤 말에 AI가 무너지는지 직접 해 본 사람이 드물다</li>
+                  <li>환각, 프롬프트의 한계, RAG 같은 개념은 글로 배우면 남지 않는다</li>
+                  <li>AI의 답을 그대로 믿거나 비밀을 프롬프트에 넣는 실수가 반복된다</li>
                   <li>
-                    한국어 실습 도구와 한국어 공격 데이터가 부족하다 <Todo>조사로 확인할 가설</Todo>
+                    재미있게 익힐 한국어 실습 도구가 부족하다 <Todo>조사로 확인할 가설</Todo>
                   </li>
                 </ul>
               </div>
@@ -199,7 +209,7 @@ export default function TeamPage() {
                 <h3>근거와 선행 사례</h3>
                 <ul>
                   <li>OWASP의 LLM 취약점 Top 10은 프롬프트 인젝션을 1순위로 꼽는다</li>
-                  <li>Lakera의 Gandalf가 같은 장르의 영어 게임이다. 2025년에 에이전트 공격형으로 확장됐다</li>
+                  <li>Lakera의 Gandalf는 같은 장르의 영어 게임이지만 보안 한 주제만 다룬다</li>
                   <li>
                     시장 규모와 교육 수요 수치 <Todo>8주차 전 보강</Todo>
                   </li>
@@ -208,9 +218,9 @@ export default function TeamPage() {
               <div className="card">
                 <h3>우리 팀의 차별점</h3>
                 <ul>
-                  <li>한국어 심문 서사. 용의자마다 성격과 방어가 다르다</li>
-                  <li>판정과 방어를 코드로 분리해 방어 계층별 차단율을 숫자로 낸다</li>
-                  <li>쌓인 공격 로그를 분석해 공개하고, 최종 레벨의 방어로 되돌린다</li>
+                  <li>방마다 개념 하나. 프롬프트, 환각, RAG, temperature, 방어 설계</li>
+                  <li>입장 전과 탈출 후에 같은 퀴즈를 내서 학습 효과를 숫자로 잰다</li>
+                  <li>판정은 코드가 하고 AI는 연기만 해서, 방별 결과를 그대로 측정할 수 있다</li>
                 </ul>
               </div>
             </div>
@@ -221,49 +231,53 @@ export default function TeamPage() {
           <div className="wrap">
             <div className="sec-head">
               <div className="eyebrow">5주차 공유 항목 · 주요 화면 UI 프로토타입</div>
-              <h2>레벨 1 심문실</h2>
+              <h2>수장고 방탈출</h2>
               <p>
-                도 씨가 숨긴 수장고 암호 단어를 대화로 알아내 제출하는 게임이다. 레벨 1의 방어는 "말하지 말라"는 지시 한
-                줄뿐이라 돌려 물으면 샌다. <a href="#game">게임만 큰 화면으로 하기</a>
+                방 세 개를 지금 바로 해 볼 수 있다. 백엔드 연결 전이라 AI의 답은 정해진 대본으로 나온다.{' '}
+                <a href="#game">게임만 큰 화면으로 하기</a>
               </p>
             </div>
 
-            <InterrogationRoom demoControls />
+            <EscapeGame demoControls />
 
             <div className="flow" aria-label="이용 흐름">
-              <span className="box">닉네임 입력</span>
+              <span className="box">수장고 지도</span>
               <span className="arr">→</span>
-              <span className="box">용의자 선택</span>
+              <span className="box">입장 전 퀴즈</span>
               <span className="arr">→</span>
-              <span className="box">심문</span>
+              <span className="box">방에서 AI와 겨루기</span>
               <span className="arr">→</span>
-              <span className="box">증거 제출</span>
+              <span className="box">배운 것과 같은 퀴즈</span>
               <span className="arr">→</span>
-              <span className="box">돌파 결과와 다음 레벨</span>
+              <span className="box">탈출 결과</span>
               <span className="arr">→</span>
-              <span className="box">공격 분석 페이지</span>
+              <span className="box">분석 페이지</span>
             </div>
 
             <div className="tablewrap gap-top">
               <table className="stack">
                 <thead>
                   <tr>
-                    <th>레벨</th>
-                    <th>용의자</th>
-                    <th>방어 계층</th>
+                    <th>방</th>
+                    <th>문지기</th>
+                    <th>푸는 방법</th>
+                    <th>배우는 것</th>
                     <th>수업 연결</th>
                     <th>범위</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {LEVELS.map((l) => (
-                    <tr key={l.level}>
-                      <td className="num" data-label="레벨">{l.level}</td>
-                      <td data-label="용의자">{l.suspect}</td>
-                      <td data-label="방어 계층">{l.defense}</td>
-                      <td data-label="수업 연결">{l.lesson}</td>
+                  {ROOMS.map((r) => (
+                    <tr key={r.id}>
+                      <td data-label="방">
+                        {r.id}. {r.name}
+                      </td>
+                      <td data-label="문지기">{r.guard}</td>
+                      <td data-label="푸는 방법">{r.how}</td>
+                      <td data-label="배우는 것">{r.concept}</td>
+                      <td data-label="수업 연결">{r.week}</td>
                       <td data-label="범위">
-                        <Pill kind={l.scope === '필수' ? 'ok' : 'plan'}>{l.scope}</Pill>
+                        <Pill kind={r.playable ? 'ok' : 'plan'}>{r.playable ? '필수' : '확장'}</Pill>
                       </td>
                     </tr>
                   ))}
@@ -275,22 +289,25 @@ export default function TeamPage() {
               <div className="card">
                 <h3>사용성 설계</h3>
                 <ul>
-                  <li>처음 온 사람도 헤매지 않게 임무, 지금 단계, 다음 수, 힌트를 화면에 보여 준다</li>
-                  <li>PC와 모바일에서 같은 기능을 쓴다. 모바일에서는 표가 카드로 바뀌고 증거 제출이 대화 바로 아래로 온다</li>
+                  <li>처음 온 사람도 헤매지 않게 임무, 지금 단계, 다음 수, 힌트를 방마다 보여 준다</li>
+                  <li>PC와 모바일에서 같은 기능을 쓴다. 모바일에서는 표가 카드로 바뀐다</li>
                   <li>버튼은 손가락으로 누르기 쉬운 크기(44px 이상)로, 입력 글자는 화면이 확대되지 않는 16px로 맞췄다</li>
-                  <li>오류가 나도 질문이 남고 '다시 보내기' 한 번으로 이어진다</li>
-                  <li>새로고침해도 심문 기록이 이어진다</li>
-                  <li>키보드만으로 질문, 제출, 다시 시작을 할 수 있다</li>
-                  <li>소리는 선택 사항이다. 글만으로 모든 기능을 쓸 수 있고, 목소리는 사용자가 켰을 때만 나온다</li>
+                  <li>오류가 나도 입력이 남고 다시 보내기 한 번으로 이어진다</li>
+                  <li>새로고침해도 통과한 방과 퀴즈 기록이 이어진다</li>
+                  <li>소리는 선택 사항이다. 글만으로 모든 기능을 쓸 수 있다</li>
                 </ul>
               </div>
               <div className="card">
-                <h3>
-                  사용성 개선 사례 <Todo>반 플레이 뒤 기록</Todo>
-                </h3>
+                <h3>사용성 개선 사례</h3>
                 <ul>
-                  <li>6주차 공개 플레이에서 사람들이 막히는 지점을 관찰해 고친 내용을 여기에 적는다</li>
-                  <li>기록 형식: 문제, 원인, 고친 화면, 전후 비교</li>
+                  {UX_CASES.map((c) => (
+                    <li key={c.when}>
+                      <b>{c.when}</b> {c.problem}. {c.fix}
+                    </li>
+                  ))}
+                  <li>
+                    6주차 공개 플레이 뒤 이어서 기록 <Todo>반 플레이 뒤 추가</Todo>
+                  </li>
                 </ul>
               </div>
             </div>
@@ -301,7 +318,7 @@ export default function TeamPage() {
           <div className="wrap">
             <div className="sec-head">
               <div className="eyebrow">5주차 공유 항목 · 확보한 데이터와 분석 방향</div>
-              <h2>데이터는 플레이할수록 쌓인다</h2>
+              <h2>어디서 막히고 무엇을 배웠는지가 데이터다</h2>
             </div>
             <div className="tablewrap">
               <table className="stack">
@@ -331,12 +348,12 @@ export default function TeamPage() {
             </div>
             <div className="cols gap-top">
               <div className="card">
-                <h3>분석 방향 (2주차 텍스트 애널리틱스)</h3>
+                <h3>분석 방향</h3>
                 <ul>
-                  <li>형태소 분석과 TF-IDF로 돌파에 성공한 질문의 핵심어 추출</li>
-                  <li>임베딩 군집으로 공격 유형 분류. 역할극, 권한 사칭, 변환 요청, 지시 덮어쓰기</li>
-                  <li>레벨별 돌파율과 평균 질문 횟수, 방어 계층별 차단율</li>
-                  <li>한국어 공격과 영어 공격의 유형 분포 비교</li>
+                  <li>방별 탈출률, 평균 시도 횟수, 힌트 사용량으로 어떤 개념에서 막히는지 본다</li>
+                  <li>입장 전과 탈출 후의 퀴즈 정답률 변화로 학습 효과를 잰다</li>
+                  <li>지시의 방 질문을 형태소 분석하고 임베딩으로 묶어 수법을 분류한다 (2주차 텍스트 애널리틱스)</li>
+                  <li>환각의 방에서 사람들이 가장 자주 속는 설명이 무엇인지 센다</li>
                 </ul>
               </div>
               <div className="card">
@@ -356,7 +373,7 @@ export default function TeamPage() {
           <div className="wrap">
             <div className="sec-head">
               <div className="eyebrow">5주차 공유 항목 · LLM·RAG·에이전트 활용 계획</div>
-              <h2>AI는 연기만 하고, 판정과 방어는 코드가 한다</h2>
+              <h2>AI는 연기만 하고, 문은 코드가 연다</h2>
             </div>
             <div className="cols">
               <div className="card">
@@ -369,31 +386,32 @@ export default function TeamPage() {
                     모델은 수업에서 쓰는 <span className="mono">gemini-3.5-flash-lite</span>, 사고 수준{' '}
                     <span className="mono">low</span>
                   </li>
-                  <li>구조화 출력으로 진술, 근거 문서 번호, 거절 여부를 받고 Pydantic으로 검증</li>
+                  <li>방마다 문지기의 역할 프롬프트를 따로 둔다</li>
+                  <li>구조화 출력으로 답변과 근거 문서 번호를 받고 Pydantic으로 검증</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>RAG</h3>
                 <ul>
-                  <li>사건 파일을 청킹·임베딩해 pgvector에 저장. 용의자는 검색된 사실만 말하고 출처를 붙인다</li>
-                  <li>레벨 5는 과거에 성공한 공격을 임베딩해 두고, 비슷한 질문이 오면 차단한다</li>
-                  <li>8주차 시연 3건: 사건 파일 근거 답변 2건, 유사 공격 차단 1건</li>
+                  <li>서가의 방 문서를 청킹·임베딩해 pgvector에 저장한다. 사서는 건네받은 문서만 근거로 답한다</li>
+                  <li>지시의 방 사건 파일도 같은 방식으로 검색해 답변에 출처를 붙인다</li>
+                  <li>8주차 시연 3건: 정답이 나오는 문서 조합, 오래된 문서로 틀리는 사례, 자료 없음 사례</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>에이전트·MCP</h3>
                 <ul>
                   <li>필수 범위가 아니다. 7주차 수업 뒤 적용 여부를 정한다</li>
-                  <li>후보: 운영자가 MCP로 로그 DB를 조회해 주간 공격 요약을 받는 기능</li>
+                  <li>후보: 문지기의 방에서 플레이어가 쓴 프롬프트에 자동 공격을 돌리는 에이전트</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>오답이 나왔을 때의 대응 설계</h3>
                 <ul>
-                  <li>돌파 판정은 제출한 단어의 문자열 대조로만 한다</li>
-                  <li>사건 파일에 근거가 없으면 "기억나지 않습니다"로 답한다</li>
+                  <li>문이 열리는지는 제출한 값을 코드가 대조해서만 판정한다</li>
+                  <li>근거 문서가 없으면 "자료 없음"으로 답한다</li>
+                  <li>환각의 방의 지어낸 설명은 미리 정해 둔다. 실제 환각에 맡기면 풀 수 없는 문제가 나올 수 있다</li>
                   <li>스키마 검증에 실패하면 한 번 다시 요청하고, 또 실패하면 정해 둔 안전 응답을 보낸다</li>
-                  <li>레벨 3부터 응답에 단어가 섞이면 서버가 가리고 기록한다</li>
                   <li>호출 한도 초과와 시간 초과는 화면에 원인과 다시 시도 방법을 알린다</li>
                 </ul>
               </div>
@@ -434,34 +452,33 @@ export default function TeamPage() {
             <div className="arch" aria-label="시스템 구조">
               <div className="node">
                 <b>React</b>
-                <small>Vercel · 심문실, 증거 제출, 분석 페이지, 팀 페이지</small>
+                <small>Vercel · 수장고 지도, 방, 퀴즈, 분석 페이지, 팀 페이지</small>
               </div>
               <span className="arr">→</span>
               <div className="node">
                 <b>FastAPI</b>
-                <small>Render · 검사, 검색, LLM 호출, 판정, 로그</small>
+                <small>Render · 방 규칙, 검색, LLM 호출, 판정, 로그</small>
               </div>
               <span className="arr">→</span>
               <div className="node">
                 <b>Gemini API</b>
-                <small>진술 생성, 임베딩</small>
+                <small>문지기 답변 생성, 임베딩</small>
               </div>
               <span className="arr">↔</span>
               <div className="node">
                 <b>PostgreSQL + pgvector</b>
-                <small>Supabase · 로그, 사건 파일, 공격 임베딩</small>
+                <small>Supabase · 로그, 퀴즈 응답, 방 문서 임베딩</small>
               </div>
             </div>
             <div className="cols">
               <div className="card">
-                <h3>질문 한 건의 처리 순서</h3>
+                <h3>요청 한 건의 처리 순서</h3>
                 <ol>
                   <li>길이와 닉네임당 횟수 검사</li>
-                  <li>입력 검사 (레벨 4부터)</li>
-                  <li>유사 공격 검색 (레벨 5)</li>
-                  <li>사건 파일 검색</li>
+                  <li>방 규칙 적용. 서가의 방은 건넨 문서만 근거로 삼는다</li>
+                  <li>근거 문서 검색</li>
                   <li>LLM 호출과 스키마 검증</li>
-                  <li>출력 검사 (레벨 3부터)</li>
+                  <li>출력 검사. 정답이 그대로 새지 않게 가린다</li>
                   <li>로그 저장 후 응답</li>
                 </ol>
               </div>
@@ -469,13 +486,19 @@ export default function TeamPage() {
                 <h3>API</h3>
                 <ul>
                   <li>
-                    <span className="mono">POST /interrogate</span> 질문을 받아 진술, 근거, 차단 여부를 돌려준다
+                    <span className="mono">POST /interrogate</span> 지시의 방 질문에 진술과 근거를 돌려준다
                   </li>
                   <li>
-                    <span className="mono">POST /evidence</span> 제출한 단어를 판정한다
+                    <span className="mono">POST /evidence</span> 지시의 방 암호를 판정한다
                   </li>
                   <li>
-                    <span className="mono">GET /levels</span> 용의자 목록과 잠금 상태
+                    <span className="mono">POST /rooms/2/check</span> 지목한 설명을 판정한다
+                  </li>
+                  <li>
+                    <span className="mono">POST /rooms/3/ask</span> 건넨 문서로 사서가 답한다
+                  </li>
+                  <li>
+                    <span className="mono">POST /rooms/3/check</span> 비상문 비밀번호를 판정한다
                   </li>
                   <li>
                     <span className="mono">GET /stats</span> 분석 페이지용 집계
@@ -491,10 +514,10 @@ export default function TeamPage() {
                   <li>
                     API 키는 <span className="mono">.env</span>와 Render 환경변수에만 둔다. Git에 올리지 않는다
                   </li>
-                  <li>암호 단어는 서버에만 둔다. 브라우저로 보내지 않는다</li>
+                  <li>정답은 서버에만 둔다. 브라우저로 보내지 않는다</li>
                   <li>질문 300자, 출력 토큰 상한, 대화 이력 없이 한 번씩 호출</li>
                   <li>
-                    개발은 무료 등급. 공개 플레이는 5,000회에 약 $5.6로 추정 <Todo>실측 후 갱신</Todo>
+                    개발은 무료 등급. 공개 플레이는 질문 5,000회에 약 $5.6로 추정 <Todo>실측 후 갱신</Todo>
                   </li>
                 </ul>
               </div>
@@ -546,7 +569,9 @@ export default function TeamPage() {
                   {GRADING.map((g) => (
                     <tr key={g.item}>
                       <td data-label="평가 항목">{g.item}</td>
-                      <td className="num" data-label="배점">{g.weight}</td>
+                      <td className="num" data-label="배점">
+                        {g.weight}
+                      </td>
                       <td data-label="보여 줄 것">{g.show}</td>
                     </tr>
                   ))}
@@ -574,7 +599,9 @@ export default function TeamPage() {
                 <tbody>
                   {SCHEDULE.map((s) => (
                     <tr key={s.week}>
-                      <td className="num" data-label="주차">{s.week}</td>
+                      <td className="num" data-label="주차">
+                        {s.week}
+                      </td>
                       <td data-label="수업 주제">{s.topic}</td>
                       <td data-label="끝낼 일">{s.todo}</td>
                     </tr>
@@ -591,7 +618,7 @@ export default function TeamPage() {
                   <li>프런트엔드와 화면 설계</li>
                   <li>백엔드와 LLM 연동</li>
                   <li>데이터와 분석 페이지</li>
-                  <li>사건 시나리오와 프롬프트</li>
+                  <li>방 시나리오와 프롬프트</li>
                   <li>품질 점검과 발표</li>
                 </ul>
               </div>
@@ -610,8 +637,8 @@ export default function TeamPage() {
               <div className="card">
                 <h3>기능을 줄여야 할 때의 순서</h3>
                 <ul>
-                  <li>먼저 뺀다: 레벨 5, 레벨 4, 에이전트·MCP 기능</li>
-                  <li>끝까지 지킨다: 레벨 1~3, 증거 제출 판정, 로그, 분석 페이지, 배포</li>
+                  <li>먼저 뺀다: 방 5, 방 4, 음성과 배경음</li>
+                  <li>끝까지 지킨다: 방 1~3, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
                   <li>실패한 실험은 원인과 개선 과정을 팀 페이지에 남긴다</li>
                 </ul>
               </div>
@@ -626,7 +653,7 @@ export default function TeamPage() {
             <b>출처</b>
           </p>
           <ul>
-            <li>강의 자료: 「금융빅데이터분석실습 강의계획서」, 「퀴즈 및 팀 프로젝트 안내」, 4주차 워크북과 교재 12</li>
+            <li>강의 자료: 「금융빅데이터분석실습 강의계획서」, 「퀴즈 및 팀 프로젝트 안내」, 3주차 교재 11, 4주차 워크북과 교재 12</li>
             <li>
               <a href="https://www.lakera.ai/blog/gandalf-agent-breaker">Lakera, Gandalf: Agent Breaker</a>
             </li>
