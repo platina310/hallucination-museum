@@ -12,7 +12,7 @@ KAIST 디지털금융MBA 「금융빅데이터분석실습」 팀 프로젝트�
 | 발표 URL | https://hallucination-museum.vercel.app | 아이디어 공유 페이지. 주제, 대상 사용자와 문제, 데이터 확보와 분석 방향, AI 활용 계획, 프로토타입 안내, 일정 |
 | 프로토타입 URL | https://hallucination-museum.vercel.app/prototype | UI 프로토타입. 주요 화면 목록, 이용 흐름 표시줄, 방 3개와 정문 자물쇠 |
 
-- `/detail`은 상세 자료다. 벤치마킹, 사용성 개선 기록, 시스템 설계, 강의 조건 대조표, 역할
+- `/detail`은 상세 자료다. 벤치마킹, 사용성 개선 기록, 시스템 설계, 강의 조건 대조표
 - 백엔드는 아직 없다. AI의 답과 판정은 `src/mock/`의 정해진 대본으로 나온다
 - 예전 주소(끝에 `#game`)는 `/prototype`으로 넘어간다
 - 주소별 화면 연결은 `vercel.json`의 rewrites가 맡는다. 지우면 `/prototype`이 열리지 않는다
