@@ -9,11 +9,17 @@ export const PROTOTYPE_URL = `${SITE}/prototype`
 export const REPO_URL = 'https://github.com/platina310/hallucination-museum'
 export const SWAGGER_URL = '' // 백엔드 배포 뒤 기입. 빈 문자열이면 "배포 후 기입"으로 표시된다
 
-// 팀이 확정되면 채운다. 비어 있으면 화면에 팀 칸이 나오지 않는다.
+// 팀 구성. 역할이 정해지면 role을 채운다. role이 모두 비어 있으면 화면에 역할 칸 대신 "역할 배정 필요"가 나온다.
 export const TEAM: { name: string; members: { name: string; role: string }[] } = {
-  name: '',
-  members: [],
+  name: '6조',
+  members: [
+    { name: '서수민', role: '' },
+    { name: '양정모', role: '' },
+    { name: '이수정', role: '' },
+    { name: '이상석', role: '' },
+  ],
 }
+export const ROLES_ASSIGNED = TEAM.members.length > 0 && TEAM.members.every((m) => m.role !== '')
 
 export const DATASETS: { name: string; origin: string; content: string; use: string; status: Status; statusText: string }[] = [
   {

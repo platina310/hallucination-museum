@@ -2,7 +2,7 @@
 // 5주차 발표는 Idea.tsx(아이디어 공유)로 하고, 여기에는 벤치마킹, 사용성, 시스템 설계, 강의 조건 대조표를 둔다.
 // 표의 내용은 아래 배열만 고치면 된다. 여러 화면이 같이 쓰는 내용은 src/content/shared.ts에 있다.
 import { Pill, Todo } from '../components/Marks'
-import { IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SWAGGER_URL, TEAM } from '../content/shared'
+import { IDEA_URL, PROTOTYPE_URL, REPO_URL, ROLES_ASSIGNED, SCHEDULE, SWAGGER_URL, TEAM } from '../content/shared'
 import type { Status } from '../content/shared'
 
 // 강의계획서와 「퀴즈 및 팀 프로젝트 안내」의 조건. 진행 상황이 바뀌면 status와 statusText를 고친다.
@@ -19,7 +19,7 @@ const CONDITIONS: { condition: string; plan: string; status: Status; statusText:
   { condition: '5주차 제출. 발표 URL과 프로토타입 URL 두 개. 권한 요청 없이 열람', plan: '발표 URL은 첫 화면, 프로토타입 URL은 /prototype. 둘 다 로그인 없이 열린다. 팀 대표 1명이 LMS에 제출', status: 'need', statusText: 'LMS 제출 전' },
   { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 두었다. 내용은 매주 갱신한다', status: 'ok', statusText: '틀 완성' },
   { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정·역할 구역에 적는다. Swagger UI는 백엔드 배포 뒤 기입', status: 'need', statusText: 'Swagger 남음' },
-  { condition: '팀 4~5명과 팀원 역할', plan: '역할 다섯 가지를 나눠 두었다', status: 'need', statusText: '팀 확정 필요' },
+  { condition: '팀 4~5명과 팀원 역할', plan: '6조 4명(서수민, 양정모, 이수정, 이상석). 역할은 다섯 가지로 나눠 두었고 담당은 배정 전이다', status: 'need', statusText: '역할 배정 필요' },
   { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않는다. 무료 범위 우선', plan: '키 분리, 닉네임만 수집, 저장 전 마스킹, 무료 등급으로 개발', status: 'plan', statusText: '계획' },
 ]
 
@@ -392,8 +392,13 @@ export default function Detail() {
             </div>
             <div className="cols gap-top">
               <div className="card">
-                <h3>팀원 역할 {TEAM.members.length === 0 && <Todo>팀 확정 필요</Todo>}</h3>
-                {TEAM.members.length > 0 ? (
+                <h3>팀원 역할 {!ROLES_ASSIGNED && <Todo>역할 배정 필요</Todo>}</h3>
+                {TEAM.members.length > 0 && (
+                  <p className="team-line">
+                    {TEAM.name} · {TEAM.members.map((m) => m.name).join(', ')}
+                  </p>
+                )}
+                {ROLES_ASSIGNED ? (
                   <ul>
                     {TEAM.members.map((m) => (
                       <li key={m.name}>

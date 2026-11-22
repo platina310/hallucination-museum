@@ -491,3 +491,4 @@ td.nowrap{white-space:nowrap}
 
 /* 한글 제목은 낱말 중간에서 끊기지 않게 한다 */
 h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
+.team-line{font-size:.95rem;margin-bottom:6px}

@@ -2,7 +2,7 @@
 // 제출 안내의 순서대로 주제, 대상 사용자와 문제, 데이터, AI 활용 계획을 요약하고 프로토타입으로 이어 준다.
 // 8주차까지 쌓아 가는 자세한 내용은 Detail.tsx(/detail)에 있다.
 import { Pill, Todo } from '../components/Marks'
-import { DATASETS, IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SCREENS, SWAGGER_URL, TEAM } from '../content/shared'
+import { DATASETS, IDEA_URL, PROTOTYPE_URL, REPO_URL, ROLES_ASSIGNED, SCHEDULE, SCREENS, SWAGGER_URL, TEAM } from '../content/shared'
 import { ROOMS } from '../game/rooms'
 
 const FLOW = ['수장고 지도', '입장 전 퀴즈', '방에서 AI와 겨루기', '배운 것과 같은 퀴즈', '정문 자물쇠', '탈출 결과와 별점', '분석 페이지']
@@ -455,7 +455,7 @@ export default function Idea() {
               </table>
             </div>
             <div className="cols gap-top">
-              {TEAM.members.length > 0 && (
+              {ROLES_ASSIGNED && (
                 <div className="card">
                   <h3>팀원과 역할</h3>
                   <ul>
