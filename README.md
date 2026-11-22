@@ -1,14 +1,21 @@
 # 환각 미술관
 
 AI가 지키는 방을 말과 추리로 뚫으며 LLM의 원리를 배우는 방탈출 게임.
-KAIST 디지털금융MBA 「금융빅데이터분석실습」 팀 프로젝트의 프런트엔드(React)와 팀 페이지다.
+KAIST 디지털금융MBA 「금융빅데이터분석실습」 팀 프로젝트의 프런트엔드(React)다. 5주차 아이디어 공유 페이지와 UI 프로토타입이 들어 있다.
 
-## 현재 상태 (5주차 아이디어 공유용)
+## 현재 상태 (5주차 아이디어 공유)
 
-- 팀 페이지: 대상 사용자와 문제, 데이터와 분석 방향, LLM·RAG·에이전트 계획, 강의 조건 대조표, 일정
-- 방탈출: 수장고 지도, 방 3개, 방마다 입장 전과 탈출 후 퀴즈, 탈출 결과
+5주차에 LMS로 내는 주소는 두 개다. 둘 다 로그인 없이 열린다.
+
+| 제출 항목 | 주소 | 내용 |
+|---|---|---|
+| 발표 URL | https://hallucination-museum.vercel.app | 아이디어 공유 페이지. 주제, 대상 사용자와 문제, 데이터 확보와 분석 방향, AI 활용 계획, 프로토타입 안내, 일정 |
+| 프로토타입 URL | https://hallucination-museum.vercel.app/prototype | UI 프로토타입. 주요 화면 목록, 이용 흐름 표시줄, 방 3개와 정문 자물쇠 |
+
+- `/detail`은 상세 자료다. 벤치마킹, 사용성 개선 기록, 시스템 설계, 강의 조건 대조표, 역할
 - 백엔드는 아직 없다. AI의 답과 판정은 `src/mock/`의 정해진 대본으로 나온다
-- 주소 끝에 `#game`을 붙이면 게임만 나온다
+- 예전 주소(끝에 `#game`)는 `/prototype`으로 넘어간다
+- 주소별 화면 연결은 `vercel.json`의 rewrites가 맡는다. 지우면 `/prototype`이 열리지 않는다
 
 | 방 | 푸는 방법 | 배우는 것 | 본뜬 게임 |
 |---|---|---|---|
@@ -33,8 +40,10 @@ npm run build    # 타입 검사 후 dist/ 생성
 
 | 경로 | 역할 |
 |---|---|
-| `src/pages/Team.tsx` | 팀 페이지. 표 내용은 파일 위쪽 배열만 고치면 된다 |
-| `src/pages/Game.tsx` | 게임만 있는 화면 (`#game`) |
+| `src/pages/Idea.tsx` | 아이디어 공유 페이지 (`/`, 발표 URL) |
+| `src/pages/Prototype.tsx` | UI 프로토타입 화면 (`/prototype`, 프로토타입 URL) |
+| `src/pages/Detail.tsx` | 상세 자료 (`/detail`). 표 내용은 파일 위쪽 배열만 고치면 된다 |
+| `src/content/shared.ts` | 세 화면이 같이 쓰는 내용. 주소, 팀명과 팀원(`TEAM`), 데이터 표, 일정, 주요 화면 목록 |
 | `src/game/rooms.ts` | 방 목록, 배우는 것, 퀴즈 |
 | `src/game/progress.ts` | 통과한 방과 퀴즈 기록 저장 |
 | `src/components/EscapeGame.tsx` | 수장고 지도, 방 진행 흐름, 정문 자물쇠, 결과 카드 |

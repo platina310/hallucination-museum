@@ -2,6 +2,7 @@
 import { useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { checkFinalCode } from '../api'
+import { PROTOTYPE_URL } from '../content/shared'
 import { PLAYABLE_IDS, ROOMS } from '../game/rooms'
 import type { RoomInfo } from '../game/rooms'
 import { starsOf, starText, useProgress } from '../game/progress'
@@ -16,7 +17,30 @@ import type { Who } from './Portrait'
 
 // 방을 지키는 AI의 얼굴. 공사 중인 방은 아직 얼굴이 없다
 const GUARD: Record<number, Who> = { 1: 'do', 2: 'lumi', 3: 'go' }
-const GAME_URL = 'https://hallucination-museum.vercel.app/#game'
+const GAME_URL = PROTOTYPE_URL
+
+// 이용 흐름 표시줄. 지금 어느 단계에 있는지를 화면 맨 위에서 항상 보여 준다.
+type Stage = 'map' | 'pre' | 'room' | 'post' | 'final' | 'result'
+const STAGES: { id: Stage; label: string }[] = [
+  { id: 'map', label: '수장고 지도' },
+  { id: 'pre', label: '입장 전 퀴즈' },
+  { id: 'room', label: '방' },
+  { id: 'post', label: '배운 것·퀴즈' },
+  { id: 'final', label: '정문' },
+  { id: 'result', label: '탈출 결과' },
+]
+
+function FlowBar({ stage }: { stage: Stage }) {
+  return (
+    <ol className="flowbar" aria-label="이용 흐름">
+      {STAGES.map((s) => (
+        <li key={s.id} className={s.id === stage ? 'now' : undefined} aria-current={s.id === stage ? 'step' : undefined}>
+          {s.label}
+        </li>
+      ))}
+    </ol>
+  )
+}
 
 function quizCorrect(room: RoomInfo, answers: Record<string, number>): boolean {
   return room.quiz !== undefined && answers[room.id] === room.quiz.answer
@@ -286,8 +310,10 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
   const room = ROOMS.find((r) => r.id === roomId)
 
   if (!room) {
+    const allCleared = PLAYABLE_IDS.every((id) => progress.cleared.includes(id))
     return (
       <div className="escape" ref={topRef}>
+        <FlowBar stage={progress.escaped ? 'result' : allCleared ? 'final' : 'map'} />
         <Lobby
           progress={progress}
           onEnter={enter}
@@ -319,6 +345,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
 
   return (
     <div className="escape" ref={topRef}>
+      <FlowBar stage={!preAnswered ? 'pre' : cleared ? 'post' : 'room'} />
       <div className="room-head">
         <button className="btn ghost small" type="button" onClick={() => enter(null)}>
           ← 수장고 지도

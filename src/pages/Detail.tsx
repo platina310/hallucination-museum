@@ -1,67 +1,24 @@
-// 팀 프로젝트 페이지. 5주차 아이디어 공유와 8주차 발표를 이 페이지로 진행한다.
-// 표의 내용은 아래 배열만 고치면 된다. 방 구성은 src/game/rooms.ts에 있다.
-import type { ReactNode } from 'react'
-import EscapeGame from '../components/EscapeGame'
-import { ROOMS } from '../game/rooms'
-
-type Status = 'ok' | 'plan' | 'need'
-
-function Pill({ kind, children }: { kind: Status; children: ReactNode }) {
-  return <span className={`pill ${kind}`}>{children}</span>
-}
-
-function Todo({ children }: { children: ReactNode }) {
-  return <span className="todo">{children}</span>
-}
-
-const DATASETS: { name: string; origin: string; content: string; use: string; status: Status; statusText: string }[] = [
-  {
-    name: '플레이 로그',
-    origin: '자체 수집. 반 공개 플레이',
-    content: '닉네임, 방, 입력, 응답, 시도 횟수, 힌트 사용, 탈출 여부, 걸린 시간',
-    use: '어떤 개념에서 막히는지 분석',
-    status: 'plan',
-    statusText: '6주차부터 수집',
-  },
-  {
-    name: '퀴즈 응답',
-    origin: '자체 수집. 방마다 입장 전과 탈출 후',
-    content: '같은 문제에 대한 두 번의 답',
-    use: '학습 효과 측정',
-    status: 'plan',
-    statusText: '6주차부터 수집',
-  },
-  {
-    name: '영어 공격문',
-    origin: 'Lakera Mosscap 데이터셋. Hugging Face, MIT 라이선스',
-    content: 'DEF CON 31 게임에 제출된 프롬프트 공격문',
-    use: '지시의 방 수법 비교, 문지기의 방 자동 공격 자료',
-    status: 'plan',
-    statusText: '내려받기 예정',
-  },
-  {
-    name: '방 자료',
-    origin: '팀 작성',
-    content: '사건 파일, 전시 기록 카드, 서가 문서',
-    use: 'AI 답변의 근거 문서. 답변마다 출처 표시',
-    status: 'ok',
-    statusText: '방 3개 초안',
-  },
-]
+// 상세 자료. 8주차 발표까지 채워 가는 작업 기록이다 (/detail).
+// 5주차 발표는 Idea.tsx(아이디어 공유)로 하고, 여기에는 벤치마킹, 사용성, 시스템 설계, 강의 조건 대조표를 둔다.
+// 표의 내용은 아래 배열만 고치면 된다. 여러 화면이 같이 쓰는 내용은 src/content/shared.ts에 있다.
+import { Pill, Todo } from '../components/Marks'
+import { IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SWAGGER_URL, TEAM } from '../content/shared'
+import type { Status } from '../content/shared'
 
 // 강의계획서와 「퀴즈 및 팀 프로젝트 안내」의 조건. 진행 상황이 바뀌면 status와 statusText를 고친다.
 const CONDITIONS: { condition: string; plan: string; status: Status; statusText: string }[] = [
-  { condition: 'React 화면 (필수)', plan: '팀 페이지, 수장고 지도, 방 3개, 정문 자물쇠를 React로 만들었다. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개 구현' },
+  { condition: 'React 화면 (필수)', plan: '아이디어 공유 페이지, 수장고 지도, 방 3개, 정문 자물쇠를 React로 만들었다. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개 구현' },
   { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태를 모두 넣었다. 빈 결과는 "근거 없음"으로 표시', status: 'ok', statusText: '구현' },
   { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 호출. 지금은 정해진 대본으로 답한다', status: 'plan', statusText: '6주차' },
   { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '프런트는 Vercel에 배포했다. 백엔드 Render와 DB Supabase는 6주차', status: 'ok', statusText: '프런트 배포' },
   { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '로그와 퀴즈 테이블, 서가 문서 임베딩', status: 'plan', statusText: '계획' },
   { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '저장소를 만들고 실행 방법을 README에 적었다. 방별 프롬프트와 탈출률 변화는 이어서 기록', status: 'ok', statusText: '저장소 생성' },
-  { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 이 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
+  { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 아이디어 공유 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
   { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 정답이 나오는 검색어, 오래된 문서가 걸려 틀리는 검색어, 자료 없음이 나오는 검색어', status: 'plan', statusText: '대본으로 시연 가능' },
-  { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '이 페이지의 문제, 화면, 데이터, AI 계획 구역', status: 'ok', statusText: '초안' },
+  { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '아이디어 공유 페이지에 주제, 사용자와 문제, 데이터, AI 계획 순서로 요약했다', status: 'ok', statusText: '페이지 준비' },
+  { condition: '5주차 제출. 발표 URL과 프로토타입 URL 두 개. 권한 요청 없이 열람', plan: '발표 URL은 첫 화면, 프로토타입 URL은 /prototype. 둘 다 로그인 없이 열린다. 팀 대표 1명이 LMS에 제출', status: 'need', statusText: 'LMS 제출 전' },
   { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 두었다. 내용은 매주 갱신한다', status: 'ok', statusText: '틀 완성' },
-  { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정·역할 구역에 적는다. Swagger UI는 백엔드 배포 뒤 기입', status: 'need', statusText: '2개 기입' },
+  { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정·역할 구역에 적는다. Swagger UI는 백엔드 배포 뒤 기입', status: 'need', statusText: 'Swagger 남음' },
   { condition: '팀 4~5명과 팀원 역할', plan: '역할 다섯 가지를 나눠 두었다', status: 'need', statusText: '팀 확정 필요' },
   { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않는다. 무료 범위 우선', plan: '키 분리, 닉네임만 수집, 저장 전 마스킹, 무료 등급으로 개발', status: 'plan', statusText: '계획' },
 ]
@@ -75,12 +32,6 @@ const GRADING: { item: string; weight: string; show: string }[] = [
   { item: '팀 페이지·배포·발표·시연', weight: '10%', show: '배포 주소 3가지, 방 하나를 실시간으로 탈출, RAG 3건' },
 ]
 
-const SCHEDULE: { week: number; topic: string; todo: string }[] = [
-  { week: 5, topic: 'RAG', todo: '아이디어 공유. 서가의 방 낱말 검색을 임베딩 검색으로 바꾸기' },
-  { week: 6, topic: 'Claude Code', todo: '방 1~3을 FastAPI와 Gemini에 연결. 로그와 퀴즈 저장. 반에 링크 공개' },
-  { week: 7, topic: 'MCP와 품질 개선', todo: '분석 페이지. 속도·비용·보안 점검. 여유가 있으면 방 4~5' },
-  { week: 8, topic: '기말 발표', todo: '팀 페이지로 발표 15분, 질의응답 5분' },
-]
 
 // 비주얼·음성·음악과 개발 도구. 프로토타입에는 자리와 기본 동작만 넣어 두었다.
 const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
@@ -90,13 +41,6 @@ const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
   { item: '문지기 목소리', now: '지시의 방에서 브라우저 기본 음성으로 답변 읽기. 기본은 꺼짐', next: '문지기마다 다른 목소리. 키는 서버에 두고 FastAPI가 호출', tool: 'ElevenLabs' },
   { item: '배경음과 효과음', now: '버튼 자리만 표시', next: '방마다 배경음, 문이 열릴 때의 효과음', tool: 'Suno' },
   { item: '개발 자동화', now: 'Claude로 화면 구현과 동작 확인', next: '반복 작업과 교차 검증을 명령줄 에이전트에 맡긴다', tool: 'Codex exec, agy (Antigravity CLI)' },
-]
-
-// 배포 후 주소를 넣는다. 빈 문자열이면 "배포 후 기입"으로 표시된다.
-const LINKS: { label: string; url: string }[] = [
-  { label: 'GitHub 저장소', url: 'https://github.com/platina310/hallucination-museum' },
-  { label: '서비스 웹 주소 (React, 팀 페이지 포함)', url: 'https://hallucination-museum.vercel.app' },
-  { label: 'Swagger UI 주소 (FastAPI /docs)', url: '' },
 ]
 
 // 성공한 게임에서 가져온 장치. 수치의 출처는 페이지 맨 아래에 있다.
@@ -129,128 +73,55 @@ const UX_CASES: { when: string; problem: string; fix: string }[] = [
   },
 ]
 
-export default function Team() {
+
+const LINKS: { label: string; url: string }[] = [
+  { label: 'GitHub 저장소', url: REPO_URL },
+  { label: '서비스 웹 주소 (React, 아이디어 공유 페이지)', url: IDEA_URL },
+  { label: '프로토타입 주소', url: PROTOTYPE_URL },
+  { label: 'Swagger UI 주소 (FastAPI /docs)', url: SWAGGER_URL },
+]
+
+export default function Detail() {
   return (
     <>
       <div className="top">
         <div className="wrap">
           <span className="mono brand">
-            환각 미술관 팀 페이지<span className="course"> · 금융빅데이터분석실습 · 5주차 아이디어 공유용 초안</span>
+            환각 미술관<span className="course"> · 상세 자료 · 금융빅데이터분석실습</span>
           </span>
           <nav aria-label="페이지 구역">
-            <a href="#problem">문제</a>
-            <a href="#play">화면</a>
-            <a href="#data">데이터</a>
-            <a href="#ai">AI 계획</a>
+            <a href="#benchmark">벤치마킹</a>
+            <a href="#ux">사용성</a>
             <a href="#architecture">구조</a>
+            <a href="#media">비주얼·음성</a>
             <a href="#checklist">강의 조건</a>
             <a href="#plan">일정·역할</a>
-            <a href="#game" className="nav-game">
-              게임만 하기
+            <a href="/">아이디어 공유</a>
+            <a href="/prototype" className="nav-game">
+              프로토타입 열기
             </a>
           </nav>
         </div>
       </div>
 
-      <header className="hero">
-        <div className="wrap hero-grid">
-          <div>
-            <div className="stamp two-line" aria-hidden="true">
-              환각
-              <br />
-              미술관
-            </div>
-            <h1 className="sr-only">환각 미술관</h1>
-            <p className="lede">
-              AI가 지키는 방을 말과 추리로 뚫으며 <mark>LLM의 원리를 배우는 방탈출</mark>
-            </p>
-            <p className="tagline">이 미술관의 AI들은 막힘 없이 말합니다. 전부 맞는 말은 아닙니다.</p>
-            <div className="cta">
-              <a className="btn" href="#play">
-                방탈출 해 보기
-              </a>
-              <a className="btn ghost" href="#checklist">
-                강의 조건 대조표
-              </a>
-            </div>
-          </div>
-          <div className="form" role="table" aria-label="서비스 개요">
-            <div className="head">
-              <span className="mono">진술조서 제1호</span>
-              <span className="mono">
-                팀명 <Todo>팀 확정 필요</Todo>
-              </span>
-            </div>
-            <div className="row">
-              <div className="k">무대</div>
-              <div className="v">한빛미술관 수장고 (팀이 지어낸 가상의 장소)</div>
-            </div>
-            <div className="row">
-              <div className="k">방</div>
-              <div className="v">5개와 정문. 방마다 AI 하나가 문을 지키고, LLM 개념 하나를 배운다</div>
-            </div>
-            <div className="row">
-              <div className="k">플레이어</div>
-              <div className="v">야간 점검을 나왔다가 갇힌 조사관</div>
-            </div>
-            <div className="row">
-              <div className="k">판정</div>
-              <div className="v">문이 열리는지는 서버 코드가 판정한다. AI는 판정하지 않는다</div>
-            </div>
-            <div className="row">
-              <div className="k">남는 것</div>
-              <div className="v">방별 탈출률, 막힌 지점, 입장 전후 퀴즈 정답률</div>
-            </div>
-          </div>
+      <header className="page-head">
+        <div className="wrap">
+          <div className="eyebrow">환각 미술관 · 8주차 발표까지 채워 가는 기록</div>
+          <h1>상세 자료</h1>
+          <p>
+            5주차 발표는 <a href="/">아이디어 공유</a> 페이지로 한다. 여기에는 그 페이지에서 줄인 벤치마킹, 사용성 개선 기록, 시스템
+            설계, 강의 조건 대조표를 모아 두었다.
+          </p>
         </div>
       </header>
 
       <main>
-        <section id="problem">
+        <section id="benchmark">
           <div className="wrap">
             <div className="sec-head">
-              <div className="eyebrow">5주차 공유 항목 · 대상 사용자와 해결하려는 문제</div>
-              <h2>LLM은 직접 속여 보고 속아 봐야 이해한다</h2>
+              <div className="eyebrow">Needs·아이디어 · 벤치마킹</div>
+              <h2>성공한 게임에서 가져온 장치</h2>
             </div>
-            <div className="cols">
-              <div className="card">
-                <h3>대상 사용자</h3>
-                <ul>
-                  <li>업무에 생성형 AI를 쓰기 시작한 직장인과 학생</li>
-                  <li>사내에서 AI 기초 교육을 맡은 담당자</li>
-                </ul>
-              </div>
-              <div className="card">
-                <h3>해결하려는 문제</h3>
-                <ul>
-                  <li>환각, 프롬프트의 한계, RAG 같은 개념은 글로 배우면 남지 않는다</li>
-                  <li>AI의 답을 그대로 믿거나 비밀을 프롬프트에 넣는 실수가 반복된다</li>
-                  <li>
-                    재미있게 익힐 한국어 실습 도구가 부족하다 <Todo>조사로 확인할 가설</Todo>
-                  </li>
-                </ul>
-              </div>
-              <div className="card">
-                <h3>근거와 선행 사례</h3>
-                <ul>
-                  <li>OWASP의 LLM 취약점 Top 10은 프롬프트 인젝션을 1순위로 꼽는다</li>
-                  <li>Lakera의 Gandalf는 같은 장르의 영어 게임이지만 보안 한 주제만 다룬다</li>
-                  <li>
-                    시장 규모와 교육 수요 수치 <Todo>8주차 전 보강</Todo>
-                  </li>
-                </ul>
-              </div>
-              <div className="card">
-                <h3>우리 팀의 차별점</h3>
-                <ul>
-                  <li>방마다 개념 하나. 프롬프트, 환각, RAG, temperature, 방어 설계</li>
-                  <li>입장 전과 탈출 후에 같은 퀴즈를 내서 학습 효과를 숫자로 잰다</li>
-                  <li>판정은 코드가 하고 AI는 연기만 해서, 방별 결과를 그대로 측정할 수 있다</li>
-                </ul>
-              </div>
-            </div>
-
-            <h3 className="sub-h">성공한 게임에서 가져온 장치</h3>
             <div className="tablewrap">
               <table className="stack">
                 <thead>
@@ -276,67 +147,13 @@ export default function Team() {
           </div>
         </section>
 
-        <section id="play">
+        <section id="ux">
           <div className="wrap">
             <div className="sec-head">
-              <div className="eyebrow">5주차 공유 항목 · 주요 화면 UI 프로토타입</div>
-              <h2>수장고 방탈출</h2>
-              <p>
-                방 세 개와 정문 자물쇠를 지금 바로 해 볼 수 있다. 백엔드 연결 전이라 AI의 답은 정해진 대본으로 나온다.{' '}
-                <a href="#game">게임만 큰 화면으로 하기</a>
-              </p>
+              <div className="eyebrow">UI/UX · 사용성</div>
+              <h2>사용성 설계와 고친 기록</h2>
             </div>
-
-            <EscapeGame demoControls />
-
-            <div className="flow" aria-label="이용 흐름">
-              <span className="box">수장고 지도</span>
-              <span className="arr">→</span>
-              <span className="box">입장 전 퀴즈</span>
-              <span className="arr">→</span>
-              <span className="box">방에서 AI와 겨루기</span>
-              <span className="arr">→</span>
-              <span className="box">배운 것과 같은 퀴즈</span>
-              <span className="arr">→</span>
-              <span className="box">정문 자물쇠</span>
-              <span className="arr">→</span>
-              <span className="box">탈출 결과와 별점</span>
-              <span className="arr">→</span>
-              <span className="box">분석 페이지</span>
-            </div>
-
-            <div className="tablewrap gap-top">
-              <table className="stack">
-                <thead>
-                  <tr>
-                    <th>방</th>
-                    <th>문지기</th>
-                    <th>푸는 방법</th>
-                    <th>배우는 것</th>
-                    <th>수업 연결</th>
-                    <th>범위</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ROOMS.map((r) => (
-                    <tr key={r.id}>
-                      <td data-label="방">
-                        {r.id}. {r.name}
-                      </td>
-                      <td data-label="문지기">{r.guard}</td>
-                      <td data-label="푸는 방법">{r.how}</td>
-                      <td data-label="배우는 것">{r.concept}</td>
-                      <td data-label="수업 연결">{r.week}</td>
-                      <td data-label="범위">
-                        <Pill kind={r.playable ? 'ok' : 'plan'}>{r.playable ? '필수' : '확장'}</Pill>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="cols gap-top">
+            <div className="cols">
               <div className="card">
                 <h3>사용성 설계</h3>
                 <ul>
@@ -361,136 +178,6 @@ export default function Team() {
                   </li>
                 </ul>
               </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="data">
-          <div className="wrap">
-            <div className="sec-head">
-              <div className="eyebrow">5주차 공유 항목 · 확보한 데이터와 분석 방향</div>
-              <h2>어디서 막히고 무엇을 배웠는지가 데이터다</h2>
-            </div>
-            <div className="tablewrap">
-              <table className="stack">
-                <thead>
-                  <tr>
-                    <th>데이터</th>
-                    <th>출처</th>
-                    <th>내용</th>
-                    <th>쓰임</th>
-                    <th>상태</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {DATASETS.map((d) => (
-                    <tr key={d.name}>
-                      <td data-label="데이터">{d.name}</td>
-                      <td data-label="출처">{d.origin}</td>
-                      <td data-label="내용">{d.content}</td>
-                      <td data-label="쓰임">{d.use}</td>
-                      <td data-label="상태">
-                        <Pill kind={d.status}>{d.statusText}</Pill>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="cols gap-top">
-              <div className="card">
-                <h3>분석 방향</h3>
-                <ul>
-                  <li>방별 탈출률, 평균 시도 횟수, 힌트 사용량으로 어떤 개념에서 막히는지 본다</li>
-                  <li>입장 전과 탈출 후의 퀴즈 정답률 변화로 학습 효과를 잰다</li>
-                  <li>지시의 방 질문을 형태소 분석하고 임베딩으로 묶어 수법을 분류한다 (2주차 텍스트 애널리틱스)</li>
-                  <li>환각의 방에서 사람들이 가장 자주 속는 설명이 무엇인지 센다</li>
-                </ul>
-              </div>
-              <div className="card">
-                <h3>품질과 개인정보</h3>
-                <ul>
-                  <li>닉네임만 받는다. 이메일과 실명은 받지 않는다</li>
-                  <li>질문은 자유 입력이므로 저장 전에 전화번호와 이메일을 마스킹한다</li>
-                  <li>화면에 "입력 내용은 분석에 쓰입니다. 개인정보를 넣지 마세요"를 표시한다</li>
-                  <li>분석 페이지에 데이터 출처와 수집 기간, 건수를 명시한다</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="ai">
-          <div className="wrap">
-            <div className="sec-head">
-              <div className="eyebrow">5주차 공유 항목 · LLM·RAG·에이전트 활용 계획</div>
-              <h2>AI는 연기만 하고, 문은 코드가 연다</h2>
-            </div>
-            <div className="cols">
-              <div className="card">
-                <h3>LLM</h3>
-                <ul>
-                  <li>
-                    FastAPI 서버에서 OpenAI 호환 API로 호출. 수업과 같은 <span className="mono">.env</span> 네 줄 구성
-                  </li>
-                  <li>
-                    모델은 수업에서 쓰는 <span className="mono">gemini-3.5-flash-lite</span>, 사고 수준{' '}
-                    <span className="mono">low</span>
-                  </li>
-                  <li>방마다 문지기의 역할 프롬프트를 따로 둔다</li>
-                  <li>구조화 출력으로 답변과 근거 문서 번호를 받고 Pydantic으로 검증</li>
-                </ul>
-              </div>
-              <div className="card">
-                <h3>RAG</h3>
-                <ul>
-                  <li>서가의 방 문서를 청킹·임베딩해 pgvector에 저장한다. 검색된 상위 3건만 근거로 사서가 답한다</li>
-                  <li>지시의 방 사건 파일도 같은 방식으로 검색해 답변에 출처를 붙인다</li>
-                  <li>8주차 시연 3건: 정답이 나오는 검색어, 오래된 문서가 걸려 틀리는 검색어, 자료 없음이 나오는 검색어</li>
-                </ul>
-              </div>
-              <div className="card">
-                <h3>에이전트·MCP</h3>
-                <ul>
-                  <li>필수 범위가 아니다. 7주차 수업 뒤 적용 여부를 정한다</li>
-                  <li>후보: 문지기의 방에서 플레이어가 쓴 프롬프트에 자동 공격을 돌리는 에이전트</li>
-                </ul>
-              </div>
-              <div className="card">
-                <h3>오답이 나왔을 때의 대응 설계</h3>
-                <ul>
-                  <li>문이 열리는지는 제출한 값을 코드가 대조해서만 판정한다</li>
-                  <li>근거 문서가 없으면 "자료 없음"으로 답한다</li>
-                  <li>환각의 방의 지어낸 설명은 미리 정해 둔다. 실제 환각에 맡기면 풀 수 없는 문제가 나올 수 있다</li>
-                  <li>환각의 방은 맞은 건수만 알려 주고 어느 건이 틀렸는지는 알려 주지 않는다. 찍어서 통과하는 것을 막는다</li>
-                  <li>스키마 검증에 실패하면 한 번 다시 요청하고, 또 실패하면 정해 둔 안전 응답을 보낸다</li>
-                  <li>호출 한도 초과와 시간 초과는 화면에 원인과 다시 시도 방법을 알린다</li>
-                </ul>
-              </div>
-            </div>
-
-            <h3 className="sub-h">비주얼·음성·음악과 개발 도구</h3>
-            <div className="tablewrap">
-              <table className="stack">
-                <thead>
-                  <tr>
-                    <th>요소</th>
-                    <th>지금 프로토타입</th>
-                    <th>이후 계획</th>
-                    <th>쓸 도구</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {MEDIA.map((m) => (
-                    <tr key={m.item}>
-                      <td data-label="요소">{m.item}</td>
-                      <td data-label="지금">{m.now}</td>
-                      <td data-label="이후 계획">{m.next}</td>
-                      <td data-label="쓸 도구">{m.tool}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
             </div>
           </div>
         </section>
@@ -573,6 +260,48 @@ export default function Team() {
                   </li>
                 </ul>
               </div>
+              <div className="card">
+                <h3>오답이 나왔을 때의 대응 설계</h3>
+                <ul>
+                  <li>문이 열리는지는 제출한 값을 코드가 대조해서만 판정한다</li>
+                  <li>근거 문서가 없으면 "자료 없음"으로 답한다</li>
+                  <li>환각의 방의 지어낸 설명은 미리 정해 둔다. 실제 환각에 맡기면 풀 수 없는 문제가 나올 수 있다</li>
+                  <li>환각의 방은 맞은 건수만 알려 주고 어느 건이 틀렸는지는 알려 주지 않는다. 찍어서 통과하는 것을 막는다</li>
+                  <li>스키마 검증에 실패하면 한 번 다시 요청하고, 또 실패하면 정해 둔 안전 응답을 보낸다</li>
+                  <li>호출 한도 초과와 시간 초과는 화면에 원인과 다시 시도 방법을 알린다</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="media">
+          <div className="wrap">
+            <div className="sec-head">
+              <div className="eyebrow">확장 계획</div>
+              <h2>비주얼·음성·음악과 개발 도구</h2>
+            </div>
+            <div className="tablewrap">
+              <table className="stack">
+                <thead>
+                  <tr>
+                    <th>요소</th>
+                    <th>지금 프로토타입</th>
+                    <th>이후 계획</th>
+                    <th>쓸 도구</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MEDIA.map((m) => (
+                    <tr key={m.item}>
+                      <td data-label="요소">{m.item}</td>
+                      <td data-label="지금">{m.now}</td>
+                      <td data-label="이후 계획">{m.next}</td>
+                      <td data-label="쓸 도구">{m.tool}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -663,19 +392,27 @@ export default function Team() {
             </div>
             <div className="cols gap-top">
               <div className="card">
-                <h3>
-                  팀원 역할 <Todo>팀 확정 필요</Todo>
-                </h3>
-                <ul>
-                  <li>프런트엔드와 화면 설계</li>
-                  <li>백엔드와 LLM 연동</li>
-                  <li>데이터와 분석 페이지</li>
-                  <li>방 시나리오와 프롬프트</li>
-                  <li>품질 점검과 발표</li>
-                </ul>
+                <h3>팀원 역할 {TEAM.members.length === 0 && <Todo>팀 확정 필요</Todo>}</h3>
+                {TEAM.members.length > 0 ? (
+                  <ul>
+                    {TEAM.members.map((m) => (
+                      <li key={m.name}>
+                        <b>{m.name}</b> {m.role}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <ul>
+                    <li>프런트엔드와 화면 설계</li>
+                    <li>백엔드와 LLM 연동</li>
+                    <li>데이터와 분석 페이지</li>
+                    <li>방 시나리오와 프롬프트</li>
+                    <li>품질 점검과 발표</li>
+                  </ul>
+                )}
               </div>
               <div className="card">
-                <h3>주소 3가지</h3>
+                <h3>발표 자료에 넣을 주소</h3>
                 <ul>
                   {LINKS.map((l) => (
                     <li key={l.label}>

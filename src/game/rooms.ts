@@ -1,4 +1,4 @@
-// 방 구성. 팀 페이지의 표와 수장고 지도가 모두 이 목록을 쓴다.
+// 방 구성. 아이디어 공유 페이지의 표와 수장고 지도가 모두 이 목록을 쓴다.
 export interface Quiz {
   question: string
   options: string[]
