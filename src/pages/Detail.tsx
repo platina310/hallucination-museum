@@ -11,7 +11,7 @@ const CONDITIONS: { condition: string; plan: string; status: Status; statusText:
   { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태를 모두 넣었다. 빈 결과는 "근거 없음"으로 표시', status: 'ok', statusText: '구현' },
   { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 호출. 지금은 정해진 대본으로 답한다', status: 'plan', statusText: '6주차' },
   { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '프런트는 Vercel에 배포했다. 백엔드 Render와 DB Supabase는 6주차', status: 'ok', statusText: '프런트 배포' },
-  { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '로그와 퀴즈 테이블, 서가 문서 임베딩', status: 'plan', statusText: '계획' },
+  { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '실험 로그, 플레이 로그와 퀴즈 테이블, 서가 문서 임베딩', status: 'plan', statusText: '계획' },
   { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '저장소를 만들고 실행 방법을 README에 적었다. 방별 프롬프트와 탈출률 변화는 이어서 기록', status: 'ok', statusText: '저장소 생성' },
   { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 아이디어 공유 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
   { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 정답이 나오는 검색어, 오래된 문서가 걸려 틀리는 검색어, 자료 없음이 나오는 검색어', status: 'plan', statusText: '대본으로 시연 가능' },
@@ -27,7 +27,7 @@ const GRADING: { item: string; weight: string; show: string }[] = [
   { item: '시스템 기능 설계·구현', weight: '30%', show: '방마다 다른 AI 활용 방식, 코드 판정 구조, 응답 검증과 오류 대응' },
   { item: 'Needs 파악·문제 정의', weight: '20%', show: 'AI 기초 교육 수요, Gandalf와의 비교, 입장 전후 퀴즈로 잰 학습 효과' },
   { item: 'UI/UX·사용성', weight: '20%', show: '임무와 다음 수 안내, PC·모바일 대응, 로딩·오류·빈 결과 처리, 고친 사례' },
-  { item: '데이터·API 활용', weight: '10%', show: '플레이 로그와 퀴즈 응답, 개념별로 막히는 지점 분석' },
+  { item: '데이터·API 활용', weight: '10%', show: '공개 공격문 약 27만 9천 건의 수법 분류, 자동 실험의 방어 전후 유출률, 플레이 로그' },
   { item: '성능·보안 등 비기능', weight: '10%', show: '응답 속도와 호출 비용 실측, 키와 개인정보 보호, 남은 한계' },
   { item: '팀 페이지·배포·발표·시연', weight: '10%', show: '배포 주소 3가지, 방 하나를 실시간으로 탈출, RAG 3건' },
 ]

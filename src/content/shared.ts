@@ -17,28 +17,20 @@ export const TEAM: { name: string; members: string[] } = {
 
 export const DATASETS: { name: string; origin: string; content: string; use: string; status: Status; statusText: string }[] = [
   {
-    name: '플레이 로그',
-    origin: '자체 수집. 반 공개 플레이',
-    content: '닉네임, 방, 입력, 응답, 시도 횟수, 힌트 사용, 탈출 여부, 걸린 시간',
-    use: '어떤 개념에서 막히는지 분석',
-    status: 'plan',
-    statusText: '6주차부터 수집',
-  },
-  {
-    name: '퀴즈 응답',
-    origin: '자체 수집. 방마다 입장 전과 탈출 후',
-    content: '같은 문제에 대한 두 번의 답',
-    use: '학습 효과 측정',
-    status: 'plan',
-    statusText: '6주차부터 수집',
-  },
-  {
-    name: '영어 공격문',
+    name: '공개 공격문',
     origin: 'Lakera Mosscap 데이터셋. Hugging Face, MIT 라이선스',
-    content: 'DEF CON 31 게임에 제출된 프롬프트 공격문',
-    use: '지시의 방 수법 비교, 문지기의 방 자동 공격 자료',
+    content: 'DEF CON 31 게임에 제출된 프롬프트 약 27만 9천 건. 방어 레벨, 프롬프트, AI의 답이 함께 있다',
+    use: '주 데이터. 공격 수법 분류와 자동 실험의 입력',
     status: 'plan',
-    statusText: '내려받기 예정',
+    statusText: '6주차 정제',
+  },
+  {
+    name: '자동 실험 로그',
+    origin: '자체 생성. 공격문 표본을 우리 문지기에 그대로 입력',
+    content: '공격문, 수법 유형, 문지기의 답, 암호 유출 여부',
+    use: '수법별 유출률. 방어를 고치기 전과 후 비교',
+    status: 'plan',
+    statusText: '6주차부터',
   },
   {
     name: '방 자료',
@@ -48,12 +40,20 @@ export const DATASETS: { name: string; origin: string; content: string; use: str
     status: 'ok',
     statusText: '방 3개 초안',
   },
+  {
+    name: '플레이 로그와 퀴즈 응답',
+    origin: '자체 수집. 반 공개 플레이',
+    content: '닉네임, 방, 입력, 시도 횟수, 힌트 사용, 입장 전후 퀴즈 답',
+    use: '보조 자료. 사람이 실제로 막히는 지점 확인',
+    status: 'plan',
+    statusText: '6주차부터 수집',
+  },
 ]
 
 export const SCHEDULE: { week: number; topic: string; todo: string }[] = [
   { week: 5, topic: 'RAG', todo: '아이디어 공유. 서가의 방 낱말 검색을 임베딩 검색으로 바꾸기' },
-  { week: 6, topic: 'Claude Code', todo: '방 1~3을 FastAPI와 Gemini에 연결. 로그와 퀴즈 저장. 반에 링크 공개' },
-  { week: 7, topic: 'MCP와 품질 개선', todo: '분석 페이지. 속도·비용·보안 점검. 여유가 있으면 방 4~5' },
+  { week: 6, topic: 'Claude Code', todo: '방 1~3을 FastAPI와 Gemini에 연결. 공개 공격문 정제와 자동 실험. 반에 링크 공개' },
+  { week: 7, topic: 'MCP와 품질 개선', todo: '분석 페이지(수법 분류, 방어 전후 유출률). 속도·비용·보안 점검. 여유가 있으면 방 4~5' },
   { week: 8, topic: '기말 발표', todo: '팀 페이지로 발표 15분, 질의응답 5분' },
 ]
 
