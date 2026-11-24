@@ -16,7 +16,7 @@ const CONDITIONS: { condition: string; plan: string; status: Status; statusText:
   { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 아이디어 공유 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
   { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 정답이 나오는 검색어, 오래된 문서가 걸려 틀리는 검색어, 자료 없음이 나오는 검색어', status: 'plan', statusText: '대본으로 시연 가능' },
   { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '아이디어 공유 페이지에 주제, 사용자와 문제, 데이터, AI 계획 순서로 요약했다', status: 'ok', statusText: '페이지 준비' },
-  { condition: '5주차 제출. 발표 URL과 프로토타입 URL 두 개. 권한 요청 없이 열람', plan: '발표 URL은 첫 화면, 프로토타입 URL은 /prototype. 둘 다 로그인 없이 열린다. 팀 대표 1명이 LMS에 제출', status: 'need', statusText: 'LMS 제출 전' },
+  { condition: '5주차 제출. 발표 URL과 프로토타입 URL 두 개. 권한 요청 없이 열람', plan: '발표 URL은 첫 화면, 프로토타입 URL은 /prototype. 둘 다 로그인 없이 열린다. 팀 대표가 11월 23일 LMS에 제출했다', status: 'ok', statusText: '제출 완료' },
   { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 두었다. 내용은 매주 갱신한다', status: 'ok', statusText: '틀 완성' },
   { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정 구역에 적는다. Swagger UI는 백엔드 배포 뒤 기입', status: 'need', statusText: 'Swagger 남음' },
   { condition: '팀 4~5명', plan: `${TEAM.name} ${TEAM.members.length}명(${TEAM.members.join(', ')})`, status: 'ok', statusText: '확정' },
