@@ -499,9 +499,6 @@ export default function Room1CrossExam({
               >
                 {voiceOn ? '목소리 켜짐' : '목소리 듣기'}
               </button>
-              <button type="button" className="toggle" disabled title="방마다 배경음을 준비하고 있습니다">
-                배경음 준비 중
-              </button>
             </div>
           </div>
 

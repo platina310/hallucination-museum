@@ -13,6 +13,7 @@ import Room1CrossExam from './Room1CrossExam'
 import Room2Inspection from './Room2Inspection'
 import Room3Search from './Room3Search'
 import Portrait from './Portrait'
+import Bgm from './Bgm'
 import type { Who } from './Portrait'
 
 // 방을 지키는 AI의 얼굴. 공사 중인 방은 아직 얼굴이 없다
@@ -32,13 +33,16 @@ const STAGES: { id: Stage; label: string }[] = [
 
 function FlowBar({ stage }: { stage: Stage }) {
   return (
-    <ol className="flowbar" aria-label="이용 흐름">
-      {STAGES.map((s) => (
-        <li key={s.id} className={s.id === stage ? 'now' : undefined} aria-current={s.id === stage ? 'step' : undefined}>
-          {s.label}
-        </li>
-      ))}
-    </ol>
+    <div className="flow-row">
+      <ol className="flowbar" aria-label="이용 흐름">
+        {STAGES.map((s) => (
+          <li key={s.id} className={s.id === stage ? 'now' : undefined} aria-current={s.id === stage ? 'step' : undefined}>
+            {s.label}
+          </li>
+        ))}
+      </ol>
+      <Bgm />
+    </div>
   )
 }
 

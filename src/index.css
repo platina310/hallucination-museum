@@ -570,3 +570,7 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
 .act:disabled{opacity:.4;cursor:not-allowed}
 .act:hover:not(:disabled),.act:focus-visible{filter:brightness(1.15)}
 .burst{position:absolute;z-index:2;left:23%;top:9%;transform:translateX(-50%) rotate(-7deg);font-family:var(--f-display);font-weight:800;font-size:clamp(1.5rem,6vw,3.4rem);line-height:1;color:var(--seal);background:rgba(248,249,246,.94);border:5px double var(--seal);border-radius:10px;padding:.12em .3em .18em;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+/* 배경음 단추는 이용 흐름 표시줄 오른쪽에 둔다 */
+.flow-row{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px 12px;margin-bottom:14px}
+.flow-row .flowbar{margin-bottom:0}
+.toggle.bgm{min-height:44px}
