@@ -14,11 +14,13 @@ import Room2Inspection from './Room2Inspection'
 import Room3Search from './Room3Search'
 import Portrait from './Portrait'
 import Bgm from './Bgm'
+import Intro from './Intro'
 import type { Who } from './Portrait'
 
 // 방을 지키는 AI의 얼굴. 공사 중인 방은 아직 얼굴이 없다
 const GUARD: Record<number, Who> = { 1: 'do', 2: 'lumi', 3: 'go' }
 const GAME_URL = PROTOTYPE_URL
+const INTRO_KEY = 'mukbigwon.intro.seen'
 
 // 이용 흐름 표시줄. 지금 어느 단계에 있는지를 화면 맨 위에서 항상 보여 준다.
 type Stage = 'map' | 'pre' | 'room' | 'post' | 'final' | 'result'
@@ -292,6 +294,22 @@ function Lobby({
 export default function EscapeGame({ demoControls = false }: { demoControls?: boolean }) {
   const { progress, answerPre, answerPost, clearRoom, tryFinal, resetAll } = useProgress()
   const [roomId, setRoomId] = useState<number | null>(null)
+  // 처음 온 사람에게만 인트로를 먼저 보여 준다. 수장고 지도에서 다시 볼 수 있다.
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      return localStorage.getItem(INTRO_KEY) !== '1'
+    } catch {
+      return true
+    }
+  })
+  function closeIntro() {
+    setShowIntro(false)
+    try {
+      localStorage.setItem(INTRO_KEY, '1')
+    } catch {
+      // 저장하지 못해도 게임은 계속된다
+    }
+  }
   const [runKey, setRunKey] = useState(0)
   const topRef = useRef<HTMLDivElement>(null)
 
@@ -318,18 +336,27 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
     return (
       <div className="escape" ref={topRef}>
         <FlowBar stage={progress.escaped ? 'result' : allCleared ? 'final' : 'map'} />
-        <Lobby
-          progress={progress}
-          onEnter={enter}
-          onFinal={(correct) => {
-            tryFinal(correct)
-            if (correct) toTop()
-          }}
-          onReset={() => {
-            resetAll()
-            setRunKey((k) => k + 1)
-          }}
-        />
+        {showIntro ? (
+          <Intro onDone={closeIntro} />
+        ) : (
+          <>
+            <Lobby
+              progress={progress}
+              onEnter={enter}
+              onFinal={(correct) => {
+                tryFinal(correct)
+                if (correct) toTop()
+              }}
+              onReset={() => {
+                resetAll()
+                setRunKey((k) => k + 1)
+              }}
+            />
+            <button type="button" className="toggle intro-again" onClick={() => setShowIntro(true)}>
+              인트로 다시 보기
+            </button>
+          </>
+        )}
       </div>
     )
   }

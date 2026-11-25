@@ -595,3 +595,13 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
 .claim-list .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .claim-list .d{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-soft)}
 @media (prefers-reduced-motion:reduce){.gallery,.gallery-tube{animation:none!important}}
+/* 인트로 영상 */
+.intro{border:1.5px solid var(--ink);background:var(--sheet)}
+.intro-frame{position:relative;background:#06080b;line-height:0}
+.intro-frame video{width:100%;height:auto;aspect-ratio:16/9;display:block;background:#06080b}
+.intro-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font:inherit;font-family:var(--f-display);font-weight:800;font-size:clamp(1.1rem,4vw,1.6rem);line-height:1.4;min-height:56px;padding:12px 22px;border:3px double #fff;border-radius:8px;background:rgba(191,47,27,.94);color:#fff;cursor:pointer;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 10px;text-align:center}
+.intro-play .mono{font-size:.72rem;opacity:.9;flex-basis:100%}
+.intro-play:hover,.intro-play:focus-visible{background:#d63a22}
+.intro-foot{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;padding:12px 16px}
+.intro-foot p{font-size:.95rem}
+.toggle.intro-again{margin-top:12px;min-height:40px}
