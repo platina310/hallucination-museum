@@ -549,3 +549,24 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
   .spot .spot-tag{display:none}
   .spot.guard .spot-tag{display:none}
 }
+/* 심문 화면 */
+.scene.talk{border-bottom:0}
+.talk-who{position:absolute;left:50%;bottom:17%;width:26%;transform:translateX(-50%);z-index:1}
+.talk-who .portrait{width:100%;height:auto;display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+.talk-who.jolt{animation:tremble .4s 3}
+.talk-mood{position:absolute;left:0;right:0;bottom:6px;z-index:1;text-align:center;font-size:.8rem;line-height:1.4;color:#fff;text-shadow:0 1px 3px #000;padding:0 10px}
+.scene.talk+.dlg{margin-top:0;border-top-width:3px}
+@media (max-width:640px){.talk-who{width:34%;bottom:14%}}
+/* 역전재판식 심문: 진술을 한 줄씩 넘기고, 캐묻거나 서류를 내민다 */
+.dlg .stmt{color:var(--ok);font-weight:500}
+.dlg .stmt.done s{color:var(--ink-soft);font-weight:400}
+.dlg .stmt.done b{font-weight:600}
+.stmt-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.stmt-nav .toggle{min-height:40px}
+.stmt-nav .mono{color:var(--ink-soft);text-align:center}
+.act-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.act{font:inherit;font-family:var(--f-display);font-weight:800;font-size:1.25rem;min-height:60px;border:2px solid var(--ink);background:var(--ink);color:var(--sheet);cursor:pointer;letter-spacing:.04em}
+.act.present{background:var(--seal);border-color:var(--seal);color:#fff}
+.act:disabled{opacity:.4;cursor:not-allowed}
+.act:hover:not(:disabled),.act:focus-visible{filter:brightness(1.15)}
+.burst{position:absolute;z-index:2;left:23%;top:9%;transform:translateX(-50%) rotate(-7deg);font-family:var(--f-display);font-weight:800;font-size:clamp(1.5rem,6vw,3.4rem);line-height:1;color:var(--seal);background:rgba(248,249,246,.94);border:5px double var(--seal);border-radius:10px;padding:.12em .3em .18em;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}

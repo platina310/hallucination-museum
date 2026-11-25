@@ -29,15 +29,13 @@ const SPOTS: Spot[] = [
 ]
 const DRAWER = { x: 56, y: 76, w: 17, h: 15 }
 
-function prefersCalm(): boolean {
-  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-}
-
 export default function GuardRoom({
   files,
   found,
   drawerOpen,
   face,
+  calm,
+  onCalm,
   onFind,
   onDrawerOpen,
   onTalk,
@@ -46,6 +44,8 @@ export default function GuardRoom({
   found: string[]
   drawerOpen: boolean
   face: Face
+  calm: boolean // 깜빡임과 그림자 끄기. 심문 화면과 같이 쓴다
+  onCalm: (v: boolean) => void
   onFind: (fileId: string) => void
   onDrawerOpen: () => void
   onTalk: () => void
@@ -55,7 +55,6 @@ export default function GuardRoom({
   const [atDrawer, setAtDrawer] = useState(false)
   const [code, setCode] = useState('')
   const [wrong, setWrong] = useState('')
-  const [calm, setCalm] = useState(prefersCalm) // 깜빡임과 그림자 끄기
   const [shade, setShade] = useState(false) // 창밖을 스치는 그림자
   const shadeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -201,7 +200,7 @@ export default function GuardRoom({
           <button type="button" className="toggle" aria-pressed={showSpots} onClick={() => setShowSpots((v) => !v)}>
             살펴볼 곳 표시
           </button>
-          <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
+          <button type="button" className="toggle" aria-pressed={calm} onClick={() => onCalm(!calm)}>
             깜빡임 끄기
           </button>
         </span>

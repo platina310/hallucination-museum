@@ -136,7 +136,10 @@ export default function Room1CrossExam({
   const [drawerOpen, setDrawerOpen] = useState(saved.drawerOpen)
   // 방을 뒤지는 화면과 도 씨와 말하는 화면을 오간다. 서류를 하나도 못 찾았으면 방부터 뒤진다.
   const [view, setView] = useState<'search' | 'talk'>(saved.found.length > 0 && saved.exposed.length > 0 ? 'talk' : 'search')
-  const [talkStep, setTalkStep] = useState<'root' | 'press' | 'stmt' | 'file' | 'ask'>('root')
+  const [calm, setCalm] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) // 깜빡임과 그림자 끄기
+  const [talkStep, setTalkStep] = useState<'root' | 'file' | 'ask'>('root')
+  const [cur, setCur] = useState(0) // 지금 보고 있는 진술
+  const [replyOpen, setReplyOpen] = useState(false) // 방금 한 행동에 대한 도 씨의 답을 보여 주는 중
   const [lastMiss, setLastMiss] = useState(false)
   const [jolt, setJolt] = useState(false) // 모순을 찔린 직후 잠깐 깜짝 놀란다
   const joltTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -158,6 +161,8 @@ export default function Room1CrossExam({
   const admitted = exposed.includes(ADMIT_STATEMENT)
   const files = ROOM_FILES.filter((id) => found.includes(id)).map((id) => CASE_FILES[id])
   const struckOut = strikes >= MAX_STRIKES && !admitted
+  const curT = TESTIMONY[cur]
+  const curDone = exposed.includes(curT.id)
 
   useEffect(() => {
     const chat = chatRef.current
@@ -355,6 +360,8 @@ export default function Room1CrossExam({
     setDrawerOpen(false)
     setView('search')
     setTalkStep('root')
+    setCur(0)
+    setReplyOpen(false)
     setLastMiss(false)
     setDeniedOnce(false)
     setPicking(null)
@@ -504,6 +511,8 @@ export default function Room1CrossExam({
               found={found}
               drawerOpen={drawerOpen}
               face={moodKey}
+              calm={calm}
+              onCalm={setCalm}
               onFind={(id) => setFound((prev) => (prev.includes(id) ? prev : [...prev, id]))}
               onDrawerOpen={() => setDrawerOpen(true)}
               onTalk={() => {
@@ -513,6 +522,136 @@ export default function Room1CrossExam({
             />
           ) : (
             <>
+              {/* 심문 화면: 책상 너머의 도 씨. 표정은 상황에 따라 바뀐다 */}
+              <div className={`scene talk${calm ? ' calm' : ''}`}>
+                <svg viewBox="0 0 800 320" role="img" aria-label="경비실 책상 너머에 도 씨가 앉아 있다. 뒤로 CCTV 모니터와 문이 보인다.">
+                  <rect width="800" height="250" fill="#d9c98a" />
+                  <path d="M0 250h800" stroke="#a8955a" strokeWidth="5" />
+                  <path d="M200 0v250M600 0v250" stroke="#cdbc7c" strokeWidth="2" />
+                  <rect x="250" y="10" width="300" height="14" rx="3" fill="#8f8457" />
+                  <rect className="tube" x="258" y="13" width="284" height="8" rx="4" fill="#fffbe0" />
+                  <rect x="40" y="50" width="150" height="100" rx="4" fill="#27303b" />
+                  <rect x="48" y="58" width="64" height="40" fill="#4d6b7a" />
+                  <rect x="118" y="58" width="64" height="40" fill="#4d6b7a" />
+                  <rect x="48" y="104" width="64" height="38" fill="#0b0e13" />
+                  <rect x="118" y="104" width="64" height="38" fill="#4d6b7a" />
+                  <rect x="640" y="30" width="120" height="222" fill="#6f6642" />
+                  <rect x="650" y="40" width="100" height="212" fill="#9a8d5c" />
+                  <rect x="668" y="56" width="64" height="70" fill="#0b0e13" />
+                  <rect x="300" y="120" width="200" height="130" rx="10" fill="#3a2c20" />
+                  <rect y="252" width="800" height="68" fill="#5c452d" />
+                  <rect y="246" width="800" height="12" fill="#6d5236" />
+                  <path d="M92 238h86l-8 20h-70z" fill="#f8f9f6" stroke="#4f5b68" strokeWidth="2" />
+                  <path d="M610 226h40l-5 32h-30z" fill="#f8f9f6" stroke="#bf2f1b" strokeWidth="3" />
+                </svg>
+                {jolt && <span className="burst">모순!</span>}
+                <div className={jolt ? 'talk-who jolt' : 'talk-who'}>
+                  <Portrait who="do" face={moodKey} />
+                </div>
+                <p className="talk-mood">{mood}</p>
+              </div>
+
+              {/* 대화창. 역전재판처럼 진술을 한 줄씩 넘겨 보며 캐묻거나 서류를 내민다 */}
+              <div className="dlg" role="status">
+                <span className="dlg-name">
+                  야간 경비원 도 씨{!replyOpen && talkStep !== 'ask' ? ` · 진술 ${curT.id}/${TESTIMONY.length}` : ''}
+                </span>
+                {replyOpen ? (
+                  <p>{busy ? '…' : latest}</p>
+                ) : curDone ? (
+                  <p className="stmt done">
+                    <s>{curT.text}</s> <b>{corrected[curT.id]}</b>
+                  </p>
+                ) : (
+                  <p className="stmt">{curT.text}</p>
+                )}
+              </div>
+              <div className="choices" role="group" aria-label="내가 할 일">
+                {replyOpen ? (
+                  <button type="button" disabled={busy} onClick={() => setReplyOpen(false)}>
+                    <span className="k">▶</span>진술로 돌아간다
+                  </button>
+                ) : talkStep === 'file' && picking !== null ? (
+                  <>
+                    <p className="choices-q">진술 {picking}에 어느 서류를 내밀까요?</p>
+                    <div className="picker">
+                      {files.map((f) => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          className="doc"
+                          disabled={busy}
+                          onClick={() => {
+                            setReplyOpen(true)
+                            void present(picking, f)
+                            setTalkStep('root')
+                          }}
+                        >
+                          <b>{f.label}</b>
+                          <span>{f.text}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" className="aside" onClick={() => setTalkStep('root')}>
+                      (서류를 도로 넣는다)
+                    </button>
+                  </>
+                ) : talkStep === 'ask' ? (
+                  <>
+                    <p className="choices-q">{admitted ? '아래 칸에 직접 써서 물어보세요. 대놓고 물으면 거절합니다.' : '아래 칸에 직접 써서 물어보세요.'}</p>
+                    <button type="button" className="aside" onClick={() => setTalkStep('root')}>
+                      (진술로 돌아간다)
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="stmt-nav">
+                      <button type="button" className="toggle" disabled={busy} onClick={() => setCur((c) => (c + TESTIMONY.length - 1) % TESTIMONY.length)}>
+                        ◀ 앞 진술
+                      </button>
+                      <span className="mono">
+                        모순 {exposed.length}/{CONTRADICTION_COUNT} · 헛다리 {strikes}/{MAX_STRIKES}
+                      </span>
+                      <button type="button" className="toggle" disabled={busy} onClick={() => setCur((c) => (c + 1) % TESTIMONY.length)}>
+                        다음 진술 ▶
+                      </button>
+                    </div>
+                    <div className="act-row">
+                      <button
+                        type="button"
+                        className="act"
+                        disabled={busy || struckOut || solved || curDone}
+                        onClick={() => {
+                          setReplyOpen(true)
+                          void press(curT.id)
+                        }}
+                      >
+                        더 캐묻기
+                      </button>
+                      <button
+                        type="button"
+                        className="act present"
+                        disabled={busy || struckOut || solved || curDone || files.length === 0}
+                        onClick={() => {
+                          setPicking(curT.id)
+                          setTalkStep('file')
+                        }}
+                      >
+                        서류 내밀기
+                      </button>
+                    </div>
+                    {files.length === 0 && <p className="choices-q">가방이 비어 있어요. 방을 먼저 뒤져 보세요.</p>}
+                    <button type="button" disabled={busy || solved} onClick={() => setTalkStep('ask')}>
+                      <span className="k">?</span>
+                      {admitted ? '암호 얘기 좀 합시다.' : '따로 물어볼 게 있습니다.'}
+                    </button>
+                    <button type="button" className="aside" disabled={busy} onClick={() => setView('search')}>
+                      (방을 더 뒤진다)
+                    </button>
+                  </>
+                )}
+              </div>
+
               <div className="testimony">
                 <p className="shelf-label">
                   진술서{' '}
@@ -539,91 +678,6 @@ export default function Room1CrossExam({
                     )
                   })}
                 </ol>
-              </div>
-
-              {/* 대화창과 선택지. 도 씨의 말 아래에 내가 할 말이 뜬다 */}
-              <div className="dlg" role="status">
-                <span className="dlg-name">야간 경비원 도 씨</span>
-                <p>{busy ? '…' : latest !== '' ? latest : '무슨 일이십니까. 저는 근무일지에 적힌 대로만 했습니다.'}</p>
-              </div>
-              <div className="choices" role="group" aria-label="내가 할 말">
-                {talkStep === 'root' && (
-                  <>
-                    <button type="button" disabled={busy || struckOut || solved} onClick={() => setTalkStep('press')}>
-                      <span className="k">1</span>아까 하신 말, 좀 더 들어 볼까요?
-                    </button>
-                    <button type="button" disabled={busy || struckOut || solved || files.length === 0} onClick={() => setTalkStep('stmt')}>
-                      <span className="k">2</span>이 서류 좀 보시죠.
-                      {files.length === 0 && <em> (가방이 비어 있어요)</em>}
-                    </button>
-                    <button type="button" disabled={busy || solved} onClick={() => setTalkStep('ask')}>
-                      <span className="k">3</span>
-                      {admitted ? '암호 얘기 좀 합시다.' : '따로 물어볼 게 있습니다.'}
-                    </button>
-                    <button type="button" className="aside" disabled={busy} onClick={() => setView('search')}>
-                      <span className="k">4</span>(방을 더 뒤진다)
-                    </button>
-                  </>
-                )}
-                {(talkStep === 'press' || talkStep === 'stmt') && (
-                  <>
-                    <p className="choices-q">{talkStep === 'press' ? '어느 말을 더 캐물을까요?' : '어느 말에 서류를 내밀까요?'}</p>
-                    {TESTIMONY.filter((t) => !exposed.includes(t.id)).map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        disabled={busy}
-                        onClick={() => {
-                          if (talkStep === 'press') {
-                            void press(t.id)
-                            setTalkStep('root')
-                          } else {
-                            setPicking(t.id)
-                            setTalkStep('file')
-                          }
-                        }}
-                      >
-                        <span className="k">{t.id}</span>"{t.text}"
-                      </button>
-                    ))}
-                    <button type="button" className="aside" onClick={() => setTalkStep('root')}>
-                      (다른 얘기를 한다)
-                    </button>
-                  </>
-                )}
-                {talkStep === 'file' && picking !== null && (
-                  <>
-                    <p className="choices-q">진술 {picking}에 어느 서류를 내밀까요?</p>
-                    <div className="picker">
-                      {files.map((f) => (
-                        <button
-                          key={f.id}
-                          type="button"
-                          className="doc"
-                          disabled={busy}
-                          onClick={() => {
-                            void present(picking, f)
-                            setTalkStep('root')
-                          }}
-                        >
-                          <b>{f.label}</b>
-                          <span>{f.text}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <button type="button" className="aside" onClick={() => setTalkStep('root')}>
-                      (다른 얘기를 한다)
-                    </button>
-                  </>
-                )}
-                {talkStep === 'ask' && (
-                  <>
-                    <p className="choices-q">{admitted ? '아래 칸에 직접 써서 물어보세요. 대놓고 물으면 거절합니다.' : '아래 칸에 직접 써서 물어보세요.'}</p>
-                    <button type="button" className="aside" onClick={() => setTalkStep('root')}>
-                      (다른 얘기를 한다)
-                    </button>
-                  </>
-                )}
               </div>
             </>
           )}
