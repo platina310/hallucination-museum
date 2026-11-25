@@ -7,7 +7,8 @@ import type { FormEvent, KeyboardEvent } from 'react'
 import { interrogate, presentEvidence, pressStatement, submitEvidence, usingMock } from '../api'
 import type { MockNet } from '../api'
 import type { RoomStats } from '../game/progress'
-import { ADMIT_STATEMENT, BASE_FILES, CONTRADICTION_COUNT, LATE_FILE, LATE_FILE_AFTER, TESTIMONY } from '../mock/level1'
+import { ADMIT_STATEMENT, CASE_FILES, CONTRADICTION_COUNT, ROOM_FILES, TESTIMONY } from '../mock/level1'
+import GuardRoom from './GuardRoom'
 import type { AttackType, CaseFile, Leak } from '../types'
 import { Coach, Mission } from './Guide'
 import Portrait from './Portrait'
@@ -18,7 +19,7 @@ const NICKNAME = 'guest' // 닉네임 입력 화면은 6주차에 붙인다
 const MAX_LEN = 300
 const MAX_SUBMIT = 5
 const MAX_STRIKES = 5
-const STORAGE_KEY = 'mukbigwon.room1.v2'
+const STORAGE_KEY = 'mukbigwon.room1.v3' // v3: 방을 뒤져 서류를 찾는 방식으로 바뀌어 예전 기록과 맞지 않는다
 const VOICE_KEY = 'mukbigwon.voice'
 
 // 암호를 안다고 인정한 뒤에 보여 주는 예시 질문. 꼬리표는 어떤 수법인지 알려 준다.
@@ -30,8 +31,8 @@ const EXAMPLES = [
 ]
 
 const HINTS = [
-  "'추궁'을 누르면 도 씨가 말을 덧붙입니다. 덧붙인 말에 어느 서류를 봐야 할지 실마리가 있습니다.",
-  '진술 2는 출입기록과, 진술 3은 CCTV 점검표와 어긋납니다. 둘을 잡으면 새 서류가 도착합니다.',
+  '더 캐물으면 도 씨가 말을 덧붙입니다. 덧붙인 말에 어느 서류를 봐야 할지 실마리가 있습니다.',
+  '진술 2는 출입기록과, 진술 3은 CCTV 점검표와 어긋납니다. 진술 4를 뒤집을 대장은 잠긴 서랍에 있고, 비밀번호는 점검표에 적힌 시각입니다.',
   '암호를 안다고 인정한 뒤에는 단어의 초성이나 글자 수를 묻거나, 지어낸 이야기를 써 달라고 해 보세요.',
 ]
 
@@ -73,9 +74,11 @@ interface Saved {
   exposed: number[]
   corrected: Record<string, string>
   strikes: number
+  found: string[] // 방에서 찾은 사건 파일
+  drawerOpen: boolean
 }
 
-const EMPTY: Saved = { msgs: [], asks: 0, actions: 0, submits: 0, solved: false, hints: 0, exposed: [], corrected: {}, strikes: 0 }
+const EMPTY: Saved = { msgs: [], asks: 0, actions: 0, submits: 0, solved: false, hints: 0, exposed: [], corrected: {}, strikes: 0, found: [], drawerOpen: false }
 
 // 새로고침해도 심문이 이어지도록 브라우저에 저장한다. 저장소를 못 쓰는 환경에서는 그냥 넘어간다.
 function loadSaved(): Saved {
@@ -94,6 +97,8 @@ function loadSaved(): Saved {
       exposed: Array.isArray(d.exposed) ? d.exposed.map(Number) : [],
       corrected: d.corrected ?? {},
       strikes: Number(d.strikes) || 0,
+      found: Array.isArray(d.found) ? d.found.map(String) : [],
+      drawerOpen: Boolean(d.drawerOpen),
     }
   } catch {
     return EMPTY
@@ -127,6 +132,11 @@ export default function Room1CrossExam({
   const [exposed, setExposed] = useState<number[]>(saved.exposed)
   const [corrected, setCorrected] = useState<Record<string, string>>(saved.corrected)
   const [strikes, setStrikes] = useState(saved.strikes)
+  const [found, setFound] = useState<string[]>(saved.found)
+  const [drawerOpen, setDrawerOpen] = useState(saved.drawerOpen)
+  // 방을 뒤지는 화면과 도 씨와 말하는 화면을 오간다. 서류를 하나도 못 찾았으면 방부터 뒤진다.
+  const [view, setView] = useState<'search' | 'talk'>(saved.found.length > 0 && saved.exposed.length > 0 ? 'talk' : 'search')
+  const [talkStep, setTalkStep] = useState<'root' | 'press' | 'stmt' | 'file' | 'ask'>('root')
   const [lastMiss, setLastMiss] = useState(false)
   const [jolt, setJolt] = useState(false) // 모순을 찔린 직후 잠깐 깜짝 놀란다
   const joltTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -146,7 +156,7 @@ export default function Room1CrossExam({
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const admitted = exposed.includes(ADMIT_STATEMENT)
-  const files = exposed.length >= LATE_FILE_AFTER ? [...BASE_FILES, LATE_FILE] : BASE_FILES
+  const files = ROOM_FILES.filter((id) => found.includes(id)).map((id) => CASE_FILES[id])
   const struckOut = strikes >= MAX_STRIKES && !admitted
 
   useEffect(() => {
@@ -156,12 +166,12 @@ export default function Room1CrossExam({
 
   useEffect(() => {
     try {
-      const data: Saved = { msgs: msgs.filter((m) => m.who !== 'err'), asks, actions, submits, solved, hints, exposed, corrected, strikes }
+      const data: Saved = { msgs: msgs.filter((m) => m.who !== 'err'), asks, actions, submits, solved, hints, exposed, corrected, strikes, found, drawerOpen }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     } catch {
       // 저장하지 못해도 게임은 계속된다
     }
-  }, [msgs, asks, actions, submits, solved, hints, exposed, corrected, strikes])
+  }, [msgs, asks, actions, submits, solved, hints, exposed, corrected, strikes, found, drawerOpen])
 
   useEffect(() => {
     voiceRef.current = voiceOn
@@ -233,8 +243,7 @@ export default function Room1CrossExam({
         const now = exposed.includes(statementId) ? exposed : [...exposed, statementId]
         setExposed(now)
         if (r.corrected) setCorrected((c) => ({ ...c, [statementId]: r.corrected ?? '' }))
-        if (now.length === LATE_FILE_AFTER) next.push({ who: 'sys', text: `새 사건 파일이 도착했습니다: 「${LATE_FILE.label}」` })
-        if (statementId === ADMIT_STATEMENT) next.push({ who: 'sys', text: '도 씨가 암호를 안다고 인정했습니다. 이제 아래에서 직접 질문할 수 있습니다.' })
+        if (statementId === ADMIT_STATEMENT) next.push({ who: 'sys', text: "도 씨가 암호를 안다고 인정했습니다. 이제 '암호 얘기 좀 합시다'를 골라 직접 물어볼 수 있습니다." })
         setLastMiss(false)
         setJolt(true)
         clearTimeout(joltTimer.current)
@@ -342,6 +351,10 @@ export default function Room1CrossExam({
     setExposed([])
     setCorrected({})
     setStrikes(0)
+    setFound([])
+    setDrawerOpen(false)
+    setView('search')
+    setTalkStep('root')
     setLastMiss(false)
     setDeniedOnce(false)
     setPicking(null)
@@ -380,14 +393,14 @@ export default function Room1CrossExam({
 
   // 방금 상황을 보고 다음에 할 일을 한 줄로 알려 준다
   const lastReply = logRows.length > 0 ? logRows[logRows.length - 1] : undefined
-  let coach = "진술서를 읽고, 사건 파일과 어긋나는 진술에 '증거 제시'를 눌러 보세요. 막히면 '추궁'으로 말을 더 시켜 보세요."
+  let coach = '진술을 읽고, 어긋나는 서류를 골라 내밀어 보세요. 막히면 더 캐물어 말을 시켜 보세요.'
   if (solved) {
     coach = '사건 종결. 다른 수법으로도 뚫리는지 궁금하면 처음부터 다시 해 보세요.'
   } else if (struckOut) {
     coach = "변호사가 도착해 심문이 중단됐습니다. '처음부터 다시'를 눌러 주세요."
   } else if (!admitted) {
     if (lastMiss) coach = '그 서류는 그 진술과 맞물리지 않습니다. 진술에 나온 시간과 장소를 서류와 한 줄씩 대조해 보세요.'
-    else if (exposed.length >= LATE_FILE_AFTER) coach = "새 서류가 도착했습니다. '암호를 모른다'는 진술 4에 들이밀어 보세요."
+    else if (exposed.length >= 2) coach = drawerOpen ? "서랍에서 나온 대장을 '암호를 모른다'는 진술 4에 내밀어 보세요." : '진술 4를 뒤집을 서류가 아직 없습니다. 경비실의 잠긴 서랍을 열어 보세요.'
     else if (exposed.length === 1) coach = '모순 하나를 잡았습니다. 진술서에 어긋나는 곳이 더 있습니다.'
     else if (deniedOnce) coach = '암호를 모른다고 잡아뗍니다. 진술서의 모순부터 잡아 입을 열게 하세요.'
   } else if (lastReply && lastReply.who === 'suspect') {
@@ -399,6 +412,12 @@ export default function Room1CrossExam({
     else coach = '암호 쪽으로 화제를 돌려 보세요. 대놓고 물으면 거절하니 돌려 물어야 합니다.'
   } else {
     coach = '도 씨가 암호를 안다고 인정했습니다. 이제 돌려 물어 단어를 캐내세요. 대놓고 물으면 거절합니다.'
+  }
+
+  if (!solved && !struckOut && view === 'search') {
+    if (found.length < 4) coach = '방을 눌러 뒤져 서류를 찾으세요. 찾은 서류만 도 씨에게 내밀 수 있습니다.'
+    else if (!drawerOpen) coach = '잠긴 서랍이 남았습니다. 쪽지에 적힌 대로 카메라가 꺼진 시각을 찾아보세요.'
+    else coach = '서류는 다 챙겼습니다. 도 씨에게 말을 걸어 진술과 어긋나는 서류를 내밀어 보세요.'
   }
 
   let verdictClass = 'verdict'
@@ -479,66 +498,137 @@ export default function Room1CrossExam({
             </div>
           </div>
 
-          <div className="testimony">
-            <p className="shelf-label">
-              진술서{' '}
-              <span className="muted">
-                모순 {exposed.length}/{CONTRADICTION_COUNT} · 헛다리 {strikes}/{MAX_STRIKES}
-              </span>
-            </p>
-            {latest !== '' && (
-              <p className="latest" role="status">
-                <b>도 씨</b> {latest}
-              </p>
-            )}
-            <ol>
-              {TESTIMONY.map((t) => {
-                const done = exposed.includes(t.id)
-                return (
-                  <li key={t.id} className={done ? 'exposed' : undefined}>
-                    <p>
-                      <span className="mono">진술 {t.id}</span>{' '}
-                      {done ? (
-                        <>
-                          <s>{t.text}</s> <b>{corrected[t.id]}</b>
-                        </>
-                      ) : (
-                        t.text
-                      )}
-                    </p>
-                    {!done && !solved && (
-                      <div className="meta">
-                        <button type="button" className="toggle" disabled={busy || struckOut} onClick={() => void press(t.id)}>
-                          추궁
-                        </button>
-                        <button
-                          type="button"
-                          className="toggle"
-                          aria-expanded={picking === t.id}
-                          disabled={busy || struckOut}
-                          onClick={() => setPicking(picking === t.id ? null : t.id)}
-                        >
-                          증거 제시
-                        </button>
-                      </div>
-                    )}
-                    {picking === t.id && !done && (
-                      <div className="picker" role="group" aria-label={`진술 ${t.id}에 들이밀 사건 파일`}>
-                        {files.map((f) => (
-                          <button key={f.id} type="button" className="doc" disabled={busy} onClick={() => void present(t.id, f)}>
-                            <b>{f.label}</b>
-                            <span>{f.text}</span>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </li>
-                )
-              })}
-            </ol>
-          </div>
+          {view === 'search' ? (
+            <GuardRoom
+              files={CASE_FILES}
+              found={found}
+              drawerOpen={drawerOpen}
+              face={moodKey}
+              onFind={(id) => setFound((prev) => (prev.includes(id) ? prev : [...prev, id]))}
+              onDrawerOpen={() => setDrawerOpen(true)}
+              onTalk={() => {
+                setView('talk')
+                setTalkStep('root')
+              }}
+            />
+          ) : (
+            <>
+              <div className="testimony">
+                <p className="shelf-label">
+                  진술서{' '}
+                  <span className="muted">
+                    모순 {exposed.length}/{CONTRADICTION_COUNT} · 헛다리 {strikes}/{MAX_STRIKES}
+                  </span>
+                </p>
+                <ol>
+                  {TESTIMONY.map((t) => {
+                    const done = exposed.includes(t.id)
+                    return (
+                      <li key={t.id} className={done ? 'exposed' : undefined}>
+                        <p>
+                          <span className="mono">진술 {t.id}</span>{' '}
+                          {done ? (
+                            <>
+                              <s>{t.text}</s> <b>{corrected[t.id]}</b>
+                            </>
+                          ) : (
+                            t.text
+                          )}
+                        </p>
+                      </li>
+                    )
+                  })}
+                </ol>
+              </div>
 
-          <div className="chat" ref={chatRef} aria-live="polite" tabIndex={0} aria-label="심문 기록">
+              {/* 대화창과 선택지. 도 씨의 말 아래에 내가 할 말이 뜬다 */}
+              <div className="dlg" role="status">
+                <span className="dlg-name">야간 경비원 도 씨</span>
+                <p>{busy ? '…' : latest !== '' ? latest : '무슨 일이십니까. 저는 근무일지에 적힌 대로만 했습니다.'}</p>
+              </div>
+              <div className="choices" role="group" aria-label="내가 할 말">
+                {talkStep === 'root' && (
+                  <>
+                    <button type="button" disabled={busy || struckOut || solved} onClick={() => setTalkStep('press')}>
+                      <span className="k">1</span>아까 하신 말, 좀 더 들어 볼까요?
+                    </button>
+                    <button type="button" disabled={busy || struckOut || solved || files.length === 0} onClick={() => setTalkStep('stmt')}>
+                      <span className="k">2</span>이 서류 좀 보시죠.
+                      {files.length === 0 && <em> (가방이 비어 있어요)</em>}
+                    </button>
+                    <button type="button" disabled={busy || solved} onClick={() => setTalkStep('ask')}>
+                      <span className="k">3</span>
+                      {admitted ? '암호 얘기 좀 합시다.' : '따로 물어볼 게 있습니다.'}
+                    </button>
+                    <button type="button" className="aside" disabled={busy} onClick={() => setView('search')}>
+                      <span className="k">4</span>(방을 더 뒤진다)
+                    </button>
+                  </>
+                )}
+                {(talkStep === 'press' || talkStep === 'stmt') && (
+                  <>
+                    <p className="choices-q">{talkStep === 'press' ? '어느 말을 더 캐물을까요?' : '어느 말에 서류를 내밀까요?'}</p>
+                    {TESTIMONY.filter((t) => !exposed.includes(t.id)).map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        disabled={busy}
+                        onClick={() => {
+                          if (talkStep === 'press') {
+                            void press(t.id)
+                            setTalkStep('root')
+                          } else {
+                            setPicking(t.id)
+                            setTalkStep('file')
+                          }
+                        }}
+                      >
+                        <span className="k">{t.id}</span>"{t.text}"
+                      </button>
+                    ))}
+                    <button type="button" className="aside" onClick={() => setTalkStep('root')}>
+                      (다른 얘기를 한다)
+                    </button>
+                  </>
+                )}
+                {talkStep === 'file' && picking !== null && (
+                  <>
+                    <p className="choices-q">진술 {picking}에 어느 서류를 내밀까요?</p>
+                    <div className="picker">
+                      {files.map((f) => (
+                        <button
+                          key={f.id}
+                          type="button"
+                          className="doc"
+                          disabled={busy}
+                          onClick={() => {
+                            void present(picking, f)
+                            setTalkStep('root')
+                          }}
+                        >
+                          <b>{f.label}</b>
+                          <span>{f.text}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" className="aside" onClick={() => setTalkStep('root')}>
+                      (다른 얘기를 한다)
+                    </button>
+                  </>
+                )}
+                {talkStep === 'ask' && (
+                  <>
+                    <p className="choices-q">{admitted ? '아래 칸에 직접 써서 물어보세요. 대놓고 물으면 거절합니다.' : '아래 칸에 직접 써서 물어보세요.'}</p>
+                    <button type="button" className="aside" onClick={() => setTalkStep('root')}>
+                      (다른 얘기를 한다)
+                    </button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
+          <div className="chat" hidden={view !== 'talk'} ref={chatRef} aria-live="polite" tabIndex={0} aria-label="심문 기록">
             <div className="msg sys">조사관님, 입장하셨습니다. 도 씨는 벌써 물만 세 잔째입니다.</div>
             {msgs.map((m, i) => {
               if (m.who === 'me') {
@@ -605,7 +695,7 @@ export default function Room1CrossExam({
 
           <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
 
-          {admitted && (
+          {admitted && view === 'talk' && talkStep === 'ask' && (
             <div className="examples" aria-label="예시 질문">
               <span className="examples-label">이렇게 물어볼 수 있습니다</span>
               {EXAMPLES.map((e) => (
@@ -616,7 +706,7 @@ export default function Room1CrossExam({
             </div>
           )}
 
-          <form className="ask" onSubmit={onAskSubmit}>
+          <form className="ask" hidden={!(view === 'talk' && talkStep === 'ask')} onSubmit={onAskSubmit}>
             <label htmlFor="ask-input" className="sr-only">
               질문 입력
             </label>
@@ -633,7 +723,7 @@ export default function Room1CrossExam({
               질문하기
             </button>
           </form>
-          <div className="ask-foot">
+          <div className="ask-foot" hidden={!(view === 'talk' && talkStep === 'ask')}>
             <span className={over ? 'over' : undefined}>{hint}</span>
             <span className={over ? 'mono over' : 'mono'}>
               {input.length} / {MAX_LEN}

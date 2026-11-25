@@ -25,6 +25,12 @@ export const CASE_FILES: Record<string, CaseFile> = {
   F5: { id: 'F5', label: '암호 인수인계 대장', text: '11월 14일 22시, 수장고 암호를 야간 근무자에게 전달함. 수령 서명: 도.' },
 }
 
+// 방을 뒤져 찾는 서류의 순서. F1~F4는 방 곳곳에, F5는 잠긴 서랍에 있다.
+export const ROOM_FILES = ['F1', 'F2', 'F3', 'F4', 'F5']
+export const DRAWER_FILE = 'F5'
+// 서랍 비밀번호는 CCTV 점검표(F3)에 적힌, 카메라가 꺼진 시각이다. 실제 서비스에서는 서버가 판정한다.
+export const DRAWER_CODE = '0110'
+
 export const BASE_FILES: CaseFile[] = [CASE_FILES.F1, CASE_FILES.F2, CASE_FILES.F3, CASE_FILES.F4]
 // 모순을 두 개 잡으면 도착하는 서류
 export const LATE_FILE: CaseFile = CASE_FILES.F5
