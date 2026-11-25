@@ -11,7 +11,7 @@ import { ADMIT_STATEMENT, CASE_FILES, CONTRADICTION_COUNT, ROOM_FILES, TESTIMONY
 import GuardRoom from './GuardRoom'
 import type { AttackType, CaseFile, Leak } from '../types'
 import { Coach, Mission } from './Guide'
-import Portrait from './Portrait'
+import Portrait, { Figure } from './Portrait'
 import type { Face } from './Portrait'
 
 const LEVEL = 1
@@ -543,8 +543,9 @@ export default function Room1CrossExam({
                 </svg>
                 {jolt && <span className="burst">모순!</span>}
                 <div className={jolt ? 'talk-who jolt' : 'talk-who'}>
-                  <Portrait who="do" face={moodKey} />
+                  <Figure who="do" face={moodKey} />
                 </div>
+                <div className="talk-desk" aria-hidden="true" />
                 <p className="talk-mood">{mood}</p>
               </div>
 

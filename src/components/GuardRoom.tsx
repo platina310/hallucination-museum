@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { CaseFile } from '../types'
 import { DRAWER_CODE, DRAWER_FILE, ROOM_FILES } from '../mock/level1'
-import Portrait from './Portrait'
+import { Figure } from './Portrait'
 import type { Face } from './Portrait'
 
 // 방 안의 살펴볼 곳. 자리는 그림 크기에 대한 백분율이다.
@@ -165,8 +165,8 @@ export default function GuardRoom({
         </svg>
 
         {/* 도 씨는 책상 뒤에 앉아 있다. 누르면 말을 건다 */}
-        <button type="button" className="spot guard" style={{ left: '5%', top: '46%', width: '14%', height: '30%' }} onClick={onTalk}>
-          <Portrait who="do" face={face} />
+        <button type="button" className="spot guard" style={{ left: '23.500%', top: '27%', width: '15%', height: '33.500%' }} onClick={onTalk}>
+          <Figure who="do" face={face} />
           <span className="spot-tag">도 씨에게 말 걸기</span>
         </button>
         {SPOTS.map((s) => (

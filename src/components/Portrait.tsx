@@ -228,3 +228,60 @@ export default function Portrait({ who, face, size }: { who: Who; face: Face; si
     </svg>
   )
 }
+
+/** 몸통. 역전재판처럼 책상 너머에 서 있는 상반신을 그릴 때 쓴다. */
+function body(who: Who): ReactNode {
+  const neck = <path d="M92 112h16v32H92z" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="3" />
+  if (who === 'do')
+    return (
+      <>
+        {neck}
+        <path d="M20 250c0-54 20-94 64-106l16 16 16-16c44 12 64 52 64 106z" fill="var(--ink)" />
+        <path d="M84 144l16 22 16-22-8-6H92z" fill="var(--sheet)" />
+        <path d="M95 160h10l4 46-9 12-9-12z" fill="var(--seal)" />
+        <path d="M38 178l28-13M162 178l-28-13" stroke="var(--mark)" strokeWidth="7" strokeLinecap="round" />
+        <circle cx="134" cy="198" r="9" fill="var(--mark)" stroke="var(--sheet)" strokeWidth="2" />
+        <path d="M52 250c2-24 6-40 11-54M148 250c-2-24-6-40-11-54" stroke="var(--ink-soft)" strokeWidth="2.5" fill="none" />
+      </>
+    )
+  if (who === 'lumi')
+    return (
+      <>
+        {neck}
+        <path d="M24 250c0-54 20-92 62-104l14 12 14-12c42 12 62 50 62 104z" fill="var(--ink-soft)" />
+        <path d="M76 140q24 18 48 0l6 16q-30 20-60 0z" fill="var(--seal)" />
+        <path d="M108 152l10 44 12-8-9-40z" fill="var(--seal)" />
+        <path d="M100 196v54" stroke="var(--ink)" strokeWidth="2.5" />
+      </>
+    )
+  return (
+    <>
+      {neck}
+      <path d="M22 250c0-54 20-92 62-104l16 14 16-14c42 12 62 50 62 104z" fill="var(--ink-soft)" />
+      <path d="M82 144l18 16 18-16 8 106H74z" fill="var(--sheet)" />
+      <path d="M100 160l-18-11v22zM100 160l18-11v22z" fill="var(--seal)" />
+      <circle cx="100" cy="160" r="5" fill="var(--ink)" />
+      <path d="M100 176v74" stroke="var(--rule)" strokeWidth="2.5" />
+    </>
+  )
+}
+
+/** 상반신 그림. 동그란 초상 대신 장면 안에 사람으로 세울 때 쓴다. 표정은 초상과 같다. */
+export function Figure({ who, face }: { who: Who; face: Face }) {
+  return (
+    <svg className={`figure ${face}`} viewBox="0 0 200 250" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}`}>
+      {body(who)}
+      <g transform="translate(23.2 6) scale(1.6)">
+        {/* 표정이 바뀔 때마다 새로 그려 움찔하는 움직임을 준다 */}
+        <g key={face} className="pop">
+          {who === 'lumi' && <path d="M25 56c-3-24 8-39 23-39s26 15 23 39c-.5 7-2 12-4 15H29c-2-3-3.5-8-4-15z" fill="var(--ink)" />}
+          <circle cx="29.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
+          <circle cx="66.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
+          <ellipse cx="48" cy="51" rx="18.5" ry="20.5" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="2" />
+          {features(face)}
+          {front(who, face)}
+        </g>
+      </g>
+    </svg>
+  )
+}

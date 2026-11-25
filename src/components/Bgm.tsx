@@ -1,14 +1,15 @@
-// 배경음 켜기·끄기. 브라우저는 사용자가 누르기 전에는 소리를 못 내므로 처음에는 꺼져 있다.
+// 배경음 켜기·끄기. 끄지 않았다면 첫 조작 때부터 나오고, 끈 사람은 다음에 와도 꺼져 있다.
 import { useEffect, useState } from 'react'
-import { bgmPlayer, bgmPlaying } from '../game/bgmPlayer'
+import { armBgm, bgmPlayer, bgmWanted, setBgmWanted } from '../game/bgmPlayer'
 
 export default function Bgm() {
-  const [on, setOn] = useState(bgmPlaying)
-  const [failed, setFailed] = useState(false)
+  const [wanted, setWanted] = useState(bgmWanted)
+  const [playing, setPlaying] = useState(() => !bgmPlayer().paused)
 
   useEffect(() => {
+    armBgm()
     const p = bgmPlayer()
-    const sync = () => setOn(!p.paused)
+    const sync = () => setPlaying(!p.paused)
     p.addEventListener('play', sync)
     p.addEventListener('pause', sync)
     return () => {
@@ -17,23 +18,18 @@ export default function Bgm() {
     }
   }, [])
 
-  async function toggle() {
+  function toggle() {
     const p = bgmPlayer()
-    if (!p.paused) {
-      p.pause()
-      return
-    }
-    try {
-      await p.play()
-      setFailed(false)
-    } catch {
-      setFailed(true)
-    }
+    const next = !wanted
+    setWanted(next)
+    setBgmWanted(next)
+    if (next) void p.play().catch(() => setPlaying(false))
+    else p.pause()
   }
 
   return (
-    <button type="button" className="toggle bgm" aria-pressed={on} onClick={() => void toggle()} title="배경음: Empty Basement (Suno로 생성)">
-      {failed ? '배경음을 틀지 못했어요' : on ? '♪ 배경음 켜짐' : '♪ 배경음 듣기'}
+    <button type="button" className="toggle bgm" data-no-bgm aria-pressed={wanted} onClick={toggle} title="배경음: Empty Basement (Suno로 생성)">
+      {!wanted ? '♪ 배경음 꺼짐' : playing ? '♪ 배경음 켜짐' : '♪ 배경음 켜짐 (화면을 누르면 시작)'}
     </button>
   )
 }
