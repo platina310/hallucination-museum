@@ -574,3 +574,24 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
 .flow-row{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px 12px;margin-bottom:14px}
 .flow-row .flowbar{margin-bottom:0}
 .toggle.bgm{min-height:44px}
+/* 환각의 방: 전시실 수색과 한 건씩 검수 */
+.gallery{position:relative;background:#d9c98a;border-bottom:1px solid var(--rule);padding-top:22px;animation:hum 7s infinite;overflow:hidden}
+.gallery.calm{animation:none}
+.gallery::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.08) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.4) 100%)}
+.gallery-tube{position:absolute;left:30%;right:30%;top:7px;height:7px;border-radius:4px;background:#fffbe0;box-shadow:0 0 14px #fffbe0;animation:tube 7s infinite}
+.gallery.calm .gallery-tube{animation:none}
+.gallery .art-wall{background:transparent;border-bottom:0;position:relative;z-index:1}
+.gallery-objs{position:relative;z-index:1;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;padding:4px 12px 14px}
+.obj{font:inherit;font-size:.82rem;font-weight:600;min-height:48px;display:flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border:2px dashed #7a6a3a;background:rgba(248,249,246,.9);color:#18202b;cursor:pointer;border-radius:4px}
+.obj svg{width:32px;height:32px;flex:none;fill:none;stroke:#18202b;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.obj:hover,.obj:focus-visible{border-color:#18202b;background:#f0d24a}
+.obj.done{border-style:solid;border-color:#1b7550;background:rgba(232,245,238,.95)}
+.dlg-cite{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.dlg .dlg-cite{font-size:.86rem}
+.claim-list{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:4px}
+.claim-list li{margin:0}
+.claim-list button{font:inherit;width:100%;min-height:40px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;padding:6px 10px;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer;font-size:.86rem}
+.claim-list button.now{border-color:var(--ink);background:var(--paper)}
+.claim-list .t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.claim-list .d{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-soft)}
+@media (prefers-reduced-motion:reduce){.gallery,.gallery-tube{animation:none!important}}
