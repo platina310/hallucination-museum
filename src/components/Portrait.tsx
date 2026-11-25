@@ -231,7 +231,7 @@ export default function Portrait({ who, face, size }: { who: Who; face: Face; si
 
 /** 몸통. 역전재판처럼 책상 너머에 서 있는 상반신을 그릴 때 쓴다. */
 function body(who: Who): ReactNode {
-  const neck = <path d="M92 112h16v32H92z" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="3" />
+  const neck = <path d="M85 104h30l4 42H81z" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="3" strokeLinejoin="round" />
   if (who === 'do')
     return (
       <>
@@ -269,8 +269,9 @@ function body(who: Who): ReactNode {
 /** 상반신 그림. 동그란 초상 대신 장면 안에 사람으로 세울 때 쓴다. 표정은 초상과 같다. */
 export function Figure({ who, face }: { who: Who; face: Face }) {
   return (
-    <svg className={`figure ${face}`} viewBox="0 0 200 250" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}`}>
-      {body(who)}
+    <svg className={`figure ${face}`} viewBox="0 0 200 238" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}`}>
+      {/* 어깨를 올려 목이 짧고 굵게 보이게 한다 */}
+      <g transform="translate(0 -12)">{body(who)}</g>
       <g transform="translate(23.2 6) scale(1.6)">
         {/* 표정이 바뀔 때마다 새로 그려 움찔하는 움직임을 준다 */}
         <g key={face} className="pop">
