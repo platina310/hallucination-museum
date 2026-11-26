@@ -219,10 +219,8 @@ a{overflow-wrap:anywhere}
 .toggle{font:inherit;font-size:.8rem;border:1px solid var(--rule);background:transparent;color:var(--ink);padding:5px 10px;border-radius:4px;cursor:pointer;white-space:nowrap}
 .toggle[aria-pressed="true"]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
 .toggle:disabled{color:var(--ink-soft);border-style:dashed;cursor:not-allowed}
-button.chip.listen{font:inherit;font-size:.74rem;cursor:pointer;color:var(--ink)}
 @media (pointer:coarse){
   .toggle{min-height:44px}
-  button.chip.listen{min-height:36px;padding:0 12px}
 }
 
 /* 임무 안내, 다음 수, 힌트: 처음 온 사람이 할 일을 알 수 있게 */
@@ -549,9 +547,14 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
 .dlg .stmt{color:var(--ok);font-weight:500}
 .dlg .stmt.done s{color:var(--ink-soft);font-weight:400}
 .dlg .stmt.done b{font-weight:600}
-.stmt-nav{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.stmt-nav .toggle{min-height:40px}
-.stmt-nav .mono{color:var(--ink-soft);text-align:center}
+/* 넘기는 단추는 아래의 행동 단추(더 캐묻기·서류 내밀기)와 같은 크기. 테두리만 둬서 행동 단추와 구분한다 */
+.stmt-nav{display:grid;grid-template-columns:1fr 1fr;grid-template-areas:"prev next" "count count";gap:6px 8px}
+.stmt-nav .toggle{min-height:60px;font-family:var(--f-display);font-weight:800;font-size:1.15rem;letter-spacing:.04em;padding:9px 12px;border:2px solid var(--ink);border-radius:0;background:var(--sheet);color:var(--ink)}
+.stmt-nav .toggle:first-child{grid-area:prev}
+.stmt-nav .toggle:last-child{grid-area:next}
+.stmt-nav .toggle:hover:not(:disabled),.stmt-nav .toggle:focus-visible{background:var(--mark);color:var(--on-mark)}
+.stmt-nav .toggle:disabled{opacity:.45;border-style:solid;color:var(--ink)}
+.stmt-nav .mono{grid-area:count;color:var(--ink-soft);text-align:center;font-size:.8rem}
 .act-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .act{font:inherit;font-family:var(--f-display);font-weight:800;font-size:1.25rem;min-height:60px;border:2px solid var(--ink);background:var(--ink);color:var(--sheet);cursor:pointer;letter-spacing:.04em}
 .act.present{background:var(--seal);border-color:var(--seal);color:#fff}

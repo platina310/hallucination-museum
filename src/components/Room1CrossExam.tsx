@@ -20,7 +20,6 @@ const MAX_LEN = 300
 const MAX_SUBMIT = 5
 const MAX_STRIKES = 5
 const STORAGE_KEY = 'mukbigwon.room1.v3' // v3: 방을 뒤져 서류를 찾는 방식으로 바뀌어 예전 기록과 맞지 않는다
-const VOICE_KEY = 'mukbigwon.voice'
 
 // 암호를 안다고 인정한 뒤에 보여 주는 예시 질문. 꼬리표는 어떤 수법인지 알려 준다.
 const EXAMPLES = [
@@ -38,23 +37,6 @@ const HINTS = [
 
 // 기다리는 동안 보여 주는 문구
 const WAITING = ['도 씨가 천장을 봅니다', '도 씨가 물을 한 모금 마십니다', '도 씨가 넥타이를 만지작거립니다']
-
-// 목소리: 지금은 브라우저에 들어 있는 기본 음성으로 읽는다. 이후 문지기별 목소리(서버 /tts)로 바꿀 자리다.
-const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window
-
-function speak(text: string) {
-  if (!canSpeak) return
-  try {
-    window.speechSynthesis.cancel()
-    const u = new SpeechSynthesisUtterance(text)
-    u.lang = 'ko-KR'
-    u.rate = 0.95
-    u.pitch = 0.8
-    window.speechSynthesis.speak(u)
-  } catch {
-    // 소리를 못 내도 글은 그대로 보인다
-  }
-}
 
 type Msg =
   | { who: 'me'; text: string; tag?: string }
@@ -105,14 +87,6 @@ function loadSaved(): Saved {
   }
 }
 
-function loadVoicePref(): boolean {
-  try {
-    return localStorage.getItem(VOICE_KEY) === 'on'
-  } catch {
-    return false
-  }
-}
-
 // demoControls: 발표용으로 서버 상태(정상·느림·오류)를 바꿔 보는 단추를 보여 줄지 여부
 // onSolved: 암호를 맞혀 방을 통과했을 때 방탈출 진행 상황에 알린다
 export default function Room1CrossExam({
@@ -152,8 +126,6 @@ export default function Room1CrossExam({
   const [net, setNet] = useState<MockNet>('ok')
   const [input, setInput] = useState('')
   const [evidence, setEvidence] = useState('')
-  const [voiceOn, setVoiceOn] = useState(loadVoicePref)
-  const voiceRef = useRef(voiceOn)
   const lastQuestion = useRef('')
   const chatRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -178,37 +150,13 @@ export default function Room1CrossExam({
     }
   }, [msgs, asks, actions, submits, solved, hints, exposed, corrected, strikes, found, drawerOpen])
 
-  useEffect(() => {
-    voiceRef.current = voiceOn
-  }, [voiceOn])
-
   // 이미 통과한 기록이 저장돼 있으면 진행 상황에도 반영한다
   useEffect(() => {
     if (saved.solved) onSolved?.({ tries: saved.actions, hints: saved.hints })
-    return () => {
-      clearTimeout(joltTimer.current)
-      if (canSpeak) window.speechSynthesis.cancel()
-    }
+    return () => clearTimeout(joltTimer.current)
     // 처음 한 번만 실행한다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  function toggleVoice() {
-    const next = !voiceOn
-    setVoiceOn(next)
-    try {
-      localStorage.setItem(VOICE_KEY, next ? 'on' : 'off')
-    } catch {
-      // 설정을 저장하지 못해도 이번 접속에서는 동작한다
-    }
-    // 누른 순간에 한 번 소리를 내야 모바일 브라우저에서 이후 음성이 나온다
-    if (next) speak('아, 아. 마이크 테스트. 도 씨입니다.')
-    else if (canSpeak) window.speechSynthesis.cancel()
-  }
-
-  function say(text: string) {
-    if (voiceRef.current) speak(text)
-  }
 
   const over = input.length > MAX_LEN
   const canSend = !busy && !over && input.trim() !== ''
@@ -238,7 +186,6 @@ export default function Room1CrossExam({
       setMsgs((prev) => [...prev, { who: 'suspect', text: r.reply, engine: r.engine }])
       setLatest(r.reply)
       setLastMiss(false)
-      say(r.reply)
     } catch (e) {
       setMsgs((prev) => [...prev, { who: 'err', text: e instanceof Error ? e.message : '오류가 발생했습니다. 다시 눌러 주세요.', retry: false }])
     } finally {
@@ -273,7 +220,6 @@ export default function Room1CrossExam({
       }
       setMsgs((prev) => [...prev, ...next])
       setLatest(r.reply)
-      say(r.reply)
     } catch (e) {
       setMsgs((prev) => [...prev, { who: 'err', text: e instanceof Error ? e.message : '오류가 발생했습니다. 다시 눌러 주세요.', retry: false }])
     } finally {
@@ -309,7 +255,6 @@ export default function Room1CrossExam({
       setMsgs((prev) => [...prev, { who: 'suspect', text: r.reply, n, source: r.source, attackType: r.attackType, leak: r.leak, engine: r.engine }])
       setLastMiss(false)
       if (!admitted && r.denied) setDeniedOnce(true)
-      say(r.reply)
     } catch (e) {
       const text = e instanceof Error ? e.message : "오류가 발생했습니다. '다시 보내기'를 눌러 주세요."
       setMsgs((prev) => [...prev, { who: 'err', text, retry: true }])
@@ -499,18 +444,6 @@ export default function Room1CrossExam({
               <div className="mood" role="status">
                 {mood}
               </div>
-            </div>
-            <div className="sound">
-              <button
-                type="button"
-                className="toggle"
-                aria-pressed={voiceOn}
-                disabled={!canSpeak}
-                title={canSpeak ? '답변을 소리로 읽어 줍니다' : '이 브라우저는 음성 읽기를 지원하지 않습니다'}
-                onClick={toggleVoice}
-              >
-                {voiceOn ? '목소리 켜짐' : '목소리 듣기'}
-              </button>
             </div>
           </div>
 
@@ -708,22 +641,19 @@ export default function Room1CrossExam({
                   <div className="msg suspect" key={i}>
                     <span className="who">도 씨</span>
                     {m.text}
-                    <div className="meta">
-                      {m.attackType !== undefined &&
-                        (m.source ? (
-                          <span className="chip src" title={m.source.text}>
-                            근거: 사건 파일 · {m.source.label}
-                          </span>
-                        ) : (
-                          <span className="chip nosrc">근거 없음: 사건 파일에 없는 내용</span>
-                        ))}
-                      {m.engine === 'gemini' && <span className="chip">Gemini가 답함 · 유출 판정은 코드</span>}
-                      {canSpeak && (
-                        <button type="button" className="chip listen" onClick={() => speak(m.text)}>
-                          듣기
-                        </button>
-                      )}
-                    </div>
+                    {(m.attackType !== undefined || m.engine === 'gemini') && (
+                      <div className="meta">
+                        {m.attackType !== undefined &&
+                          (m.source ? (
+                            <span className="chip src" title={m.source.text}>
+                              근거: 사건 파일 · {m.source.label}
+                            </span>
+                          ) : (
+                            <span className="chip nosrc">근거 없음: 사건 파일에 없는 내용</span>
+                          ))}
+                        {m.engine === 'gemini' && <span className="chip">Gemini가 답함 · 유출 판정은 코드</span>}
+                      </div>
+                    )}
                   </div>
                 )
               }

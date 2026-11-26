@@ -40,7 +40,7 @@ const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
   { item: '방 장면', now: '경비실, 전시실, 자료실, 정문 로비를 눌러서 뒤지는 장면. 형광등 깜빡임과 스치는 그림자. 깜빡임 끄기 제공', next: '방마다 다른 효과음', tool: '없음 (SVG, CSS)' },
   { item: '전시 작품', now: '환각의 방에 걸리는 작품 3점을 코드로 직접 그림. 서명 옆 연도가 기록 카드와 일치', next: '유화, 수채 질감이 나는 그림으로 교체', tool: '이미지 생성 도구 (미정)' },
   { item: '서가', now: '검색하면 고 선생이 받은 책이 튀어나오고 잘린 책은 빗금으로 표시. 문서별 유사도 점수 표시', next: '없음', tool: '없음 (SVG)' },
-  { item: '문지기 목소리', now: '지시의 방에서 브라우저 기본 음성으로 답변 읽기. 기본은 꺼짐. 인트로 영상의 목소리는 ElevenLabs', next: '게임 안에서도 문지기마다 다른 목소리', tool: 'ElevenLabs' },
+  { item: '문지기 목소리', now: '인트로 영상의 목소리는 ElevenLabs. 게임 안 답변 읽기는 브라우저 기본 음성이 기계적으로 들려 제거', next: '게임 안에서도 문지기마다 다른 목소리', tool: 'ElevenLabs' },
   { item: '배경음', now: 'Suno로 만든 곡 "Empty Basement"를 게임과 인트로 영상에 사용. 첫 조작부터 재생, 끄기 가능', next: '방마다 다른 효과음', tool: 'Suno' },
   { item: '개발 자동화', now: 'Claude로 화면과 서버 구현, 자동 플레이 확인. 공격문 정제와 실험은 GitHub Actions에서 실행', next: '반복 작업과 교차 검증을 명령줄 에이전트에 위임', tool: 'Claude, GitHub Actions, Codex exec, agy (Antigravity CLI)' },
 ]
