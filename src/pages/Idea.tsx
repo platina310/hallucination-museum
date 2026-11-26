@@ -1,4 +1,4 @@
-// 5주차 "아이디어 공유" 페이지. LMS에 내는 발표 URL이 이 화면이다.
+// 팀 페이지. 5주차 아이디어 공유로 시작해 8주차 기말 발표까지 쓰는 발표 URL이 이 화면이다.
 // 제출 안내의 순서대로 주제, 대상 사용자와 문제, 데이터, AI 활용 계획을 요약하고 프로토타입으로 이어 준다.
 // 8주차까지 쌓아 가는 자세한 내용은 Detail.tsx(/detail)에 있다.
 import { Pill, Todo } from '../components/Marks'
@@ -16,7 +16,7 @@ export default function Idea() {
       <div className="top">
         <div className="wrap">
           <span className="mono brand">
-            환각 미술관<span className="course"> · 아이디어 공유 · 금융빅데이터분석실습 5주차</span>
+            환각 미술관<span className="course"> · 팀 페이지 · 금융빅데이터분석실습</span>
           </span>
           <nav aria-label="페이지 구역">
             <a href="#topic">주제</a>
@@ -41,7 +41,7 @@ export default function Idea() {
               <br />
               미술관
             </div>
-            <h1 className="sr-only">환각 미술관 아이디어 공유</h1>
+            <h1 className="sr-only">환각 미술관 팀 페이지</h1>
             <p className="lede">
               AI가 지키는 방을 말과 추리로 뚫으며 <mark>LLM의 원리를 배우는 방탈출</mark>
             </p>
@@ -57,8 +57,8 @@ export default function Idea() {
           </div>
           <div className="form" role="table" aria-label="발표 개요">
             <div className="head">
-              <span className="mono">5주차 아이디어 공유</span>
-              <span className="mono">발표 5~6분</span>
+              <span className="mono">8주차 기말 발표</span>
+              <span className="mono">발표 15분 · 질의응답 5분</span>
             </div>
             <div className="row">
               <div className="k">과목</div>
@@ -80,7 +80,7 @@ export default function Idea() {
             </div>
             <div className="row">
               <div className="k">발표 순서</div>
-              <div className="v">주제, 사용자와 문제, 데이터, AI 활용, 시행착오를 이 페이지로 설명하고 프로토타입을 시연</div>
+              <div className="v">주제, 사용자와 문제, 데이터와 실험, AI 활용, 시행착오를 이 페이지로 설명한 뒤 게임 시연</div>
             </div>
             <div className="row">
               <div className="k">발표 URL</div>
@@ -107,8 +107,8 @@ export default function Idea() {
               </div>
               <h2>AI의 허점을 직접 찔러 보며 배우는 방탈출</h2>
               <p>
-                야간 점검을 나왔다가 미술관 수장고에 갇힌다. 방마다 AI 하나가 문을 지키고, 그 AI의 허점을 찾아야 문이 열린다. 허점
-                하나가 곧 LLM 개념 하나다.
+                야간 점검을 나왔다가 미술관 수장고에 갇힌 조사관. 방마다 AI 하나가 문을 지키고, 그 AI의 허점을 찾아야 문이 열림. 허점
+                하나가 곧 LLM 개념 하나
               </p>
             </div>
             <div className="topic-grid">
@@ -119,7 +119,7 @@ export default function Idea() {
                 </div>
                 <div className="row">
                   <div className="k">구성</div>
-                  <div className="v">방 5개와 정문. 8주차 필수 범위는 방 3개와 정문이다</div>
+                  <div className="v">방 5개와 정문. 8주차 필수 범위는 방 3개와 정문</div>
                 </div>
                 <div className="row">
                   <div className="k">플레이어</div>
@@ -127,7 +127,7 @@ export default function Idea() {
                 </div>
                 <div className="row">
                   <div className="k">판정</div>
-                  <div className="v">문이 열리는지는 서버 코드가 판정한다. AI는 판정하지 않는다</div>
+                  <div className="v">문이 열리는지는 서버 코드가 판정. AI는 판정하지 않음</div>
                 </div>
                 <div className="row">
                   <div className="k">남는 것</div>
@@ -170,7 +170,7 @@ export default function Idea() {
               <div className="eyebrow step">
                 <b>02</b> 대상 사용자와 문제 정의
               </div>
-              <h2>LLM은 직접 속여 보고 속아 봐야 이해한다</h2>
+              <h2>직접 속여 보고 속아 봐야 이해되는 LLM</h2>
             </div>
             <div className="cols two">
               <div className="card">
@@ -183,32 +183,32 @@ export default function Idea() {
               <div className="card">
                 <h3>해결하려는 문제</h3>
                 <ul>
-                  <li>환각, 프롬프트의 한계, RAG 같은 개념은 글로 배우면 남지 않는다</li>
-                  <li>AI의 답을 그대로 믿거나 비밀을 프롬프트에 넣는 실수가 반복된다</li>
+                  <li>환각, 프롬프트의 한계, RAG 같은 개념은 글로 배우면 남지 않음</li>
+                  <li>AI의 답을 그대로 믿거나 비밀을 프롬프트에 넣는 실수의 반복</li>
                   <li>
-                    재미있게 익힐 한국어 실습 도구가 부족하다 <Todo>조사로 확인할 가설</Todo>
+                    재미있게 익힐 한국어 실습 도구 부족 <Todo>조사로 확인할 가설</Todo>
                   </li>
                 </ul>
               </div>
               <div className="card">
                 <h3>근거와 선행 사례</h3>
                 <ul>
-                  <li>OWASP의 LLM 취약점 Top 10은 프롬프트 인젝션을 1순위로 꼽는다</li>
-                  <li>Lakera의 Gandalf는 같은 장르의 영어 게임이지만 보안 한 주제만 다룬다</li>
-                  <li>시장 규모와 교육 수요 수치는 8주차 발표 전까지 보강한다</li>
+                  <li>OWASP의 LLM 취약점 Top 10에서 프롬프트 인젝션이 1순위</li>
+                  <li>Lakera의 Gandalf는 같은 장르의 영어 게임이지만 보안 한 주제만 다룸</li>
+                  <li>시장 규모와 교육 수요 수치는 8주차 발표 전까지 보강</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>우리 팀의 차별점</h3>
                 <ul>
                   <li>방마다 개념 하나. 프롬프트, 환각, RAG, temperature, 방어 설계</li>
-                  <li>입장 전과 탈출 후에 같은 퀴즈를 내서 학습 효과를 숫자로 잰다</li>
-                  <li>판정은 코드가 하고 AI는 연기만 해서, 방별 결과를 그대로 측정할 수 있다</li>
+                  <li>입장 전과 탈출 후에 같은 퀴즈를 내서 학습 효과를 숫자로 측정</li>
+                  <li>판정은 코드가 하고 AI는 연기만 해서, 방별 결과를 그대로 측정 가능</li>
                 </ul>
               </div>
             </div>
             <p className="more">
-              방의 구조는 성공한 게임 7종의 장치를 옮겨 만들었다. <a href="/detail#benchmark">벤치마킹 표 보기</a>
+              방의 구조는 성공한 게임 7종의 장치를 옮겨 만든 것. <a href="/detail#benchmark">벤치마킹 표 보기</a>
             </p>
           </div>
         </section>
@@ -219,7 +219,7 @@ export default function Idea() {
               <div className="eyebrow step">
                 <b>03</b> 데이터 확보와 분석 방향
               </div>
-              <h2>공개 공격문 27만 9천 건으로 문지기를 시험한다</h2>
+              <h2>공개 공격문 27만 9천 건으로 문지기 시험</h2>
               <p>
                 주 데이터는 공개된 프롬프트 공격문과, 그 공격문을 우리 문지기에 돌려 얻는 실험 로그. 플레이어가 많이 모이지 않아도
                 분석이 성립함. 반 공개 플레이의 로그와 퀴즈 응답은 보조 자료
@@ -356,7 +356,7 @@ export default function Idea() {
               <div className="eyebrow step">
                 <b>04</b> AI 활용 (LLM·RAG·에이전트)
               </div>
-              <h2>AI는 연기만 하고, 문은 코드가 연다</h2>
+              <h2>연기는 AI, 문을 여는 것은 코드</h2>
             </div>
             <div className="arch" aria-label="시스템 구조">
               <div className="node">
@@ -422,7 +422,7 @@ export default function Idea() {
               </div>
             </div>
             <p className="more">
-              요청 처리 순서, API 목록, 비용 추정, 비주얼·음성 계획은 <a href="/detail#architecture">상세 자료</a>에 있다.
+              요청 처리 순서, API 목록, 비용 추정, 비주얼·음성 현황은 <a href="/detail#architecture">상세 자료</a>에 정리
             </p>
           </div>
         </section>
@@ -433,7 +433,7 @@ export default function Idea() {
               <div className="eyebrow step">
                 <b>05</b> UI 프로토타입
               </div>
-              <h2>지금 바로 탈출해 볼 수 있다</h2>
+              <h2>지금 바로 해 볼 수 있는 탈출</h2>
               <p>
                 방 세 개와 정문까지 처음부터 끝까지 플레이 가능. 지시의 방과 서가의 방은 서버의 Gemini가 답변. 서버가 쉬는 중이거나
                 한도를 넘으면 정해진 대본으로 답하고, 어느 쪽이 답했는지 화면에 표시
@@ -487,18 +487,18 @@ export default function Idea() {
               <div className="card">
                 <h3>사용하기 쉽게 설계한 점</h3>
                 <ul>
-                  <li>처음 온 사람도 헤매지 않게 임무, 지금 단계, 다음 수, 힌트를 방마다 보여 준다</li>
-                  <li>PC와 모바일에서 같은 기능을 쓴다. 모바일에서는 표가 카드로 바뀐다</li>
-                  <li>오류가 나도 입력이 남고 다시 보내기 한 번으로 이어진다</li>
-                  <li>새로고침해도 통과한 방과 퀴즈 기록이 이어진다</li>
+                  <li>처음 온 사람도 헤매지 않게 임무, 지금 단계, 다음 수, 힌트를 방마다 표시</li>
+                  <li>PC와 모바일에서 같은 기능 제공. 모바일에서는 그림 속 물건을 단추로도 선택</li>
+                  <li>서버가 답하지 못해도 멈추지 않고 정해진 대본으로 이어짐</li>
+                  <li>새로고침해도 통과한 방과 퀴즈 기록 유지</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>프로토타입에서 확인할 수 있는 상태</h3>
                 <ul>
-                  <li>입력, 로딩, 오류, 응답, 출처 표시. 빈 결과는 "근거 없음"으로 나온다</li>
+                  <li>입력, 로딩, 오류, 응답, 출처 표시. 빈 결과는 "근거 없음"으로 표시</li>
                   <li>화면 위쪽에 AI 서버 상태 표시. 연결됨, 깨우는 중, 쉬는 중</li>
-                  <li>공사 중인 방 4와 5는 지도에 자리만 표시했다</li>
+                  <li>공사 중인 방 4와 5는 지도에 자리만 표시</li>
                 </ul>
               </div>
             </div>
@@ -545,7 +545,7 @@ export default function Idea() {
               <div className="eyebrow step">
                 <b>07</b> 8주차까지의 일정
               </div>
-              <h2>남은 2주에 끝낼 일</h2>
+              <h2>8주차 발표까지 남은 일</h2>
             </div>
             <div className="tablewrap">
               <table className="stack">
@@ -553,7 +553,8 @@ export default function Idea() {
                   <tr>
                     <th>주차</th>
                     <th>수업 주제</th>
-                    <th>팀이 끝낼 일</th>
+                    <th>끝낸 일</th>
+                    <th>남은 일</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -563,7 +564,8 @@ export default function Idea() {
                         {s.week}
                       </td>
                       <td data-label="수업 주제">{s.topic}</td>
-                      <td data-label="끝낼 일">{s.todo}</td>
+                      <td data-label="끝낸 일">{s.done}</td>
+                      <td data-label="남은 일">{s.todo}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -590,8 +592,8 @@ export default function Idea() {
               <div className="card">
                 <h3>기능을 줄여야 할 때의 순서</h3>
                 <ul>
-                  <li>먼저 뺀다: 방 5, 방 4, 음성과 배경음</li>
-                  <li>끝까지 지킨다: 방 1~3, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
+                  <li>여유가 있을 때만: 방 4 온도의 방, 방 5 문지기의 방, 게임 안 문지기 목소리</li>
+                  <li>끝까지 지킬 것: 방 1~3과 정문, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
                 </ul>
               </div>
             </div>
@@ -620,7 +622,7 @@ export default function Idea() {
               </a>
             </li>
             <li>
-              벤치마킹 수치와 비용 추정의 출처는 <a href="/detail">상세 자료</a> 맨 아래에 있다
+              벤치마킹 수치와 비용 추정의 출처는 <a href="/detail">상세 자료</a> 맨 아래에 기재
             </li>
           </ul>
         </div>

@@ -1,5 +1,5 @@
 // 상세 자료. 8주차 발표까지 채워 가는 작업 기록이다 (/detail).
-// 5주차 발표는 Idea.tsx(아이디어 공유)로 하고, 여기에는 벤치마킹, 사용성, 시스템 설계, 강의 조건 대조표를 둔다.
+// 발표는 Idea.tsx(팀 페이지)로 하고, 여기에는 벤치마킹, 사용성, 시스템 설계, 강의 조건 대조표를 둔다.
 // 표의 내용은 아래 배열만 고치면 된다. 여러 화면이 같이 쓰는 내용은 src/content/shared.ts에 있다.
 import { Pill, Todo } from '../components/Marks'
 import { IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SWAGGER_URL, TEAM } from '../content/shared'
@@ -7,20 +7,20 @@ import type { Status } from '../content/shared'
 
 // 강의계획서와 「퀴즈 및 팀 프로젝트 안내」의 조건. 진행 상황이 바뀌면 status와 statusText를 고친다.
 const CONDITIONS: { condition: string; plan: string; status: Status; statusText: string }[] = [
-  { condition: 'React 화면 (필수)', plan: '아이디어 공유 페이지, 수장고 지도, 방 3개, 정문을 React로 구현. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개와 정문' },
+  { condition: 'React 화면 (필수)', plan: '팀 페이지, 수장고 지도, 방 3개, 정문을 React로 구현. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개와 정문' },
   { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태 구현. 빈 결과는 "근거 없음", 답한 쪽(Gemini 또는 대본)도 표시', status: 'ok', statusText: '구현' },
   { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 3.5 Flash-Lite 호출. 도 씨의 대화와 고 선생의 답을 생성. 실패하면 그 요청만 정해진 대본으로 답변', status: 'ok', statusText: '11월 26일 연결' },
   { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '화면은 Vercel, 서버는 Render, DB는 Supabase에 배포', status: 'ok', statusText: '세 곳 배포' },
   { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '서가 문서 12건의 임베딩을 pgvector에 저장. 플레이 로그와 실험 로그 테이블. 퀴즈 응답 테이블은 7주차', status: 'ok', statusText: 'pgvector 사용' },
   { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '실행 방법과 서버 구조를 README에 기록. 지시문은 backend/app, 실험 결과와 검색 점검은 data 폴더', status: 'ok', statusText: '기록 중' },
-  { condition: '데이터 출처 명시와 분석 페이지', plan: '출처, 라이선스, 내려받은 날짜와 건수는 아이디어 공유 페이지의 데이터 구역. 분석 페이지는 7주차', status: 'plan', statusText: '출처 명시, 분석 페이지 남음' },
+  { condition: '데이터 출처 명시와 분석 페이지', plan: '출처, 라이선스, 내려받은 날짜와 건수는 팀 페이지의 데이터 구역. 분석 페이지는 7주차', status: 'plan', statusText: '출처 명시, 분석 페이지 남음' },
   { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 "비상문 비밀번호"(옛 문서가 걸려 틀린 답), "변경"(절반만 아는 답), "변경 개관"(정답)', status: 'ok', statusText: '실시간 시연 가능' },
-  { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '아이디어 공유 페이지에 주제, 사용자와 문제, 데이터, AI 계획 순서로 요약', status: 'ok', statusText: '발표 완료' },
+  { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '팀 페이지에 주제, 사용자와 문제, 데이터, AI 계획 순서로 요약해 발표', status: 'ok', statusText: '발표 완료' },
   { condition: '5주차 제출. 발표 URL과 프로토타입 URL 두 개. 권한 요청 없이 열람', plan: '발표 URL은 첫 화면, 프로토타입 URL은 /prototype. 둘 다 로그인 없이 열림. 11월 23일 LMS 제출', status: 'ok', statusText: '제출 완료' },
   { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 둠. 시연 때는 발표자 우선 모드로 Gemini 몫 확보', status: 'ok', statusText: '틀 완성' },
   { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정 구역에 기재', status: 'ok', statusText: '세 주소 기재' },
   { condition: '팀 4~5명', plan: `${TEAM.name} ${TEAM.members.length}명(${TEAM.members.join(', ')})`, status: 'ok', statusText: '확정' },
-  { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않는다. 무료 범위 우선', plan: '키는 Render 환경변수와 GitHub Secrets에만 보관. 닉네임과 접속 주소는 저장하지 않고, 입력에 든 전화번호와 이메일은 저장 전에 가림. 무료 등급으로 운영', status: 'ok', statusText: '적용' },
+  { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않기. 무료 범위 우선', plan: '키는 Render 환경변수와 GitHub Secrets에만 보관. 닉네임과 접속 주소는 저장하지 않고, 입력에 든 전화번호와 이메일은 저장 전에 가림. 무료 등급으로 운영', status: 'ok', statusText: '적용' },
 ]
 
 const GRADING: { item: string; weight: string; show: string }[] = [
@@ -47,48 +47,48 @@ const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
 
 // 성공한 게임에서 가져온 장치. 수치의 출처는 페이지 맨 아래에 있다.
 const BENCHMARKS: { game: string; result: string; device: string; ours: string }[] = [
-  { game: 'Papers, Please', result: '10년간 500만 장 판매', device: '날마다 서류 규칙이 늘고 어려워진다', ours: '환각의 방: 라운드마다 검수 규칙 추가' },
-  { game: 'Her Story', result: '검색을 게임으로 만든 대표작', device: '검색 결과를 앞의 5건만 보여 준다', ours: '서가의 방: 앞의 3건만 AI에게 전달' },
-  { game: '역전재판', result: '장수 시리즈', device: '증언을 추궁하고 증거로 모순을 찌른다', ours: '지시의 방: 추궁과 증거 제시' },
-  { game: 'Return of the Obra Dinn', result: '추리 게임의 기준작', device: '정답이 모여야 한꺼번에 확정해 준다', ours: '환각의 방: 맞은 건수만 알려 준다' },
+  { game: 'Papers, Please', result: '10년간 500만 장 판매', device: '날마다 서류 규칙이 늘고 어려워짐', ours: '환각의 방: 라운드마다 검수 규칙 추가' },
+  { game: 'Her Story', result: '검색을 게임으로 만든 대표작', device: '검색 결과를 앞의 5건만 표시', ours: '서가의 방: 앞의 3건만 AI에게 전달' },
+  { game: '역전재판', result: '장수 시리즈', device: '증언을 추궁하고 증거로 모순 지적', ours: '지시의 방: 추궁과 증거 제시' },
+  { game: 'Return of the Obra Dinn', result: '추리 게임의 기준작', device: '정답이 모여야 한꺼번에 확정', ours: '환각의 방: 맞은 건수만 알림' },
   { game: 'Wordle', result: '한 달 새 30만 명에서 200만 명 이상', device: '정답을 드러내지 않는 결과 공유', ours: '탈출 결과를 별점 카드로 복사' },
-  { game: 'Tensor Trust', result: '공격 56만 건, 방어 11만 건이 연구 데이터가 됨', device: '플레이어끼리 공격과 방어. 판정은 문자열 비교', ours: '문지기의 방 (7주차). 판정은 코드가 한다' },
-  { game: 'Lakera Gandalf', result: '같은 장르의 영어 게임', device: 'AI가 지키는 암호를 말로 뚫는다. 보안 한 주제', ours: '방마다 다른 LLM 개념, 학습 효과 측정' },
+  { game: 'Tensor Trust', result: '공격 56만 건, 방어 11만 건이 연구 데이터가 됨', device: '플레이어끼리 공격과 방어. 판정은 문자열 비교', ours: '문지기의 방 (확장). 판정은 코드' },
+  { game: 'Lakera Gandalf', result: '같은 장르의 영어 게임', device: 'AI가 지키는 암호를 말로 뚫기. 보안 한 주제', ours: '방마다 다른 LLM 개념, 학습 효과 측정' },
 ]
 
 // 사용성 개선 사례. 실제로 겪고 고친 것만 적는다.
 const UX_CASES: { when: string; problem: string; fix: string }[] = [
   {
     when: '11월 26일 Gemini 연결 뒤',
-    problem: '도 씨의 답이 천편일률적이었다',
-    fix: '사람됨과 기분, 앞서 오간 말을 지시문에 넣어 대화가 이어지게 했다. 추궁과 서류 제시의 반응도 모델이 쓴다',
+    problem: '도 씨의 답이 천편일률적',
+    fix: '사람됨과 기분, 앞서 오간 말을 지시문에 넣어 대화가 이어지게 함. 추궁과 서류 제시의 반응도 모델이 작성',
   },
   {
     when: '11월 25일 교수님 의견 뒤',
-    problem: '글을 읽고 단추를 누르는 화면이라 방탈출에 들어와 있다는 느낌이 약했다',
-    fix: '인트로 영상을 넣고, 방을 눌러 뒤지는 장면과 아래쪽 대화창 방식으로 방 세 개와 정문을 바꿨다. 동그란 초상 대신 상반신 그림을 장면 안에 세웠다',
+    problem: '글을 읽고 단추를 누르는 화면이라 방탈출에 들어와 있다는 느낌이 약함',
+    fix: '인트로 영상 추가. 방을 눌러 뒤지는 장면과 아래쪽 대화창 방식으로 방 세 개와 정문 개편. 동그란 초상 대신 상반신 그림을 장면 안에 배치',
   },
   {
     when: '11월 20일 제목 변경 뒤',
-    problem: '미술관인데 그림이 없고, 글만 읽어야 해서 무슨 일이 일어났는지 한눈에 들어오지 않았다',
-    fix: '작품 그림, 문지기 세 명의 표정 변화, 책장과 책 넘기는 움직임을 넣었다. 서가의 방은 전달된 문서와 잘린 문서가 책장에 바로 보인다',
+    problem: '미술관인데 그림이 없고, 글만 읽어야 해서 무슨 일이 일어났는지 한눈에 들어오지 않음',
+    fix: '작품 그림, 문지기 세 명의 표정 변화, 책장과 책 넘기는 움직임 추가. 서가의 방은 전달된 문서와 잘린 문서를 책장에 바로 표시',
   },
   {
     when: '11월 20일 방탈출 첫 판',
-    problem: '방마다 행동 한 번으로 끝나 너무 단순했다',
-    fix: '성공한 게임 7종을 벤치마킹해 방을 여러 단계로 나누고, 세 방의 단서를 조합하는 정문 자물쇠를 추가했다',
+    problem: '방마다 행동 한 번으로 끝나 너무 단순함',
+    fix: '성공한 게임 7종을 벤치마킹해 방을 여러 단계로 나누고, 세 방의 단서를 조합하는 정문 자물쇠 추가',
   },
   {
     when: '11월 18일 첫 시험 플레이',
-    problem: '화면에 들어갔지만 무엇을 물어야 하는지, 목적이 무엇인지 알 수 없었다',
-    fix: '임무 문장, 단계 표시, 방금 답변에 따른 다음 수 안내, 힌트를 추가했다. 이어서 목표가 분명한 방탈출 구조로 바꿨다',
+    problem: '화면에 들어갔지만 무엇을 물어야 하는지, 목적이 무엇인지 알 수 없음',
+    fix: '임무 문장, 단계 표시, 방금 답변에 따른 다음 수 안내, 힌트 추가. 이어서 목표가 분명한 방탈출 구조로 변경',
   },
 ]
 
 
 const LINKS: { label: string; url: string }[] = [
   { label: 'GitHub 저장소', url: REPO_URL },
-  { label: '서비스 웹 주소 (React, 아이디어 공유 페이지)', url: IDEA_URL },
+  { label: '서비스 웹 주소 (React, 팀 페이지)', url: IDEA_URL },
   { label: '프로토타입 주소', url: PROTOTYPE_URL },
   { label: 'Swagger UI 주소 (FastAPI /docs)', url: SWAGGER_URL },
 ]
@@ -108,7 +108,7 @@ export default function Detail() {
             <a href="#media">비주얼·음성</a>
             <a href="#checklist">강의 조건</a>
             <a href="#plan">일정</a>
-            <a href="/">아이디어 공유</a>
+            <a href="/">팀 페이지</a>
             <a href="/prototype" className="nav-game">
               프로토타입 열기
             </a>
@@ -121,7 +121,7 @@ export default function Detail() {
           <div className="eyebrow">환각 미술관 · 8주차 발표까지 채워 가는 기록</div>
           <h1>상세 자료</h1>
           <p>
-            발표는 <a href="/">아이디어 공유</a> 페이지로 진행. 여기에는 그 페이지에서 줄인 벤치마킹, 사용성 개선 기록, 시스템 설계,
+            발표는 <a href="/">팀 페이지</a> 페이지로 진행. 여기에는 그 페이지에서 줄인 벤치마킹, 사용성 개선 기록, 시스템 설계,
             강의 조건 대조표를 모음
           </p>
         </div>
@@ -169,12 +169,12 @@ export default function Detail() {
               <div className="card">
                 <h3>사용성 설계</h3>
                 <ul>
-                  <li>처음 온 사람도 헤매지 않게 임무, 지금 단계, 다음 수, 힌트를 방마다 보여 준다</li>
-                  <li>PC와 모바일에서 같은 기능을 쓴다. 모바일에서는 표가 카드로 바뀐다</li>
-                  <li>버튼은 손가락으로 누르기 쉬운 크기(44px 이상)로, 입력 글자는 화면이 확대되지 않는 16px로 맞췄다</li>
-                  <li>오류가 나도 입력이 남고 다시 보내기 한 번으로 이어진다</li>
-                  <li>새로고침해도 통과한 방과 퀴즈 기록이 이어진다</li>
-                  <li>소리는 선택 사항이다. 글만으로 모든 기능을 쓸 수 있다</li>
+                  <li>처음 온 사람도 헤매지 않게 임무, 지금 단계, 다음 수, 힌트를 방마다 표시</li>
+                  <li>PC와 모바일에서 같은 기능 제공. 모바일에서는 표가 카드로 바뀌고, 그림 속 물건을 단추로도 선택</li>
+                  <li>버튼은 손가락으로 누르기 쉬운 크기(44px 이상), 입력 글자는 화면이 확대되지 않는 16px</li>
+                  <li>서버가 답하지 못해도 멈추지 않고 정해진 대본으로 이어짐</li>
+                  <li>새로고침해도 통과한 방과 퀴즈 기록 유지</li>
+                  <li>소리는 선택 사항. 글만으로 모든 기능 사용 가능. 형광등 깜빡임은 끄기 가능</li>
                 </ul>
               </div>
               <div className="card">
@@ -267,6 +267,9 @@ export default function Detail() {
                   <li>질문 300자, 대화 이력 여섯 쌍, 서버의 하루 생성 호출 250회 제한</li>
                   <li>무료 등급으로 운영. 시연 때는 발표자 우선 모드로 방문자의 호출을 제한</li>
                   <li>
+                    유료로 바꿀 경우 질문 5,000회에 약 $5.6 추정 <Todo>실측 후 갱신</Todo>
+                  </li>
+                  <li>
                     알려진 한계: 서버가 쉴 때 쓰는 대본에 정답이 들어 있어 브라우저 코드에서 볼 수 있음 <Todo>8주차 전 정리</Todo>
                   </li>
                 </ul>
@@ -284,7 +287,7 @@ export default function Detail() {
               </div>
             </div>
             <p className="more">
-              실제 모델에 붙이며 겪은 시행착오 아홉 가지는 <a href="/#trials">아이디어 공유 페이지</a>에 정리
+              실제 모델에 붙이며 겪은 시행착오 아홉 가지는 <a href="/#trials">팀 페이지</a>에 정리
             </p>
           </div>
         </section>
@@ -292,7 +295,7 @@ export default function Detail() {
         <section id="media">
           <div className="wrap">
             <div className="sec-head">
-              <div className="eyebrow">확장 계획</div>
+              <div className="eyebrow">만든 것과 남은 것</div>
               <h2>비주얼·음성·음악과 개발 도구</h2>
             </div>
             <div className="tablewrap">
@@ -325,14 +328,14 @@ export default function Detail() {
             <div className="sec-head">
               <div className="eyebrow">강의 자료 대조</div>
               <h2>팀 프로젝트 조건 대조표</h2>
-              <p>강의계획서와 「퀴즈 및 팀 프로젝트 안내」에 적힌 조건을 하나씩 옮기고 우리 계획을 맞춰 적었다.</p>
+              <p>강의계획서와 「퀴즈 및 팀 프로젝트 안내」에 적힌 조건을 하나씩 옮기고 우리 진행 상황을 맞춰 기재</p>
             </div>
             <div className="tablewrap">
               <table className="stack">
                 <thead>
                   <tr>
                     <th>강의 조건</th>
-                    <th>우리 계획</th>
+                    <th>우리 진행 상황</th>
                     <th>현재</th>
                   </tr>
                 </thead>
@@ -340,7 +343,7 @@ export default function Detail() {
                   {CONDITIONS.map((c) => (
                     <tr key={c.condition}>
                       <td data-label="강의 조건">{c.condition}</td>
-                      <td data-label="우리 계획">{c.plan}</td>
+                      <td data-label="진행 상황">{c.plan}</td>
                       <td data-label="현재">
                         <Pill kind={c.status}>{c.statusText}</Pill>
                       </td>
@@ -388,7 +391,8 @@ export default function Detail() {
                   <tr>
                     <th>주차</th>
                     <th>수업 주제</th>
-                    <th>팀이 끝낼 일</th>
+                    <th>끝낸 일</th>
+                    <th>남은 일</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -398,7 +402,8 @@ export default function Detail() {
                         {s.week}
                       </td>
                       <td data-label="수업 주제">{s.topic}</td>
-                      <td data-label="끝낼 일">{s.todo}</td>
+                      <td data-label="끝낸 일">{s.done}</td>
+                      <td data-label="남은 일">{s.todo}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -412,7 +417,7 @@ export default function Detail() {
                     <li key={l.label}>
                       {l.label}
                       {': '}
-                      {l.url ? <a href={l.url}>{l.url}</a> : <Todo>배포 후 기입</Todo>}
+                      <a href={l.url}>{l.url}</a>
                     </li>
                   ))}
                 </ul>
@@ -420,9 +425,9 @@ export default function Detail() {
               <div className="card">
                 <h3>기능을 줄여야 할 때의 순서</h3>
                 <ul>
-                  <li>먼저 뺀다: 방 5, 방 4, 음성과 배경음</li>
-                  <li>끝까지 지킨다: 방 1~3, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
-                  <li>실패한 실험은 원인과 개선 과정을 팀 페이지에 남긴다</li>
+                  <li>여유가 있을 때만: 방 4 온도의 방, 방 5 문지기의 방, 게임 안 문지기 목소리</li>
+                  <li>끝까지 지킬 것: 방 1~3과 정문, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
+                  <li>실패한 실험은 원인과 개선 과정을 팀 페이지의 시행착오 구역에 기록</li>
                 </ul>
               </div>
             </div>
@@ -463,7 +468,7 @@ export default function Detail() {
             <li>
               <a href="https://ai.google.dev/gemini-api/docs/pricing">Gemini API 가격표</a>. 2026-11-18 확인. Gemini 3.5
               Flash-Lite 유료 단가는 100만 토큰당 입력 $0.30, 출력 $2.50. 비용 추정은 질문 1회에 입력 1,200토큰, 출력
-              300토큰을 가정했다
+              300토큰 가정
             </li>
           </ul>
         </div>

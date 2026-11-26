@@ -18,7 +18,7 @@ function routeOf(pathname: string): Route {
 }
 
 const TITLES: Record<Route, string> = {
-  idea: '환각 미술관 · 아이디어 공유',
+  idea: '환각 미술관 · 팀 페이지',
   prototype: '환각 미술관 · UI 프로토타입',
   detail: '환각 미술관 · 상세 자료',
 }
