@@ -1,7 +1,7 @@
 // AI 서버 상태 표시. 서버 주소가 없으면 아무것도 보여 주지 않는다.
 // 서버가 잠들어 있어도 게임은 정해진 대본으로 계속된다는 것을 알려 준다.
 import { useEffect, useSyncExternalStore } from 'react'
-import { getServerState, subscribeServer, wakeServer } from '../api'
+import { getPresenterState, getServerState, subscribeServer, wakeServer } from '../api'
 
 const TEXT = {
   none: '',
@@ -15,10 +15,12 @@ export default function ServerPill() {
   useEffect(() => {
     wakeServer()
   }, [])
+  const presenter = useSyncExternalStore(subscribeServer, getPresenterState, getPresenterState)
   if (state === 'none') return null
   return (
     <span className={`pill server ${state === 'on' ? 'ok' : 'plan'}`} role="status">
       {TEXT[state]}
+      {presenter === 'on' && state === 'on' ? ' · 발표자 모드' : ''}
     </span>
   )
 }

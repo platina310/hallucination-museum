@@ -40,14 +40,64 @@ function setServerState(next: ServerState) {
   listeners.forEach((fn) => fn())
 }
 
+// ── 발표자 우선 모드 ────────────────────────────────────────
+// 발표자 암호를 이 브라우저에 넣어 두면 요청마다 함께 보낸다. 서버는 그 요청에 Gemini 몫을 남겨 둔다.
+// 암호는 이 브라우저에만 저장되고 주소창에는 나타나지 않는다.
+const PRESENTER_STORE = 'mukbigwon.presenter'
+export type PresenterState = 'off' | 'checking' | 'on' | 'wrong' | 'unavailable'
+let presenterState: PresenterState = 'off' // 저장된 암호가 있으면 서버를 깨울 때 확인한다
+
+function presenterKey(): string {
+  try {
+    return localStorage.getItem(PRESENTER_STORE) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function authHeaders(): Record<string, string> {
+  const key = presenterKey()
+  return key === '' ? {} : { 'X-Presenter-Key': key }
+}
+
+export function getPresenterState(): PresenterState {
+  return presenterState
+}
+
+function setPresenterState(next: PresenterState) {
+  if (next === presenterState) return
+  presenterState = next
+  listeners.forEach((fn) => fn())
+}
+
+/** 발표자 암호를 저장하고 서버에 확인한다. 빈 값을 넣으면 발표자 모드를 끈다. */
+export async function setPresenterKey(key: string): Promise<PresenterState> {
+  try {
+    if (key === '') localStorage.removeItem(PRESENTER_STORE)
+    else localStorage.setItem(PRESENTER_STORE, key)
+  } catch {
+    // 저장하지 못하면 이번 확인에서 꺼진 것으로 나온다
+  }
+  if (key === '') {
+    setPresenterState('off')
+    return 'off'
+  }
+  setPresenterState('checking')
+  const ok = await ping(20000)
+  if (!ok) setPresenterState('unavailable')
+  return presenterState
+}
+
 async function ping(timeoutMs: number): Promise<boolean> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
-    const res = await fetch(`${API_URL}/health`, { signal: controller.signal })
+    const res = await fetch(`${API_URL}/health`, { signal: controller.signal, headers: authHeaders() })
     if (!res.ok) return false
-    const data = (await res.json()) as { service?: string }
-    return data.service === 'hallucination-museum'
+    const data = (await res.json()) as { service?: string; presenter?: boolean; presenter_mode?: boolean }
+    if (data.service !== 'hallucination-museum') return false
+    if (presenterKey() !== '') setPresenterState(data.presenter ? 'on' : data.presenter_mode ? 'wrong' : 'unavailable')
+    return true
   } catch {
     return false
   } finally {
@@ -82,7 +132,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   try {
     res = await fetch(`${API_URL}${path}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...authHeaders() },
       body: JSON.stringify(body),
       signal: controller.signal,
     })

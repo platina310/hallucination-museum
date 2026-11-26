@@ -67,10 +67,21 @@ def _memory_scores(qv: list[float]) -> list[tuple[str, float]]:
     return [(d["id"], float(s)) for d, s in zip(DOCS, sims)]
 
 
+# 같은 검색어는 다시 임베딩하지 않는다
+_query_vectors: dict[str, list[float]] = {}
+
+
 def rank(query: str) -> tuple[list[tuple[str, float]], str]:
     """문서를 질문과 가까운 순서로 늘어놓는다. (문서 번호, 유사도) 목록과 검색 방식을 돌려준다."""
     try:
-        qv = llm.embed([query], "query")[0]
+        qv = _query_vectors.get(query)
+        if qv is None:
+            if not guard.take_embed_call():
+                return _keyword_scores(query), "keyword"
+            qv = llm.embed([query], "query")[0]
+            if len(_query_vectors) > 300:
+                _query_vectors.clear()
+            _query_vectors[query] = qv
         scores = store.doc_scores(qv)
         engine = "pgvector"
         if scores is None:

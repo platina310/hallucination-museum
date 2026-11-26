@@ -658,3 +658,11 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
 .dlg .retrieved .score{margin-left:8px;font-family:var(--f-mono);font-size:.74rem;color:var(--ok)}
 .dlg .retrieved .how{margin-top:6px;font-family:var(--f-mono);font-size:.72rem;color:var(--ink-soft)}
 .guard-note{margin-top:8px;font-size:.86rem;color:var(--seal)}
+/* 수장고 지도 아래 도구: 인트로 다시 보기, 발표자 모드 */
+.lobby-tools{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 12px;margin-top:12px}
+.lobby-tools .toggle.intro-again{margin-top:0}
+.presenter{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;font-size:.84rem}
+.presenter .toggle{min-height:40px}
+.presenter form{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;flex:1 1 260px}
+.presenter input{font:inherit;font-size:16px;padding:7px 10px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:4px;min-width:0;width:180px}
+.presenter form p{flex:1 1 100%}

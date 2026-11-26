@@ -13,6 +13,7 @@ import Room2Inspection from './Room2Inspection'
 import Room3Search from './Room3Search'
 import Portrait from './Portrait'
 import Bgm from './Bgm'
+import Presenter from './Presenter'
 import ServerPill from './ServerPill'
 import Intro from './Intro'
 import type { Who } from './Portrait'
@@ -264,9 +265,12 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
                 setRunKey((k) => k + 1)
               }}
             />
-            <button type="button" className="toggle intro-again" onClick={() => setShowIntro(true)}>
-              인트로 다시 보기
-            </button>
+            <div className="lobby-tools">
+              <button type="button" className="toggle intro-again" onClick={() => setShowIntro(true)}>
+                인트로 다시 보기
+              </button>
+              <Presenter />
+            </div>
           </>
         )}
       </div>

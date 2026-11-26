@@ -37,16 +37,17 @@ app.add_middleware(
     allow_origins=config.ALLOWED_ORIGINS,
     allow_origin_regex=config.ALLOWED_ORIGIN_REGEX,
     allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_headers=["Content-Type", "X-Presenter-Key"],
 )
 
 
 @app.middleware("http")
 async def limit(request: Request, call_next):
-    if request.method == "POST":
-        ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
-        if not guard.allow_request(ip):
-            return JSONResponse({"detail": "요청이 몰렸습니다. 잠시 뒤 다시 시도해 주세요."}, status_code=429)
+    ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
+    if request.method == "POST" and not guard.allow_request(ip):
+        return JSONResponse({"detail": "요청이 몰렸습니다. 잠시 뒤 다시 시도해 주세요."}, status_code=429)
+    # 발표자 암호를 보낸 요청인지 표시해 둔다. 모델 호출 한도를 정할 때 쓴다
+    guard.presenter.set(guard.is_presenter(request.headers.get("x-presenter-key", "")))
     return await call_next(request)
 
 
@@ -59,6 +60,8 @@ def health() -> dict:
         "model": config.LLM_MODEL if llm.available() else "",
         "db": store.enabled(),
         "calls_left_today": guard.calls_left(),
+        "presenter_mode": config.PRESENTER_KEY != "",  # 발표자 우선 모드가 켜져 있는지
+        "presenter": guard.presenter.get(),  # 이 요청이 발표자의 것으로 인정됐는지
     }
 
 

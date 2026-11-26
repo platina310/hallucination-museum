@@ -10,10 +10,19 @@ os.environ["RATE_PER_MINUTE"] = "1000"
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-from app import attacks, guard, llm, room1, room3  # noqa: E402
+import pytest  # noqa: E402
+
+from app import attacks, config, guard, llm, room1, room3  # noqa: E402
 from app.main import app  # noqa: E402
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def fresh_guard():
+    guard.reset_for_tests()
+    room3._query_vectors.clear()
+    yield
 
 
 def post(path, body):
@@ -225,3 +234,52 @@ def test_validation_and_rate_limit(monkeypatch):
     assert client.post("/rooms/3/ask", json={"query": ""}).status_code == 422
     monkeypatch.setattr(guard, "allow_request", lambda ip: False)
     assert client.post("/evidence", json={"word": "등대"}).status_code == 429
+
+
+# ── 발표자 우선 모드 ──
+
+KEY = {"X-Presenter-Key": "demo-key-for-tests"}
+
+
+def test_presenter_mode_is_off_without_key():
+    r = client.get("/health", headers=KEY).json()
+    assert not r["presenter_mode"] and not r["presenter"]
+
+
+def test_presenter_keeps_gemini_when_public_quota_is_used_up(monkeypatch):
+    monkeypatch.setattr(config, "PRESENTER_KEY", "demo-key-for-tests")
+    monkeypatch.setattr(config, "PUBLIC_LLM_PER_MINUTE", 2)
+    body = {"question": "그날 밤 어디 계셨죠?", "admitted": False}
+    engines = [client.post("/interrogate", json=body).json()["engine"] for _ in range(4)]
+    assert engines == ["gemini", "gemini", "script", "script"]  # 방문자는 1분 2회까지만 Gemini
+    assert client.post("/interrogate", json=body, headers=KEY).json()["engine"] == "gemini"  # 발표자는 계속 Gemini
+    assert client.post("/interrogate", json=body, headers={"X-Presenter-Key": "wrong"}).json()["engine"] == "script"
+    h = client.get("/health", headers=KEY).json()
+    assert h["presenter_mode"] and h["presenter"] and not client.get("/health").json()["presenter"]
+
+
+def test_public_daily_share_leaves_calls_for_presenter(monkeypatch):
+    monkeypatch.setattr(config, "PRESENTER_KEY", "demo-key-for-tests")
+    monkeypatch.setattr(config, "PUBLIC_LLM_PER_MINUTE", 1000)
+    monkeypatch.setattr(config, "PUBLIC_DAILY_LLM_CALLS", 3)
+    monkeypatch.setattr(config, "GAME_DAILY_LLM_CALLS", 5)
+    body = {"question": "그날 밤 어디 계셨죠?", "admitted": False}
+    assert [client.post("/interrogate", json=body).json()["engine"] for _ in range(4)] == ["gemini"] * 3 + ["script"]
+    assert [client.post("/interrogate", json=body, headers=KEY).json()["engine"] for _ in range(3)] == ["gemini", "gemini", "script"]
+
+
+def test_wrong_keys_never_lock_out_the_presenter(monkeypatch):
+    # 강의실에서는 모두가 한 주소로 보인다. 누가 틀린 암호를 마구 보내도 발표자는 계속 인정된다
+    monkeypatch.setattr(config, "PRESENTER_KEY", "demo-key-for-tests")
+    for _ in range(30):
+        assert not client.get("/health", headers={"X-Presenter-Key": "guess"}).json()["presenter"]
+    assert client.get("/health", headers=KEY).json()["presenter"]
+
+
+def test_public_search_falls_back_to_keywords_when_embedding_share_is_used(monkeypatch):
+    monkeypatch.setattr(config, "PRESENTER_KEY", "demo-key-for-tests")
+    monkeypatch.setattr(config, "PUBLIC_EMBED_PER_MINUTE", 1)
+    assert post("/rooms/3/ask", {"query": "비상문 비밀번호"})["search"] == "memory"
+    assert post("/rooms/3/ask", {"query": "비상문 비밀번호"})["search"] == "memory"  # 같은 검색어는 다시 임베딩하지 않는다
+    assert post("/rooms/3/ask", {"query": "변경 개관"})["search"] == "keyword"
+    assert client.post("/rooms/3/ask", json={"query": "개관 연도"}, headers=KEY).json()["search"] == "memory"

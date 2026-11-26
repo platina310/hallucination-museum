@@ -23,3 +23,6 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
+      # 발표자 우선 모드의 암호. 12자 이상. Render의 Environment 화면에서 직접 넣는다. 비워 두면 이 모드는 꺼진다
+      - key: PRESENTER_KEY
+        sync: false
