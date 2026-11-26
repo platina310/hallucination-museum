@@ -666,3 +666,14 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
 .presenter form{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;flex:1 1 260px}
 .presenter input{font:inherit;font-size:16px;padding:7px 10px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);border-radius:4px;min-width:0;width:180px}
 .presenter form p{flex:1 1 100%}
+/* 시행착오 카드 */
+.trials{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.trial h3{display:flex;gap:8px;align-items:baseline}
+.trial h3 .mono{color:var(--seal);font-size:.8rem}
+.trial dl{margin:0;display:grid;grid-template-columns:4.2em minmax(0,1fr);gap:6px 10px;font-size:.92rem;line-height:1.55}
+.trial dt{font-family:var(--f-mono);font-size:.74rem;color:var(--ink-soft);padding-top:3px}
+.trial dd{margin:0}
+.trial dd.learned{font-weight:600;border-left:3px solid var(--mark);padding-left:8px}
+.privacy-note{padding:0 16px 10px;font-size:.78rem;color:var(--ink-soft)}
+.ask-words .privacy-note{padding:0}
+table.fit{min-width:0;width:100%}

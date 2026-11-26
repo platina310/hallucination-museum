@@ -7,40 +7,42 @@ import type { Status } from '../content/shared'
 
 // 강의계획서와 「퀴즈 및 팀 프로젝트 안내」의 조건. 진행 상황이 바뀌면 status와 statusText를 고친다.
 const CONDITIONS: { condition: string; plan: string; status: Status; statusText: string }[] = [
-  { condition: 'React 화면 (필수)', plan: '아이디어 공유 페이지, 수장고 지도, 방 3개, 정문 자물쇠를 React로 만들었다. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개 구현' },
-  { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태를 모두 넣었다. 빈 결과는 "근거 없음"으로 표시', status: 'ok', statusText: '구현' },
-  { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 호출. 지금은 정해진 대본으로 답한다', status: 'plan', statusText: '6주차' },
-  { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '프런트는 Vercel에 배포했다. 백엔드 Render와 DB Supabase는 6주차', status: 'ok', statusText: '프런트 배포' },
-  { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '실험 로그, 플레이 로그와 퀴즈 테이블, 서가 문서 임베딩', status: 'plan', statusText: '계획' },
-  { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '저장소를 만들고 실행 방법을 README에 적었다. 방별 프롬프트와 탈출률 변화는 이어서 기록', status: 'ok', statusText: '저장소 생성' },
-  { condition: '데이터 출처 명시와 분석 페이지', plan: '출처는 아이디어 공유 페이지의 데이터 표. 분석은 /stats 화면', status: 'plan', statusText: '계획' },
-  { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 정답이 나오는 검색어, 오래된 문서가 걸려 틀리는 검색어, 자료 없음이 나오는 검색어', status: 'plan', statusText: '대본으로 시연 가능' },
-  { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '아이디어 공유 페이지에 주제, 사용자와 문제, 데이터, AI 계획 순서로 요약했다', status: 'ok', statusText: '페이지 준비' },
-  { condition: '5주차 제출. 발표 URL과 프로토타입 URL 두 개. 권한 요청 없이 열람', plan: '발표 URL은 첫 화면, 프로토타입 URL은 /prototype. 둘 다 로그인 없이 열린다. 팀 대표가 11월 23일 LMS에 제출했다', status: 'ok', statusText: '제출 완료' },
-  { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 두었다. 내용은 매주 갱신한다', status: 'ok', statusText: '틀 완성' },
-  { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정 구역에 적는다. Swagger UI는 백엔드 배포 뒤 기입', status: 'need', statusText: 'Swagger 남음' },
+  { condition: 'React 화면 (필수)', plan: '아이디어 공유 페이지, 수장고 지도, 방 3개, 정문을 React로 구현. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개와 정문' },
+  { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태 구현. 빈 결과는 "근거 없음", 답한 쪽(Gemini 또는 대본)도 표시', status: 'ok', statusText: '구현' },
+  { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 3.5 Flash-Lite 호출. 도 씨의 대화와 고 선생의 답을 생성. 실패하면 그 요청만 정해진 대본으로 답변', status: 'ok', statusText: '11월 26일 연결' },
+  { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '화면은 Vercel, 서버는 Render, DB는 Supabase에 배포', status: 'ok', statusText: '세 곳 배포' },
+  { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '서가 문서 12건의 임베딩을 pgvector에 저장. 플레이 로그와 실험 로그 테이블. 퀴즈 응답 테이블은 7주차', status: 'ok', statusText: 'pgvector 사용' },
+  { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '실행 방법과 서버 구조를 README에 기록. 지시문은 backend/app, 실험 결과와 검색 점검은 data 폴더', status: 'ok', statusText: '기록 중' },
+  { condition: '데이터 출처 명시와 분석 페이지', plan: '출처, 라이선스, 내려받은 날짜와 건수는 아이디어 공유 페이지의 데이터 구역. 분석 페이지는 7주차', status: 'plan', statusText: '출처 명시, 분석 페이지 남음' },
+  { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 "비상문 비밀번호"(옛 문서가 걸려 틀린 답), "변경"(절반만 아는 답), "변경 개관"(정답)', status: 'ok', statusText: '실시간 시연 가능' },
+  { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '아이디어 공유 페이지에 주제, 사용자와 문제, 데이터, AI 계획 순서로 요약', status: 'ok', statusText: '발표 완료' },
+  { condition: '5주차 제출. 발표 URL과 프로토타입 URL 두 개. 권한 요청 없이 열람', plan: '발표 URL은 첫 화면, 프로토타입 URL은 /prototype. 둘 다 로그인 없이 열림. 11월 23일 LMS 제출', status: 'ok', statusText: '제출 완료' },
+  { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 둠. 시연 때는 발표자 우선 모드로 Gemini 몫 확보', status: 'ok', statusText: '틀 완성' },
+  { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정 구역에 기재', status: 'ok', statusText: '세 주소 기재' },
   { condition: '팀 4~5명', plan: `${TEAM.name} ${TEAM.members.length}명(${TEAM.members.join(', ')})`, status: 'ok', statusText: '확정' },
-  { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않는다. 무료 범위 우선', plan: '키 분리, 닉네임만 수집, 저장 전 마스킹, 무료 등급으로 개발', status: 'plan', statusText: '계획' },
+  { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않는다. 무료 범위 우선', plan: '키는 Render 환경변수와 GitHub Secrets에만 보관. 닉네임과 접속 주소는 저장하지 않고, 입력에 든 전화번호와 이메일은 저장 전에 가림. 무료 등급으로 운영', status: 'ok', statusText: '적용' },
 ]
 
 const GRADING: { item: string; weight: string; show: string }[] = [
   { item: '시스템 기능 설계·구현', weight: '30%', show: '방마다 다른 AI 활용 방식, 코드 판정 구조, 응답 검증과 오류 대응' },
   { item: 'Needs 파악·문제 정의', weight: '20%', show: 'AI 기초 교육 수요, Gandalf와의 비교, 입장 전후 퀴즈로 잰 학습 효과' },
   { item: 'UI/UX·사용성', weight: '20%', show: '임무와 다음 수 안내, PC·모바일 대응, 로딩·오류·빈 결과 처리, 고친 사례' },
-  { item: '데이터·API 활용', weight: '10%', show: '공개 공격문 약 27만 9천 건의 수법 분류, 자동 실험의 방어 전후 유출률, 플레이 로그' },
-  { item: '성능·보안 등 비기능', weight: '10%', show: '응답 속도와 호출 비용 실측, 키와 개인정보 보호, 남은 한계' },
+  { item: '데이터·API 활용', weight: '10%', show: '공개 공격문 278,945건의 정제와 수법 분류, 지시문 네 조건의 유출률 실험, 판정 규칙을 고친 과정, 플레이 로그' },
+  { item: '성능·보안 등 비기능', weight: '10%', show: '응답 속도 실측(1.3~2.1초), 무료 한도와 발표자 우선 모드, 키와 개인정보 보호, 남은 한계' },
   { item: '팀 페이지·배포·발표·시연', weight: '10%', show: '배포 주소 3가지, 방 하나를 실시간으로 탈출, RAG 3건' },
 ]
 
 
 // 비주얼·음성·음악과 개발 도구. 프로토타입에는 자리와 기본 동작만 넣어 두었다.
 const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
-  { item: '문지기 초상', now: '도 씨, 루미, 고 선생 세 명의 얼굴. 상황에 따라 표정이 열 가지로 바뀐다. 코드로 직접 그린 그림', next: '공사 중인 두 방의 문지기 얼굴', tool: '이미지 생성 도구 (미정)' },
-  { item: '전시 작품', now: '환각의 방에 걸리는 작품 3점을 코드로 직접 그렸다. 서명 옆 연도가 기록 카드와 맞는다', next: '유화, 수채 질감이 나는 그림으로 교체', tool: '이미지 생성 도구 (미정)' },
-  { item: '서가', now: '검색하면 책장을 넘기고, 전달된 책과 잘린 책이 책장에 표시된다', next: '실제 임베딩 검색 결과의 순위와 점수 표시', tool: '없음 (CSS)' },
-  { item: '문지기 목소리', now: '지시의 방에서 브라우저 기본 음성으로 답변 읽기. 기본은 꺼짐', next: '문지기마다 다른 목소리. 키는 서버에 두고 FastAPI가 호출', tool: 'ElevenLabs' },
-  { item: '배경음과 효과음', now: '버튼 자리만 표시', next: '방마다 배경음, 문이 열릴 때의 효과음', tool: 'Suno' },
-  { item: '개발 자동화', now: 'Claude로 화면 구현과 동작 확인', next: '반복 작업과 교차 검증을 명령줄 에이전트에 맡긴다', tool: 'Codex exec, agy (Antigravity CLI)' },
+  { item: '인트로 영상', now: '수장고에 갇히는 과정을 담은 1분 11초 영상. 게임 시작 화면에서 재생', next: '없음', tool: '코드로 그린 화면, ElevenLabs 목소리, Suno 배경음' },
+  { item: '문지기 그림', now: '도 씨, 루미, 고 선생을 장면 안에 상반신으로 배치. 상황에 따라 표정이 열 가지로 변화. 관장 AI는 벽 화면의 얼굴. 코드로 직접 그린 그림', next: '공사 중인 두 방의 문지기', tool: '없음 (SVG)' },
+  { item: '방 장면', now: '경비실, 전시실, 자료실, 정문 로비를 눌러서 뒤지는 장면. 형광등 깜빡임과 스치는 그림자. 깜빡임 끄기 제공', next: '방마다 다른 효과음', tool: '없음 (SVG, CSS)' },
+  { item: '전시 작품', now: '환각의 방에 걸리는 작품 3점을 코드로 직접 그림. 서명 옆 연도가 기록 카드와 일치', next: '유화, 수채 질감이 나는 그림으로 교체', tool: '이미지 생성 도구 (미정)' },
+  { item: '서가', now: '검색하면 고 선생이 받은 책이 튀어나오고 잘린 책은 빗금으로 표시. 문서별 유사도 점수 표시', next: '없음', tool: '없음 (SVG)' },
+  { item: '문지기 목소리', now: '지시의 방에서 브라우저 기본 음성으로 답변 읽기. 기본은 꺼짐. 인트로 영상의 목소리는 ElevenLabs', next: '게임 안에서도 문지기마다 다른 목소리', tool: 'ElevenLabs' },
+  { item: '배경음', now: 'Suno로 만든 곡 "Empty Basement"를 게임과 인트로 영상에 사용. 첫 조작부터 재생, 끄기 가능', next: '방마다 다른 효과음', tool: 'Suno' },
+  { item: '개발 자동화', now: 'Claude로 화면과 서버 구현, 자동 플레이 확인. 공격문 정제와 실험은 GitHub Actions에서 실행', next: '반복 작업과 교차 검증을 명령줄 에이전트에 위임', tool: 'Claude, GitHub Actions, Codex exec, agy (Antigravity CLI)' },
 ]
 
 // 성공한 게임에서 가져온 장치. 수치의 출처는 페이지 맨 아래에 있다.
@@ -56,6 +58,16 @@ const BENCHMARKS: { game: string; result: string; device: string; ours: string }
 
 // 사용성 개선 사례. 실제로 겪고 고친 것만 적는다.
 const UX_CASES: { when: string; problem: string; fix: string }[] = [
+  {
+    when: '11월 26일 Gemini 연결 뒤',
+    problem: '도 씨의 답이 천편일률적이었다',
+    fix: '사람됨과 기분, 앞서 오간 말을 지시문에 넣어 대화가 이어지게 했다. 추궁과 서류 제시의 반응도 모델이 쓴다',
+  },
+  {
+    when: '11월 25일 교수님 의견 뒤',
+    problem: '글을 읽고 단추를 누르는 화면이라 방탈출에 들어와 있다는 느낌이 약했다',
+    fix: '인트로 영상을 넣고, 방을 눌러 뒤지는 장면과 아래쪽 대화창 방식으로 방 세 개와 정문을 바꿨다. 동그란 초상 대신 상반신 그림을 장면 안에 세웠다',
+  },
   {
     when: '11월 20일 제목 변경 뒤',
     problem: '미술관인데 그림이 없고, 글만 읽어야 해서 무슨 일이 일어났는지 한눈에 들어오지 않았다',
@@ -109,8 +121,8 @@ export default function Detail() {
           <div className="eyebrow">환각 미술관 · 8주차 발표까지 채워 가는 기록</div>
           <h1>상세 자료</h1>
           <p>
-            5주차 발표는 <a href="/">아이디어 공유</a> 페이지로 한다. 여기에는 그 페이지에서 줄인 벤치마킹, 사용성 개선 기록, 시스템
-            설계, 강의 조건 대조표를 모아 두었다.
+            발표는 <a href="/">아이디어 공유</a> 페이지로 진행. 여기에는 그 페이지에서 줄인 벤치마킹, 사용성 개선 기록, 시스템 설계,
+            강의 조건 대조표를 모음
           </p>
         </div>
       </header>
@@ -213,65 +225,67 @@ export default function Detail() {
               <div className="card">
                 <h3>요청 한 건의 처리 순서</h3>
                 <ol>
-                  <li>길이와 닉네임당 횟수 검사</li>
-                  <li>방 규칙 적용. 서가의 방은 검색된 상위 3건만 근거로 삼는다</li>
-                  <li>근거 문서 검색</li>
-                  <li>LLM 호출과 스키마 검증</li>
-                  <li>출력 검사. 정답이 그대로 새지 않게 가린다</li>
-                  <li>로그 저장 후 응답</li>
+                  <li>길이 검사, 주소당 요청 수 검사</li>
+                  <li>발표자 암호 확인과 모델 호출 한도 확인. 한도를 넘으면 정해진 대본으로 답변</li>
+                  <li>서가의 방: 검색어 임베딩, pgvector에서 가까운 문서 검색, 앞의 3건 선택</li>
+                  <li>Gemini 호출. 도 씨는 대화 이력과 함께, 고 선생은 받은 문서와 함께</li>
+                  <li>코드 검사. 암호 유출 판정, 근거 번호와 숫자 검사. 걸리면 정해진 답으로 교체</li>
+                  <li>응답 후 로그 저장</li>
                 </ol>
               </div>
               <div className="card">
                 <h3>API</h3>
                 <ul>
                   <li>
-                    <span className="mono">POST /rooms/1/press</span>, <span className="mono">/present</span> 진술 추궁과 증거 제시
+                    <span className="mono">POST /rooms/1/press</span>, <span className="mono">/present</span> 진술 추궁과 서류 제시
                   </li>
                   <li>
                     <span className="mono">POST /interrogate</span>, <span className="mono">/evidence</span> 지시의 방 질문과 암호 판정
                   </li>
                   <li>
-                    <span className="mono">POST /rooms/2/check</span> 검수 결과에서 맞은 건수를 돌려준다
+                    <span className="mono">POST /rooms/2/check</span> 검수 결과에서 맞은 건수 반환
                   </li>
                   <li>
-                    <span className="mono">POST /rooms/3/ask</span> 검색된 상위 3건으로 사서가 답한다
+                    <span className="mono">POST /rooms/3/ask</span> 임베딩 검색 뒤 상위 3건으로 사서가 답변
                   </li>
                   <li>
                     <span className="mono">POST /rooms/3/check</span>, <span className="mono">/final/check</span> 비상문과 정문 암호 판정
                   </li>
                   <li>
-                    <span className="mono">GET /stats</span> 분석 페이지용 집계
+                    <span className="mono">GET /health</span> 서버 상태. <span className="mono">GET /stats</span> 분석 페이지용 집계는 7주차
                   </li>
                   <li>
-                    <span className="mono">GET /docs</span> Swagger UI
+                    <a href={SWAGGER_URL}>Swagger UI</a>에서 전체 목록 확인
                   </li>
                 </ul>
               </div>
               <div className="card">
                 <h3>속도·비용·보안</h3>
                 <ul>
+                  <li>API 키는 Render 환경변수와 GitHub Secrets에만 보관. Git에 올리지 않음</li>
+                  <li>응답 1.3~2.1초 (11월 26일 5회 실측). 서버가 잠들었다 깨어난 직후의 첫 요청은 10초 안팎</li>
+                  <li>질문 300자, 대화 이력 여섯 쌍, 서버의 하루 생성 호출 250회 제한</li>
+                  <li>무료 등급으로 운영. 시연 때는 발표자 우선 모드로 방문자의 호출을 제한</li>
                   <li>
-                    API 키는 <span className="mono">.env</span>와 Render 환경변수에만 둔다. Git에 올리지 않는다
-                  </li>
-                  <li>정답은 서버에만 둔다. 브라우저로 보내지 않는다</li>
-                  <li>질문 300자, 출력 토큰 상한, 대화 이력 없이 한 번씩 호출</li>
-                  <li>
-                    개발은 무료 등급. 공개 플레이는 질문 5,000회에 약 $5.6로 추정 <Todo>실측 후 갱신</Todo>
+                    알려진 한계: 서버가 쉴 때 쓰는 대본에 정답이 들어 있어 브라우저 코드에서 볼 수 있음 <Todo>8주차 전 정리</Todo>
                   </li>
                 </ul>
               </div>
               <div className="card">
                 <h3>오답이 나왔을 때의 대응 설계</h3>
                 <ul>
-                  <li>문이 열리는지는 제출한 값을 코드가 대조해서만 판정한다</li>
-                  <li>근거 문서가 없으면 "자료 없음"으로 답한다</li>
-                  <li>환각의 방의 지어낸 설명은 미리 정해 둔다. 실제 환각에 맡기면 풀 수 없는 문제가 나올 수 있다</li>
-                  <li>환각의 방은 맞은 건수만 알려 주고 어느 건이 틀렸는지는 알려 주지 않는다. 찍어서 통과하는 것을 막는다</li>
-                  <li>스키마 검증에 실패하면 한 번 다시 요청하고, 또 실패하면 정해 둔 안전 응답을 보낸다</li>
-                  <li>호출 한도 초과와 시간 초과는 화면에 원인과 다시 시도 방법을 알린다</li>
+                  <li>문이 열리는지와 암호가 새었는지는 코드가 판정</li>
+                  <li>사서의 답에 받은 문서에 없는 네 자리 숫자가 있거나 받지 않은 문서를 근거로 대면 정해진 답으로 교체하고 화면에 이유 표시</li>
+                  <li>아직 들키지 않은 사실과 인정하기 전의 암호는 도 씨의 지시문에 넣지 않음</li>
+                  <li>환각의 방의 지어낸 설명은 미리 정해 둠. 맞은 건수만 알려 주어 찍어서 통과하는 것을 방지</li>
+                  <li>모델이 12초 안에 답하지 못하거나 한도를 넘으면 그 요청만 정해진 대본으로 답변. 화면 위쪽에 서버 상태 표시</li>
+                  <li>임베딩을 쓸 수 없으면 낱말 검색으로, DB를 쓸 수 없으면 서버 메모리 검색으로 전환</li>
                 </ul>
               </div>
             </div>
+            <p className="more">
+              실제 모델에 붙이며 겪은 시행착오 아홉 가지는 <a href="/#trials">아이디어 공유 페이지</a>에 정리
+            </p>
           </div>
         </section>
 

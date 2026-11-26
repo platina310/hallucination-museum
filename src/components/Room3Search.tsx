@@ -575,6 +575,7 @@ export default function Room3Search({
                   {busy ? '찾는 중' : '찾아 주세요'}
                 </button>
               </div>
+              {!usingMock && <p className="privacy-note">입력한 말은 분석에 쓰여요. 개인정보는 넣지 마세요.</p>}
             </form>
             <div className="act-row">
               <button

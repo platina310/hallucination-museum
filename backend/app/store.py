@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import time
 
 from . import config
@@ -109,6 +110,15 @@ def doc_scores(qv: list[float]) -> list[tuple[str, float]] | None:
     return [(r[0], float(r[1])) for r in rows] or None
 
 
+_EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
+_PHONE = re.compile(r"(?<!\d)(01[016789]|0\d{1,2})[-.\s]?\d{3,4}[-.\s]?\d{4}(?!\d)")
+
+
+def mask(text: str) -> str:
+    """저장하기 전에 전화번호와 이메일을 가린다."""
+    return _PHONE.sub("[전화번호]", _EMAIL.sub("[이메일]", text))
+
+
 def log_play(room: int, event: str, *, input: str = "", reply: str = "", attack_type: str = "", leak: str = "", engine: str = "", extra: dict | None = None) -> None:
     """플레이 기록을 남긴다. 실패해도 게임은 계속된다. 별명이나 주소 같은 개인 정보는 남기지 않는다."""
     if not enabled():
@@ -117,7 +127,7 @@ def log_play(room: int, event: str, *, input: str = "", reply: str = "", attack_
         with _connect() as conn:
             conn.execute(
                 "INSERT INTO play_logs (room, event, input, reply, attack_type, leak, engine, extra) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                (room, event, input[:500], reply[:1000], attack_type, leak, engine, json.dumps(extra or {}, ensure_ascii=False)),
+                (room, event, mask(input[:500]), mask(reply[:1000]), attack_type, leak, engine, json.dumps(extra or {}, ensure_ascii=False)),
             )
     except Exception as e:
         _fail(e)

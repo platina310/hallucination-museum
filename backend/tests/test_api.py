@@ -12,7 +12,7 @@ from fastapi.testclient import TestClient  # noqa: E402
 
 import pytest  # noqa: E402
 
-from app import attacks, config, guard, llm, room1, room3  # noqa: E402
+from app import attacks, config, guard, llm, room1, room3, store  # noqa: E402
 from app.main import app  # noqa: E402
 
 client = TestClient(app)
@@ -290,3 +290,9 @@ def test_public_search_falls_back_to_keywords_when_embedding_share_is_used(monke
     assert post("/rooms/3/ask", {"query": "비상문 비밀번호"})["search"] == "memory"  # 같은 검색어는 다시 임베딩하지 않는다
     assert post("/rooms/3/ask", {"query": "변경 개관"})["search"] == "keyword"
     assert client.post("/rooms/3/ask", json={"query": "개관 연도"}, headers=KEY).json()["search"] == "memory"
+
+
+def test_personal_data_is_masked_before_logging():
+    assert store.mask("제 번호는 010-1234-5678이고 메일은 kim.a@example.com 입니다") == "제 번호는 [전화번호]이고 메일은 [이메일] 입니다"
+    assert store.mask("02 345 6789로 전화 주세요") == "[전화번호]로 전화 주세요"
+    assert store.mask("비상문 비밀번호는 4712입니다. 11월 14일 22시") == "비상문 비밀번호는 4712입니다. 11월 14일 22시"

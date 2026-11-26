@@ -794,6 +794,7 @@ export default function Room1CrossExam({
               {input.length} / {MAX_LEN}
             </span>
           </div>
+          {!usingMock && view === 'talk' && talkStep === 'ask' && <p className="privacy-note">입력한 말은 분석에 쓰여요. 개인정보는 넣지 마세요.</p>}
         </div>
 
         <aside className="side">

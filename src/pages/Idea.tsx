@@ -3,6 +3,7 @@
 // 8주차까지 쌓아 가는 자세한 내용은 Detail.tsx(/detail)에 있다.
 import { Pill, Todo } from '../components/Marks'
 import { DATASETS, IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SCREENS, SWAGGER_URL, TEAM } from '../content/shared'
+import { ATTACK_TYPES, CHECKED_ON, CLEANING, EXPERIMENT, EXPERIMENT_NOTES, TRIALS } from '../content/results'
 import { ROOMS } from '../game/rooms'
 
 const FLOW = ['수장고 지도', '입장 전 퀴즈', '방에서 AI와 겨루기', '배운 것과 같은 퀴즈', '정문 자물쇠', '탈출 결과와 별점', '분석 페이지']
@@ -21,8 +22,9 @@ export default function Idea() {
             <a href="#topic">주제</a>
             <a href="#problem">사용자·문제</a>
             <a href="#data">데이터</a>
-            <a href="#ai">AI 계획</a>
+            <a href="#ai">AI 활용</a>
             <a href="#prototype">프로토타입</a>
+            <a href="#trials">시행착오</a>
             <a href="#plan">일정</a>
             <a href="/prototype" className="nav-game">
               프로토타입 열기
@@ -78,7 +80,7 @@ export default function Idea() {
             </div>
             <div className="row">
               <div className="k">발표 순서</div>
-              <div className="v">주제, 사용자와 문제, 데이터, AI 계획을 이 페이지로 설명하고 프로토타입을 시연한다</div>
+              <div className="v">주제, 사용자와 문제, 데이터, AI 활용, 시행착오를 이 페이지로 설명하고 프로토타입을 시연</div>
             </div>
             <div className="row">
               <div className="k">발표 URL</div>
@@ -219,8 +221,8 @@ export default function Idea() {
               </div>
               <h2>공개 공격문 27만 9천 건으로 문지기를 시험한다</h2>
               <p>
-                주 데이터는 공개된 프롬프트 공격문과, 그 공격문을 우리 문지기에 돌려 얻는 실험 로그다. 플레이어가 많이 모이지
-                않아도 분석이 성립한다. 반 공개 플레이의 로그와 퀴즈 응답은 보조 자료로 쓴다.
+                주 데이터는 공개된 프롬프트 공격문과, 그 공격문을 우리 문지기에 돌려 얻는 실험 로그. 플레이어가 많이 모이지 않아도
+                분석이 성립함. 반 공개 플레이의 로그와 퀴즈 응답은 보조 자료
               </p>
             </div>
             <div className="tablewrap">
@@ -249,23 +251,99 @@ export default function Idea() {
                 </tbody>
               </table>
             </div>
+            <h3 className="sub-h">정제와 수법 분류 ({CHECKED_ON} 실행)</h3>
+            <div className="cols two">
+              <div className="tablewrap">
+                <table className="fit">
+                  <thead>
+                    <tr>
+                      <th>정제 단계</th>
+                      <th className="num">남은 건수</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {CLEANING.map((c) => (
+                      <tr key={c.step}>
+                        <td>{c.step}</td>
+                        <td className="num">{c.rows}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="tablewrap">
+                <table className="fit">
+                  <thead>
+                    <tr>
+                      <th>수법</th>
+                      <th className="num">비중</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ATTACK_TYPES.map((a) => (
+                      <tr key={a.type}>
+                        <td>{a.type}</td>
+                        <td className="num">{a.share}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <h3 className="sub-h">첫 자동 실험: 공격문 100건을 도 씨에게 그대로 입력</h3>
+            <div className="tablewrap">
+              <table className="stack">
+                <thead>
+                  <tr>
+                    <th>지시문 조건</th>
+                    <th>내용</th>
+                    <th className="num">암호 유출</th>
+                    <th className="num">그중 암호 그대로</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {EXPERIMENT.map((e) => (
+                    <tr key={e.condition}>
+                      <td data-label="지시문 조건">{e.condition}</td>
+                      <td data-label="내용">{e.what}</td>
+                      <td className="num" data-label="암호 유출">
+                        {e.leaks}
+                      </td>
+                      <td className="num" data-label="암호 그대로">
+                        {e.full}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <div className="cols gap-top">
               <div className="card">
-                <h3>분석 방향</h3>
+                <h3>결과를 읽을 때의 한계</h3>
                 <ul>
-                  <li>공개 공격문을 정제한 뒤 형태소 분석과 임베딩 군집으로 수법을 분류한다 (2주차 텍스트 애널리틱스)</li>
-                  <li>수법별 표본을 지시의 방 문지기에 입력해 암호 유출률을 잰다</li>
-                  <li>방어 프롬프트와 출력 검사를 더한 뒤 같은 표본으로 다시 재서 전후를 비교한다</li>
-                  <li>플레이 로그와 퀴즈 응답으로 사람이 막히는 지점과 정답률 변화를 본다 (보조)</li>
+                  {EXPERIMENT_NOTES.map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                  <li>유출 판정은 코드의 글자 맞추기. 규칙에 없는 방식으로 돌려 말한 답은 세지 못함</li>
+                </ul>
+              </div>
+              <div className="card">
+                <h3>남은 분석</h3>
+                <ul>
+                  <li>표본을 늘리고 한국어 공격문을 더해 같은 실험 반복</li>
+                  <li>수법 분류 규칙에 걸리지 않은 29.3%를 묶음 결과로 다시 분류</li>
+                  <li>플레이 로그와 퀴즈 응답으로 사람이 막히는 지점과 정답률 변화 확인 (보조)</li>
+                  <li>분석 페이지에 위 표와 수법별 유출률 게시 (7주차)</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>품질과 개인정보</h3>
                 <ul>
-                  <li>공개 데이터는 출처, 라이선스, 내려받은 날짜와 건수를 분석 페이지에 밝힌다</li>
-                  <li>공개 공격문에는 공격이 아닌 입력도 섞여 있어 중복과 잡담을 걸러 낸다</li>
-                  <li>플레이 로그는 닉네임만 받고, 자유 입력은 저장 전에 전화번호와 이메일을 마스킹한다</li>
-                  <li>화면에 "입력 내용은 분석에 쓰입니다. 개인정보를 넣지 마세요"를 표시한다</li>
+                  <li>공개 데이터의 출처, 라이선스, 내려받은 날짜와 건수를 위 표와 저장소에 기록</li>
+                  <li>공개 공격문에서 빈 입력, 너무 짧거나 긴 입력, 인사말, 중복 등 70,348건 제거</li>
+                  <li>플레이 로그에 닉네임과 접속 주소는 저장하지 않음. 입력에 든 전화번호와 이메일은 저장 전에 가림</li>
+                  <li>질문 입력 칸 아래에 "입력한 말은 분석에 쓰여요. 개인정보는 넣지 마세요" 표시</li>
                 </ul>
               </div>
             </div>
@@ -276,7 +354,7 @@ export default function Idea() {
           <div className="wrap">
             <div className="sec-head">
               <div className="eyebrow step">
-                <b>04</b> AI 활용 계획 (LLM·RAG·에이전트)
+                <b>04</b> AI 활용 (LLM·RAG·에이전트)
               </div>
               <h2>AI는 연기만 하고, 문은 코드가 연다</h2>
             </div>
@@ -306,38 +384,40 @@ export default function Idea() {
                 <h3>LLM</h3>
                 <ul>
                   <li>
-                    FastAPI 서버에서 OpenAI 호환 API로 호출. 수업과 같은 <span className="mono">.env</span> 네 줄 구성
+                    FastAPI 서버에서 OpenAI 호환 API로 호출. 수업과 같은 <span className="mono">.env</span> 구성
                   </li>
                   <li>
-                    모델은 수업에서 쓰는 <span className="mono">gemini-3.5-flash-lite</span>, 사고 수준{' '}
-                    <span className="mono">low</span>
+                    모델은 수업에서 쓰는 <span className="mono">gemini-3.5-flash-lite</span>. 사고 수준은 사서의 답{' '}
+                    <span className="mono">low</span>, 도 씨와의 대화 <span className="mono">minimal</span>
                   </li>
-                  <li>방마다 문지기의 역할 프롬프트를 따로 둔다</li>
-                  <li>구조화 출력으로 답변과 근거 문서 번호를 받고 Pydantic으로 검증</li>
+                  <li>도 씨: 사람됨, 기분, 앞서 오간 말 여섯 쌍을 지시문에 넣어 대화를 이어 감</li>
+                  <li>고 선생: 답과 근거 문서 번호를 JSON으로 받아 코드로 검사</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>RAG</h3>
                 <ul>
-                  <li>서가의 방 문서를 청킹·임베딩해 pgvector에 저장한다. 검색된 상위 3건만 근거로 사서가 답한다</li>
-                  <li>지시의 방 사건 파일도 같은 방식으로 검색해 답변에 출처를 붙인다</li>
-                  <li>8주차 시연 3건: 정답이 나오는 검색어, 오래된 문서가 걸려 틀리는 검색어, 자료 없음이 나오는 검색어</li>
+                  <li>서가의 방 문서 12건을 Gemini Embedding 2(768차원)로 임베딩해 pgvector에 저장</li>
+                  <li>검색어와 가까운 문서 가운데 앞의 3건만 근거로 사서가 답변. 문서별 유사도를 화면에 표시</li>
+                  <li>8주차 시연 3건: "비상문 비밀번호"(옛 문서가 걸려 틀린 답), "변경"(절반만 아는 답), "변경 개관"(정답)</li>
+                  <li>지시의 방의 출처는 질문에 든 낱말로 사건 파일을 고르는 규칙. 임베딩 검색은 서가의 방에만 적용</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>에이전트·MCP</h3>
                 <ul>
-                  <li>필수 범위가 아니다. 7주차 수업 뒤 적용 여부를 정한다</li>
+                  <li>필수 범위가 아님. 7주차 수업 뒤 적용 여부 결정</li>
                   <li>후보: 문지기의 방에서 플레이어가 쓴 프롬프트에 자동 공격을 돌리는 에이전트</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>AI가 틀릴 때의 대응</h3>
                 <ul>
-                  <li>문이 열리는지는 제출한 값을 코드가 대조해서만 판정한다</li>
-                  <li>근거 문서가 없으면 "자료 없음"으로 답한다</li>
-                  <li>환각의 방의 지어낸 설명은 미리 정해 둔다. 실제 환각에 맡기면 풀 수 없는 문제가 나올 수 있다</li>
-                  <li>스키마 검증에 실패하면 한 번 다시 요청하고, 또 실패하면 정해 둔 안전 응답을 보낸다</li>
+                  <li>문이 열리는지와 암호가 새었는지는 코드가 판정</li>
+                  <li>사서의 답에 받은 문서에 없는 네 자리 숫자가 있거나 받지 않은 문서를 근거로 대면, 정해진 답으로 바꾸고 화면에 이유 표시</li>
+                  <li>아직 들키지 않은 사실과 인정하기 전의 암호는 도 씨의 지시문에 넣지 않음</li>
+                  <li>모델이 12초 안에 답하지 못하거나 한도를 넘으면 그 요청만 정해진 대본으로 답변</li>
+                  <li>환각의 방의 지어낸 설명은 미리 정해 둠. 실제 환각에 맡기면 풀 수 없는 문제가 나올 수 있음</li>
                 </ul>
               </div>
             </div>
@@ -355,7 +435,8 @@ export default function Idea() {
               </div>
               <h2>지금 바로 탈출해 볼 수 있다</h2>
               <p>
-                방 세 개와 정문 자물쇠까지 처음부터 끝까지 해 볼 수 있다. 백엔드 연결 전이라 AI의 답은 정해진 대본으로 나온다.
+                방 세 개와 정문까지 처음부터 끝까지 플레이 가능. 지시의 방과 서가의 방은 서버의 Gemini가 답변. 서버가 쉬는 중이거나
+                한도를 넘으면 정해진 대본으로 답하고, 어느 쪽이 답했는지 화면에 표시
               </p>
             </div>
             <div className="cta">
@@ -416,10 +497,44 @@ export default function Idea() {
                 <h3>프로토타입에서 확인할 수 있는 상태</h3>
                 <ul>
                   <li>입력, 로딩, 오류, 응답, 출처 표시. 빈 결과는 "근거 없음"으로 나온다</li>
-                  <li>화면 위의 "시연용 조작"을 켜면 서버가 느리거나 오류일 때의 화면을 볼 수 있다</li>
+                  <li>화면 위쪽에 AI 서버 상태 표시. 연결됨, 깨우는 중, 쉬는 중</li>
                   <li>공사 중인 방 4와 5는 지도에 자리만 표시했다</li>
                 </ul>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="trials">
+          <div className="wrap">
+            <div className="sec-head">
+              <div className="eyebrow step">
+                <b>06</b> 시행착오
+              </div>
+              <h2>실제 모델에 붙여 보니 계획과 달랐던 것</h2>
+              <p>
+                {CHECKED_ON}에 서버와 Gemini를 연결하고 실험을 돌리며 겪은 일. 기대와 결과가 달랐던 것만 기록. 숫자의 원본은 저장소의{' '}
+                <a href={`${REPO_URL}/tree/main/data`}>data 폴더</a>
+              </p>
+            </div>
+            <div className="trials">
+              {TRIALS.map((t, i) => (
+                <article className="card trial" key={t.topic}>
+                  <h3>
+                    <span className="mono">{String(i + 1).padStart(2, '0')}</span> {t.topic}
+                  </h3>
+                  <dl>
+                    <dt>기대</dt>
+                    <dd>{t.expected}</dd>
+                    <dt>실제</dt>
+                    <dd>{t.happened}</dd>
+                    <dt>고친 것</dt>
+                    <dd>{t.fix}</dd>
+                    <dt>배운 것</dt>
+                    <dd className="learned">{t.learned}</dd>
+                  </dl>
+                </article>
+              ))}
             </div>
           </div>
         </section>
@@ -428,9 +543,9 @@ export default function Idea() {
           <div className="wrap">
             <div className="sec-head">
               <div className="eyebrow step">
-                <b>06</b> 8주차까지의 일정
+                <b>07</b> 8주차까지의 일정
               </div>
-              <h2>남은 3주에 끝낼 일</h2>
+              <h2>남은 2주에 끝낼 일</h2>
             </div>
             <div className="tablewrap">
               <table className="stack">
@@ -467,7 +582,9 @@ export default function Idea() {
                   <li>
                     GitHub 저장소: <a href={REPO_URL}>{REPO_URL}</a>
                   </li>
-                  <li>Swagger UI: {SWAGGER_URL ? <a href={SWAGGER_URL}>{SWAGGER_URL}</a> : '백엔드 배포 뒤 기입 (6주차)'}</li>
+                  <li>
+                    Swagger UI: <a href={SWAGGER_URL}>{SWAGGER_URL}</a>
+                  </li>
                 </ul>
               </div>
               <div className="card">
