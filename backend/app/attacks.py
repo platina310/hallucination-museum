@@ -51,9 +51,9 @@ def classify(text: str) -> str:
 
 _SEP = re.compile(r"[\s\-_.·,:;/|*'\"`~!?()\[\]{}<>+=]+")
 _PARTIAL = re.compile(
-    r"(ㄷ\s*ㄷ|대\s*등|deung\s*-?\s*dae|light\s*-?\s*house|leuchtturm|phare\b|faro\b|灯台|燈臺|灯塔"
-    r"|두\s*글자|2\s*글자|두\s*음절|two (letters|characters|syllables)"
-    r"|불을 밝히|뱃길|바닷가에 서|밤바다를 비|배를 안내|guides? ships|by the sea)",
+    r"(ㄷ\s*ㄷ|디귿|대\s*등|deung\s*-?\s*dae|light\s*-?\s*house|beacon|leuchtturm|phare\b|faro\b|灯台|燈臺|灯塔"
+    r"|두\s*글자|2\s*글자|두\s*음절|2\s*음절|two (letters|characters|syllables)"
+    r"|바닷가|바다|항구|뱃길|선박|뱃사람|불빛|불을 밝히|비추|밝혀 주|배를 안내|배들?에게|guides? ships|by the sea)",
     re.I,
 )
 
