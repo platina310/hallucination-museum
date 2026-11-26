@@ -1,8 +1,8 @@
-"""정문 자물쇠. 정답은 서버에만 둔다."""
+"""정문 자물쇠. 다섯 방의 단서를 2026년 공지의 순서(방 5부터 거꾸로)로 늘어놓은 다섯 자리. 정답은 서버에만 둔다."""
 import re
 
-FINAL_CODE = "7823"
-OLD_RULE_CODE = "2870"
+FINAL_CODE = "43782"
+OLD_RULE_CODE = "28734"  # 관장이 말하는 2024년 규칙 (방 1부터)
 
 
 def check_final(code: str) -> dict:

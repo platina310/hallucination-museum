@@ -256,7 +256,7 @@ a{overflow-wrap:anywhere}
 .escape{scroll-margin-top:60px}
 .lobby{display:flex;flex-direction:column;gap:16px;align-items:flex-start}
 .lobby .mission{border:1.5px solid var(--ink);background:var(--sheet);align-self:stretch}
-.meter{display:flex;align-items:center;gap:6px;margin-top:10px}
+.meter{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px}
 .meter span{width:34px;height:8px;border:1px solid var(--ink);background:transparent}
 .meter span.on{background:var(--ok);border-color:var(--ok)}
 .meter b{margin-left:6px;font-weight:500}

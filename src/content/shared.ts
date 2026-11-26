@@ -75,7 +75,7 @@ export const SCHEDULE: { week: number; topic: string; done: string; todo: string
 
 // 사용자가 거치는 화면. 아이디어 공유 페이지의 표와 프로토타입 화면의 안내가 이 목록을 쓴다.
 export const SCREENS: { name: string; does: string; status: Status; statusText: string }[] = [
-  { name: '수장고 지도', does: '본관 방 3개와 별관 방 2개의 상태와 진행도를 보고 들어갈 방 선택', status: 'ok', statusText: '구현' },
+  { name: '수장고 지도', does: '본관 방 3개와 별관 방 2개의 상태와 진행도를 보고 들어갈 방 선택. 다섯 방을 모두 통과하면 정문 등장', status: 'ok', statusText: '구현' },
   { name: '입장 전 퀴즈', does: '그 방에서 배울 개념을 묻는 문제 하나에 응답', status: 'ok', statusText: '구현' },
   { name: '방 1 지시의 방', does: '경비실을 뒤져 서류를 찾고, 진술을 추궁하고 서류를 내밀어 모순을 잡은 뒤, 돌려 물어 암호 확보', status: 'ok', statusText: 'Gemini 연결' },
   { name: '방 2 환각의 방', does: '전시실에서 기록 카드를 찾고, AI 도슨트의 설명을 카드와 대조해 한 건씩 통과 또는 반려', status: 'ok', statusText: '구현' },
@@ -83,7 +83,7 @@ export const SCREENS: { name: string; does: string; status: Status; statusText: 
   { name: '방 4 온도의 방', does: '조절기의 다이얼을 돌려 가며 같은 질문을 세 번씩 묻고, 기록 자물쇠와 창작 자물쇠 열기', status: 'ok', statusText: '구현' },
   { name: '방 5 문지기의 방', does: '신입 문지기에게 줄 지시문을 쓰고 검사 장치를 겹쳐, 공격은 막고 정상 질문에는 답하게 하기', status: 'ok', statusText: '구현' },
   { name: '통과 화면', does: '배운 것 한 줄과 단서를 받고, 입장 전과 같은 퀴즈에 다시 응답', status: 'ok', statusText: '구현' },
-  { name: '정문', does: '로비를 뒤져 가려진 최근 공지를 찾고, 세 방의 단서와 조합해 암호 네 자리 입력', status: 'ok', statusText: '구현' },
+  { name: '정문', does: '로비를 뒤져 가려진 최근 공지를 찾고, 다섯 방의 단서와 조합해 암호 다섯 자리 입력', status: 'ok', statusText: '구현' },
   { name: '탈출 결과', does: '별점, 시도와 힌트 횟수, 퀴즈 정답 변화 확인, 결과 카드 복사', status: 'ok', statusText: '구현' },
   { name: '분석 페이지', does: '공격 수법 분포, 조건별 유출률, 방별 통과와 퀴즈 정답률 변화 확인', status: 'ok', statusText: '구현' },
 ]

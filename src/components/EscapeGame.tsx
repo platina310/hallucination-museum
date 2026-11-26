@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { track, usingMock } from '../api'
 import { PROTOTYPE_URL } from '../content/shared'
-import { CORE_IDS, PLAYABLE_IDS, ROOMS } from '../game/rooms'
+import { ANNEX_IDS, GATE_IDS, PLAYABLE_IDS, ROOMS } from '../game/rooms'
 import type { RoomInfo } from '../game/rooms'
 import { starsOf, starText, useProgress } from '../game/progress'
 import type { Progress, RoomStats } from '../game/progress'
@@ -22,7 +22,7 @@ import ServerPill from './ServerPill'
 import Intro from './Intro'
 import type { Who } from './Portrait'
 
-// 방을 지키는 AI의 얼굴. 별관의 두 방은 기계라서 얼굴 대신 글자를 쓴다
+// 방을 지키는 AI의 얼굴. 별관의 두 방은 얼굴 대신 글자를 쓴다
 const GUARD: Record<number, Who> = { 1: 'do', 2: 'lumi', 3: 'go' }
 const GUARD_MARK: Record<number, string> = { 4: '℃', 5: 'AI' }
 const GAME_URL = PROTOTYPE_URL
@@ -73,10 +73,9 @@ function Lobby({
   onFinal: (correct: boolean) => void
 }) {
   const [copied, setCopied] = useState<'idle' | 'done' | 'manual'>('idle')
-  // 결과에는 본관 방과, 통과한 별관 방을 함께 센다
-  const playable = ROOMS.filter((r) => r.playable && (CORE_IDS.includes(r.id) || progress.cleared.includes(r.id)))
-  const clearedCount = CORE_IDS.filter((id) => progress.cleared.includes(id)).length
-  const allCleared = clearedCount === CORE_IDS.length
+  const playable = ROOMS.filter((r) => r.playable)
+  const clearedCount = GATE_IDS.filter((id) => progress.cleared.includes(id)).length
+  const allCleared = clearedCount === GATE_IDS.length
   const tries = PLAYABLE_IDS.reduce((n, id) => n + (progress.stats[id]?.tries ?? 0), 0) + progress.finalTries
   const hints = PLAYABLE_IDS.reduce((n, id) => n + (progress.stats[id]?.hints ?? 0), 0)
   const preRight = playable.filter((r) => quizCorrect(r, progress.pre)).length
@@ -108,19 +107,19 @@ function Lobby({
     <div className="lobby">
       <div className="mission">
         <p className="mission-goal">
-          <b>임무</b> 본관 방 {CORE_IDS.length}개를 통과하고 정문을 열어 <mark>수장고를 탈출</mark>하세요.
+          <b>임무</b> 방 {GATE_IDS.length}개를 통과하고 정문을 열어 <mark>수장고를 탈출</mark>하세요.
         </p>
         <p className="mission-why">
           야간 점검을 나왔다가 수장고 문이 잠겼습니다. 방마다 AI가 문을 지킵니다. 다행히 AI에게는 허점이 있고, 그 허점이 곧 이
-          게임에서 배울 내용입니다. 어느 방부터 들어가도 됩니다. 별관의 두 방은 탈출과 상관없이 도전할 수 있습니다.
+          게임에서 배울 내용입니다. 어느 방부터 들어가도 됩니다. 방을 나올 때마다 단서가 하나씩 수첩에 적히고, 정문은 그 다섯 개를 모두 써야 열립니다.
         </p>
-        <div className="meter" role="img" aria-label={`본관 방 ${CORE_IDS.length}개 중 ${clearedCount}개 통과${progress.escaped ? ', 정문 통과' : ''}`}>
-          {CORE_IDS.map((id) => (
+        <div className="meter" role="img" aria-label={`방 ${GATE_IDS.length}개 중 ${clearedCount}개 통과${progress.escaped ? ', 정문 통과' : ''}`}>
+          {GATE_IDS.map((id) => (
             <span key={id} className={progress.cleared.includes(id) ? 'on' : undefined} />
           ))}
           <span className={progress.escaped ? 'on gate' : 'gate'} />
           <b className="mono">
-            본관 {clearedCount} / {CORE_IDS.length} · 정문 {progress.escaped ? '열림' : '잠김'}
+            방 {clearedCount} / {GATE_IDS.length} · 정문 {progress.escaped ? '열림' : '잠김'}
           </b>
         </div>
       </div>
@@ -173,7 +172,7 @@ function Lobby({
             <li key={r.id} className={cleared ? 'door cleared' : r.playable ? 'door' : 'door closed'}>
               <div className="door-head">
                 <span className="mono">
-                  방 {r.id} · {CORE_IDS.includes(r.id) ? '본관' : '별관'}
+                  방 {r.id} · {ANNEX_IDS.includes(r.id) ? '별관' : '본관'}
                 </span>
                 {cleared ? (
                   <span className="pill ok" aria-label={`통과, 별 ${stars}개`}>
@@ -258,7 +257,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
   }, [roomId])
 
   if (!room) {
-    const allCleared = CORE_IDS.every((id) => progress.cleared.includes(id))
+    const allCleared = GATE_IDS.every((id) => progress.cleared.includes(id))
     return (
       <div className="escape" ref={topRef}>
         <FlowBar stage={progress.escaped ? 'result' : allCleared ? 'final' : 'map'} />
@@ -304,9 +303,8 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
   const cleared = progress.cleared.includes(room.id)
   const preAnswered = quiz === undefined || progress.pre[room.id] !== undefined
   const postAnswered = quiz === undefined || progress.post[room.id] !== undefined
-  // 본관 방에서는 다음 본관 방으로, 별관 방에서는 남은 별관 방으로 안내한다
-  const isCore = CORE_IDS.includes(room.id)
-  const nextId = (isCore ? CORE_IDS : PLAYABLE_IDS.filter((id) => !CORE_IDS.includes(id))).find((id) => id !== room.id && !progress.cleared.includes(id))
+  // 아직 통과하지 않은 방이 있으면 그 방으로, 다 통과했으면 정문으로 안내한다
+  const nextId = GATE_IDS.find((id) => id !== room.id && !progress.cleared.includes(id))
   const stars = starsOf(room.id, progress.stats[room.id])
 
   function solved(stats: RoomStats) {
@@ -344,15 +342,9 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
           <p className="cleared-lesson">
             <b>이 방에서 배운 것</b> {room.lesson}
           </p>
-          {CLUES[room.id] ? (
-            <p className="cleared-clue">
-              <b>단서 수첩에 적음</b> {CLUES[room.id]}
-            </p>
-          ) : (
-            <p className="cleared-clue">
-              <b>별관</b> 이 방은 정문 암호와 상관없는 심화 방입니다. 기록은 분석 페이지에 반영됩니다.
-            </p>
-          )}
+          <p className="cleared-clue">
+            <b>단서 수첩에 적음</b> {CLUES[room.id]} <span className="muted">정문 암호에 쓰입니다.</span>
+          </p>
           {quiz && !postAnswered && <Quiz quiz={quiz} mode="post" onAnswer={(c) => {
                 answerPost(room.id, c)
                 track({ kind: 'quiz', room: room.id, phase: 'post', choice: c })
@@ -370,7 +362,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
               </button>
             )}
             <button className={nextId === undefined ? 'btn' : 'btn ghost'} type="button" onClick={() => enter(null)}>
-              {nextId === undefined && isCore ? '정문으로 가기' : '지도로 돌아가기'}
+              {nextId === undefined ? '정문으로 가기' : '지도로 돌아가기'}
             </button>
           </div>
         </div>

@@ -1,9 +1,9 @@
-// 정문. 세 방에서 얻은 단서를 조합해야 열린다. 방들과 같은 방식으로, 로비를 뒤지고 관장 AI와 대화한다.
+// 정문. 다섯 방에서 얻은 단서를 조합해야 열린다. 방들과 같은 방식으로, 로비를 뒤지고 관장 AI와 대화한다.
 // 관장 AI는 2024년 규칙을 자신 있게 말한다. 게시판 포스터 뒤에 가려진 최근 공지를 찾아야 한다.
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { checkFinalCode } from '../api'
-import { PLAYABLE_IDS } from '../game/rooms'
+import { GATE_IDS } from '../game/rooms'
 import { CLUES, DIRECTOR_LINES, NOTICES } from '../mock/final'
 import { Coach } from './Guide'
 
@@ -47,7 +47,7 @@ const SPOTS: Spot[] = [
 const HINTS = [
   '관장의 말을 그대로 믿기 전에 로비 게시판에서 근거를 확인하세요.',
   '게시판의 전시 포스터를 눌러 보세요. 뒤에 종이가 한 장 더 붙어 있습니다.',
-  '공지가 두 장이면 날짜가 최근인 쪽을 따릅니다. 단서 수첩의 세 가지를 새 공지의 순서로 늘어놓고, 마지막 자리는 본관 방의 수입니다.',
+  '공지가 두 장이면 날짜가 최근인 쪽을 따릅니다. 단서 수첩의 다섯 가지에서 숫자를 하나씩 뽑아, 새 공지의 순서(방 5부터 거꾸로)로 늘어놓으세요.',
 ]
 
 type Screen = 'idle' | 'sure' | 'glitch' | 'humble'
@@ -177,7 +177,7 @@ export default function FinalGate({ tries, onTry }: { tries: number; onTry: (cor
 
   let coach = '화면을 눌러 관장 AI에게 정문 암호를 물어보세요. 로비도 눌러 살펴보세요.'
   if (open) coach = '탈출입니다. AI가 아는 것은 배운 시점까지입니다.'
-  else if (hasNew) coach = '공지가 두 장입니다. 날짜가 최근인 쪽을 따라 단서 수첩의 숫자를 늘어놓고 키패드에 입력하세요. 관장에게 새 공지를 내밀어 봐도 좋습니다.'
+  else if (hasNew) coach = '공지가 두 장입니다. 날짜가 최근인 쪽을 따라 단서 수첩의 다섯 숫자를 늘어놓고 키패드에 입력하세요. 관장에게 새 공지를 내밀어 봐도 좋습니다.'
   else if (hasOld) coach = '게시판 공지와 관장의 말이 같습니다. 그런데 이 공지가 가장 최근 것일까요? 게시판을 더 살펴보세요.'
   else if (asked) coach = '관장은 자신 있게 답했습니다. 믿기 전에 로비 게시판에서 근거를 확인하세요.'
 
@@ -187,7 +187,7 @@ export default function FinalGate({ tries, onTry }: { tries: number; onTry: (cor
     <div className="final">
       <div className="final-head">
         <h3>수장고 정문</h3>
-        <p>방 세 개를 모두 통과했어요. 마지막으로 정문 암호 네 자리를 맞히면 탈출이에요. 지금까지 배운 걸 써먹을 차례예요.</p>
+        <p>방 다섯 개를 모두 통과했어요. 마지막으로 정문 암호 다섯 자리를 맞히면 탈출이에요. 방마다 적어 둔 단서를 전부 써먹을 차례예요.</p>
       </div>
       <div className="proto-body">
         <div className="room">
@@ -361,9 +361,9 @@ export default function FinalGate({ tries, onTry }: { tries: number; onTry: (cor
             ) : panel === 'door' ? (
               <>
                 <span className="dlg-name me">정문 키패드</span>
-                <p>암호 네 자리를 누르면 정문이 열려요. 수첩을 다시 펴 봐요.</p>
+                <p>암호 다섯 자리를 누르면 정문이 열려요. 수첩을 다시 펴 봐요.</p>
                 <ul className="notebook gap-small">
-                  {PLAYABLE_IDS.map((id) => (
+                  {GATE_IDS.map((id) => (
                     <li key={id}>
                       <span className="mono">방 {id}</span> {CLUES[id]}
                     </li>
@@ -371,15 +371,15 @@ export default function FinalGate({ tries, onTry }: { tries: number; onTry: (cor
                 </ul>
                 <form className="drawer-row" onSubmit={(e) => void submit(e)}>
                   <label htmlFor="final-input" className="sr-only">
-                    정문 암호 네 자리
+                    정문 암호 다섯 자리
                   </label>
                   <input
                     id="final-input"
                     className="code-input"
                     inputMode="numeric"
                     autoComplete="off"
-                    maxLength={4}
-                    placeholder="0000"
+                    maxLength={5}
+                    placeholder="00000"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                   />
@@ -447,9 +447,9 @@ export default function FinalGate({ tries, onTry }: { tries: number; onTry: (cor
         <aside className="side">
           <div>
             <h3>단서 수첩</h3>
-            <p>세 방을 나오며 적어 둔 것입니다.</p>
+            <p>다섯 방을 나오며 적어 둔 것입니다.</p>
             <ul className="notebook gap-top">
-              {PLAYABLE_IDS.map((id) => (
+              {GATE_IDS.map((id) => (
                 <li key={id}>
                   <span className="mono">방 {id}</span> {CLUES[id]}
                 </li>

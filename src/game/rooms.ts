@@ -100,5 +100,7 @@ export const ROOMS: RoomInfo[] = [
 
 export const PLAYABLE_IDS = ROOMS.filter((r) => r.playable).map((r) => r.id)
 
-// 정문을 여는 데 필요한 본관 방. 나머지(온도의 방, 문지기의 방)는 별관이라 통과하지 않아도 탈출할 수 있다.
-export const CORE_IDS = [1, 2, 3]
+// 정문은 다섯 방을 모두 통과해야 나타난다. 방마다 단서가 하나씩 나오고, 정문 암호는 그 다섯 개를 조합한다.
+export const GATE_IDS = PLAYABLE_IDS
+// 온도의 방과 문지기의 방은 별관에 있다. 지도에 적는 위치일 뿐, 탈출에는 본관 방과 똑같이 필요하다.
+export const ANNEX_IDS = [4, 5]

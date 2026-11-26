@@ -232,8 +232,9 @@ def test_room3_ignores_query_without_korean_or_digits():
 def test_door_and_final():
     assert post("/rooms/3/check", {"code": "1987"})["correct"]
     assert "예전" in post("/rooms/3/check", {"code": "4712"})["note"]
-    assert post("/final/check", {"code": "7823"})["correct"]
-    assert "2024" in post("/final/check", {"code": "2870"})["note"]
+    assert post("/final/check", {"code": "43782"})["correct"]
+    assert "2024" in post("/final/check", {"code": "28734"})["note"]
+    assert not post("/final/check", {"code": "7823"})["correct"]  # 세 방만 쓰던 예전 암호
 
 
 def test_validation_and_rate_limit(monkeypatch):
