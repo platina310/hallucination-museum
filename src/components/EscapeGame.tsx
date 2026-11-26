@@ -251,10 +251,11 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
 
   const room = ROOMS.find((r) => r.id === roomId)
 
-  // 방에 들어가면 그 방의 곡으로, 지도로 나오면 원래 곡으로 바꾼다
+  // 방에 들어가면 그 방의 곡으로, 지도로 나오면 원래 곡으로 바꾼다. 다섯 방을 다 통과해 정문이 나타나면 정문의 곡
+  const atGate = roomId === null && !showIntro && !progress.escaped && GATE_IDS.every((id) => progress.cleared.includes(id))
   useEffect(() => {
-    setBgmPlace(roomId)
-  }, [roomId])
+    setBgmPlace(atGate ? 'gate' : roomId)
+  }, [roomId, atGate])
 
   if (!room) {
     const allCleared = GATE_IDS.every((id) => progress.cleared.includes(id))

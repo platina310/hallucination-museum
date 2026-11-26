@@ -1,5 +1,5 @@
 // 배경음 재생기. 화면이 바뀌어도 끊기지 않게 재생기는 하나만 두고, 장소가 바뀌면 곡만 갈아 끼운다.
-// 수장고 지도와 정문은 「Empty Basement」, 방은 방마다 다른 곡. 모두 Suno로 만들었다.
+// 수장고 지도는 「Empty Basement」, 방과 정문은 저마다 다른 곡. 모두 Suno로 만들었다.
 // 브라우저는 사용자가 누르기 전에는 소리를 못 내므로, 켜 둔 상태라면 첫 조작 때 시작한다.
 export interface Track {
   src: string
@@ -7,6 +7,7 @@ export interface Track {
 }
 
 const LOBBY: Track = { src: '/audio/empty-basement.mp3', title: 'Empty Basement' }
+const GATE: Track = { src: '/audio/gate-threshold-of-exit.mp3', title: 'Threshold of Exit' }
 // 방 번호별 곡. 여기에 없는 방은 수장고 지도의 곡을 그대로 쓴다
 const ROOM_TRACKS: Record<number, Track> = {
   1: { src: '/audio/room1-ticking-room.mp3', title: 'The Ticking Room' },
@@ -77,9 +78,9 @@ function swap(next: Track, play: boolean) {
   if (play) start()
 }
 
-// 장소가 바뀌면 부른다. room이 null이면 수장고 지도. 소리가 나는 중이면 줄였다가 다음 곡으로 넘어간다
-export function setBgmPlace(room: number | null) {
-  const next = (room !== null && ROOM_TRACKS[room]) || LOBBY
+// 장소가 바뀌면 부른다. null이면 수장고 지도, 'gate'면 정문. 소리가 나는 중이면 줄였다가 다음 곡으로 넘어간다
+export function setBgmPlace(place: number | 'gate' | null) {
+  const next = place === 'gate' ? GATE : (place !== null && ROOM_TRACKS[place]) || LOBBY
   const p = bgmPlayer()
   clearInterval(fade)
   if (next.src === current.src) {
