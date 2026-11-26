@@ -35,7 +35,9 @@ ROOM3_Z = float(_env("ROOM3_Z", "0.5"))
 
 # 무료 등급 한도를 게임이 다 쓰지 않도록 하루 생성 호출 수를 막아 둔다. 넘으면 정해진 대본으로 답한다
 GAME_DAILY_LLM_CALLS = int(_env("GAME_DAILY_LLM_CALLS", "250"))
-RATE_PER_MINUTE = int(_env("RATE_PER_MINUTE", "30"))
+# 한 주소가 1분에 보낼 수 있는 요청 수. 강의실처럼 여럿이 같은 와이파이를 쓰면 모두 한 주소로 보이므로 넉넉히 둔다.
+# 사람이 누르는 속도로는 닿지 않고, 프로그램으로 마구 부르는 것만 막는다
+RATE_PER_MINUTE = int(_env("RATE_PER_MINUTE", "600"))
 
 ALLOWED_ORIGINS = [
     o.strip()
