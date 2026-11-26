@@ -238,7 +238,8 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
   const [runKey, setRunKey] = useState(0)
   const topRef = useRef<HTMLDivElement>(null)
 
-  const toTop = () => setTimeout(() => topRef.current?.scrollIntoView({ block: 'start' }), 0)
+  // 방 안에서는 방 제목부터, 지도에서는 이용 흐름 표시줄부터 보이게 한다
+  const toTop = () => setTimeout(() => (topRef.current?.querySelector('.room-head') ?? topRef.current)?.scrollIntoView({ block: 'start' }), 0)
 
   function enter(id: number | null) {
     // 이미 통과한 방에 다시 들어가면 새 판으로 시작한다 (별 3개 재도전)
@@ -335,6 +336,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
       {!preAnswered && quiz && <Quiz quiz={quiz} mode="pre" onAnswer={(c) => {
             answerPre(room.id, c)
             track({ kind: 'quiz', room: room.id, phase: 'pre', choice: c })
+            toTop()
           }} />}
 
       {preAnswered && cleared && (

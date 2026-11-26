@@ -5,6 +5,9 @@ export default function ModeSwitch() {
   const hard = useHardMode()
   return (
     <span className="seg mode" role="group" aria-label="게임 모드" title="하드 모드: 맞힐 때마다 문지기가 조금씩 무섭게 변합니다. 문제와 음악은 일반 모드와 같습니다">
+      <span className="seg-label" aria-hidden="true">
+        모드
+      </span>
       <button type="button" aria-pressed={!hard} onClick={() => setHardMode(false)}>
         일반
       </button>

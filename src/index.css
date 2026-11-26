@@ -517,10 +517,10 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
 .dlg-name{position:absolute;left:-1.5px;top:-13px;background:var(--seal);color:#fff;font-family:var(--f-mono);font-size:.74rem;padding:2px 10px}
 .dlg p{font-size:1.02rem;line-height:1.6}
 .choices{display:grid;gap:8px;padding:10px 16px 14px;border-bottom:1px solid var(--rule)}
-.choices>button{font:inherit;font-size:.98rem;text-align:left;min-height:46px;padding:9px 12px;border:1.5px solid var(--ink-soft);background:var(--paper);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:10px;line-height:1.45}
-.choices>button:hover:not(:disabled),.choices>button:focus-visible{border-color:var(--ink);background:var(--mark);color:var(--on-mark)}
-.choices>button:disabled{opacity:.45;cursor:not-allowed}
-.choices>button.aside{border-style:dashed;color:var(--ink-soft)}
+.choices>button,.choice-pair>button{font:inherit;font-size:.98rem;text-align:left;min-height:46px;padding:9px 12px;border:1.5px solid var(--ink-soft);background:var(--paper);color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:10px;line-height:1.45}
+.choices>button:hover:not(:disabled),.choices>button:focus-visible,.choice-pair>button:hover:not(:disabled),.choice-pair>button:focus-visible{border-color:var(--ink);background:var(--mark);color:var(--on-mark)}
+.choices>button:disabled,.choice-pair>button:disabled{opacity:.45;cursor:not-allowed}
+.choices>button.aside,.choice-pair>button.aside{border-style:dashed;color:var(--ink-soft)}
 .choices .k{font-family:var(--f-mono);font-size:.74rem;border:1px solid currentColor;min-width:22px;height:22px;display:grid;place-items:center;flex:none;opacity:.7}
 .choices em{font-style:normal;color:var(--ink-soft);font-size:.86rem}
 .choices-q{font-family:var(--f-mono);font-size:.8rem;color:var(--ink-soft)}
@@ -794,3 +794,42 @@ table.fit{min-width:0;width:100%}
 .seg.mode button:last-child[aria-pressed="true"]{background:var(--seal);color:#fff}
 .mission-mode{margin-top:8px;font-size:.88rem;color:var(--ink-soft)}
 .mission-mode b{color:var(--seal);margin-right:4px}
+/* ── 사용성 점검 (PC·모바일) ─────────────────────────────── */
+/* 한글은 낱말 가운데에서 줄이 바뀌지 않게 한다. 긴 주소 같은 것만 예외로 끊는다 */
+body{word-break:keep-all;overflow-wrap:anywhere}
+/* 방 안에서는 프로토타입 안내 상자를 접어 플레이 화면을 위로 올린다 */
+.wrap:has(.room-head) .proto-guide{display:none}
+.room-head{scroll-margin-top:66px}
+/* 문지기 정보 줄은 낮게. 그림은 장면 안에 크게 있다 */
+.suspect-bar{padding:8px 16px}
+.suspect-bar .portrait{width:52px;height:52px}
+/* 덜 쓰는 선택지 둘은 넓은 화면에서 나란히 두어, 장면·대화창·단추가 한 화면에 들어오게 한다 */
+.choice-pair{display:grid;gap:8px}
+@media (min-width:700px){.choice-pair{grid-template-columns:1fr 1fr}}
+/* 모드 고르기에 이름표 */
+.seg.mode{align-items:stretch}
+.seg-label{display:inline-flex;align-items:center;padding:0 9px;font-family:var(--f-mono);font-size:.74rem;color:var(--ink-soft);border-right:1px solid var(--rule);background:var(--sheet)}
+/* 수장고 지도: 넓은 화면에서는 본관 셋을 윗줄, 별관 둘을 아랫줄에 */
+@media (min-width:900px){
+  .doors{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .doors .door{grid-column:span 2}
+  .doors .door:nth-child(n+4){grid-column:span 3}
+}
+/* 좁은 화면: 임무의 단계는 지금 단계만 글로 보이고 나머지는 번호만 */
+@media (max-width:640px){
+  .steps{display:flex;gap:6px}
+  .steps li{flex:0 0 auto;font-size:0;padding:7px 8px;display:flex;align-items:center}
+  .steps li::before{font-size:.74rem;margin-right:0}
+  .steps li.now{flex:1 1 0;min-width:0;font-size:.86rem}
+  .steps li.now::before{margin-right:6px;flex:none}
+  .mission-why{font-size:.8rem}
+}
+/* 넓은 화면: 오른쪽 칸(기록 카드, 증거 제출, 단서 수첩)은 스크롤해도 따라와서, 아래쪽에서 판정할 때도 대조할 수 있다 */
+@media (min-width:821px){
+  .side{position:sticky;top:57px;align-self:start;max-height:calc(100vh - 57px);overflow-y:auto}
+}
+/* 좁은 화면: 머리글이 높아 방 제목이 가려지지 않게 하고, 심문 장면은 세로를 키워 도 씨의 머리가 잘리지 않게 한다 */
+@media (max-width:640px){
+  .room-head{scroll-margin-top:80px}
+  .scene.talk svg{height:200px}
+}

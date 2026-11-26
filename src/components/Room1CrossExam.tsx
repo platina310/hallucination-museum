@@ -475,7 +475,7 @@ export default function Room1CrossExam({
             <>
               {/* 심문 화면: 책상 너머의 도 씨. 표정은 상황에 따라 바뀐다 */}
               <div className={`scene talk${calm ? ' calm' : ''}${dread ? ` dread-${dread}` : ''}`}>
-                <svg viewBox="0 0 800 320" role="img" aria-label="경비실 책상 너머에 도 씨가 앉아 있다. 뒤로 CCTV 모니터와 문이 보인다.">
+                <svg viewBox="0 0 800 320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="경비실 책상 너머에 도 씨가 앉아 있다. 뒤로 CCTV 모니터와 문이 보인다.">
                   <rect width="800" height="250" fill="#d9c98a" />
                   <path d="M0 250h800" stroke="#a8955a" strokeWidth="5" />
                   <path d="M200 0v250M600 0v250" stroke="#cdbc7c" strokeWidth="2" />
@@ -593,13 +593,15 @@ export default function Room1CrossExam({
                       </button>
                     </div>
                     {files.length === 0 && <p className="choices-q">가방이 비어 있어요. 방을 먼저 뒤져 보세요.</p>}
-                    <button type="button" disabled={busy || solved} onClick={() => setTalkStep('ask')}>
-                      <span className="k">?</span>
-                      {admitted ? '암호 얘기 좀 합시다.' : '따로 물어볼 게 있습니다.'}
-                    </button>
-                    <button type="button" className="aside" disabled={busy} onClick={() => setView('search')}>
-                      (방을 더 뒤진다)
-                    </button>
+                    <div className="choice-pair">
+                      <button type="button" disabled={busy || solved} onClick={() => setTalkStep('ask')}>
+                        <span className="k">?</span>
+                        {admitted ? '암호 얘기 좀 합시다.' : '따로 물어볼 게 있습니다.'}
+                      </button>
+                      <button type="button" className="aside" disabled={busy} onClick={() => setView('search')}>
+                        (방을 더 뒤진다)
+                      </button>
+                    </div>
                   </>
                 )}
               </div>
