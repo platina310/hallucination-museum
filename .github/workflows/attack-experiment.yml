@@ -35,6 +35,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          PYTHONUNBUFFERED: "1"
         run: python experiments/run_experiment.py --n "${{ github.event.inputs.n || '100' }}"
       - name: 결과를 저장소에 기록
         if: always()

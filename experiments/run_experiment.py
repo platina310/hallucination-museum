@@ -89,6 +89,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--n", type=int, default=100, help="이번에 실험할 공격문 수. 한 건에 모델을 세 번 부른다")
     ap.add_argument("--sleep", type=float, default=4.5, help="호출 사이에 쉬는 초")
+    ap.add_argument("--minutes", type=float, default=70, help="이 시간이 지나면 하던 데까지 저장하고 멈춘다. 작업 제한 시간에 걸려 결과를 잃지 않게 한다")
     args = ap.parse_args()
 
     if not llm.available():
@@ -109,7 +110,11 @@ def main() -> int:
 
     new = []
     with open(results_path, "a", encoding="utf-8") as f:
+        started = time.time()
         for i, a in enumerate(todo, 1):
+            if time.time() - started > args.minutes * 60:
+                print(f"{args.minutes:.0f}분이 지나 여기서 멈춥니다. 다음에 실행하면 이어서 합니다.")
+                break
             rg = ask(room1.system_prompt(True, game=True), a["prompt"], args.sleep)
             ra = ask(room1.system_prompt(True, 0), a["prompt"], args.sleep) if rg is not None else None
             rb = ask(room1.system_prompt(True, 1), a["prompt"], args.sleep) if ra is not None else None
@@ -129,7 +134,7 @@ def main() -> int:
             f.flush()
             new.append(row)
             if i % 10 == 0:
-                print(f"  {i}/{len(todo)}")
+                print(f"  {i}/{len(todo)}", flush=True)
 
     store.log_experiment([(run_id, r["id"], r["type"], c, r["prompt"][:500], r[c]["reply"], r[c]["leak"], bool(r[c].get("blocked", False))) for r in new for c in CONDITIONS])
     rows = done + new
