@@ -6,13 +6,14 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent, KeyboardEvent } from 'react'
 import { interrogate, presentEvidence, pressStatement, submitEvidence, usingMock } from '../api'
 import type { MockNet } from '../api'
+import { useHardMode } from '../game/mode'
 import type { RoomStats } from '../game/progress'
 import { ADMIT_STATEMENT, CASE_FILES, CONTRADICTION_COUNT, ROOM_FILES, TESTIMONY } from '../mock/level1'
 import GuardRoom from './GuardRoom'
 import type { AttackType, CaseFile, Engine, Leak, TalkContext } from '../types'
 import { Coach, Mission } from './Guide'
 import Portrait, { Figure } from './Portrait'
-import type { Face } from './Portrait'
+import type { Dread, Face } from './Portrait'
 
 const LEVEL = 1
 const NICKNAME = 'guest' // 닉네임 입력 화면은 6주차에 붙인다
@@ -110,6 +111,7 @@ export default function Room1CrossExam({
   const [drawerOpen, setDrawerOpen] = useState(saved.drawerOpen)
   // 방을 뒤지는 화면과 도 씨와 말하는 화면을 오간다. 서류를 하나도 못 찾았으면 방부터 뒤진다.
   const [view, setView] = useState<'search' | 'talk'>(saved.found.length > 0 && saved.exposed.length > 0 ? 'talk' : 'search')
+  const hard = useHardMode() // 하드 모드에서만 도 씨가 변한다
   const [calm, setCalm] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) // 깜빡임과 그림자 끄기
   const [talkStep, setTalkStep] = useState<'root' | 'file' | 'ask'>('root')
   const [cur, setCur] = useState(0) // 지금 보고 있는 진술
@@ -355,6 +357,12 @@ export default function Room1CrossExam({
     mood = struckOut ? '여유만만. 변호사 옆에서 웃고 있습니다' : '피식. 헛다리라는 표정입니다'
   }
 
+  // 하드 모드에서는 틀릴수록 도 씨가 사람 같지 않게 변한다. 헛다리와 틀린 제출을 함께 센다. 문을 열면 원래대로 돌아온다
+  const mistakes = strikes + (solved ? 0 : submits)
+  const dread: Dread = !hard || solved ? 0 : mistakes >= 5 ? 3 : mistakes >= 4 ? 2 : mistakes >= 2 ? 1 : 0
+  if (!solved && !jolt && dread === 3) mood = struckOut ? '웃고 있습니다. 아까부터 눈을 깜빡이지 않습니다' : `${mood}. 그런데 눈을 깜빡이지 않습니다`
+  else if (!solved && !jolt && dread === 2) mood = `${mood}. 눈가가 유난히 어둡습니다`
+
   // 방금 상황을 보고 다음에 할 일을 한 줄로 알려 준다
   const lastReply = logRows.length > 0 ? logRows[logRows.length - 1] : undefined
   let coach = '진술을 읽고, 어긋나는 서류를 골라 내밀어 보세요. 막히면 더 캐물어 말을 시켜 보세요.'
@@ -438,7 +446,7 @@ export default function Room1CrossExam({
       <div className="proto-body">
         <div className="room">
           <div className="suspect-bar">
-            <Portrait who="do" face={moodKey} />
+            <Portrait who="do" face={moodKey} dread={dread} />
             <div className="suspect-now">
               <b>도 씨</b> <span className="muted">야간 경비원</span>
               <div className="mood" role="status">
@@ -453,6 +461,7 @@ export default function Room1CrossExam({
               found={found}
               drawerOpen={drawerOpen}
               face={moodKey}
+              dread={dread}
               calm={calm}
               onCalm={setCalm}
               onFind={(id) => setFound((prev) => (prev.includes(id) ? prev : [...prev, id]))}
@@ -465,7 +474,7 @@ export default function Room1CrossExam({
           ) : (
             <>
               {/* 심문 화면: 책상 너머의 도 씨. 표정은 상황에 따라 바뀐다 */}
-              <div className={`scene talk${calm ? ' calm' : ''}`}>
+              <div className={`scene talk${calm ? ' calm' : ''}${dread ? ` dread-${dread}` : ''}`}>
                 <svg viewBox="0 0 800 320" role="img" aria-label="경비실 책상 너머에 도 씨가 앉아 있다. 뒤로 CCTV 모니터와 문이 보인다.">
                   <rect width="800" height="250" fill="#d9c98a" />
                   <path d="M0 250h800" stroke="#a8955a" strokeWidth="5" />
@@ -488,7 +497,7 @@ export default function Room1CrossExam({
                 </svg>
                 {jolt && <span className="burst">모순!</span>}
                 <div className={jolt ? 'talk-who jolt' : 'talk-who'}>
-                  <Figure who="do" face={moodKey} />
+                  <Figure who="do" face={moodKey} dread={dread} />
                 </div>
                 <div className="talk-desk" aria-hidden="true" />
                 <p className="talk-mood">{mood}</p>

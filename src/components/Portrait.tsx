@@ -30,6 +30,10 @@ const FACE_LABEL: Record<Face, string> = {
   sure: '자신만만한 표정',
 }
 
+// 틀릴수록 문지기가 사람 같지 않게 변하는 정도. 0은 평소 모습
+export type Dread = 0 | 1 | 2 | 3
+const DREAD_LABEL = ['', ', 어딘가 창백해진 모습', ', 눈가가 검게 꺼진 모습', ', 사람 같지 않게 변한 모습']
+
 const line = { stroke: 'var(--ink)', strokeWidth: 2, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, fill: 'none' }
 const drop = 'c1.8 2.7 2.7 4 2.7 5.3a2.7 2.7 0 0 1-5.4 0c0-1.3.9-2.6 2.7-5.3z'
 
@@ -144,6 +148,42 @@ function features(face: Face): ReactNode {
   }
 }
 
+/** 표정 아래에 까는 것: 꺼진 눈가와 실핏줄. 표정(눈썹·눈·입)은 이 위에 그대로 그려져 계속 읽힌다. */
+function dreadUnder(d: Dread): ReactNode {
+  if (d === 0) return null
+  const socket = d === 1 ? { rx: 5, ry: 4.4, o: 0.16 } : d === 2 ? { rx: 5.6, ry: 5, o: 0.5 } : { rx: 6.2, ry: 5.8, o: 0.94 }
+  return (
+    <g className="dread-under">
+      <ellipse cx="40" cy="50.5" rx={socket.rx} ry={socket.ry} fill="#1a1220" opacity={socket.o} />
+      <ellipse cx="56" cy="50.5" rx={socket.rx} ry={socket.ry} fill="#1a1220" opacity={socket.o} />
+      {d === 1 && <path d="M36.5 55q3.5 2.200 7 0M52.5 55q3.5 2.200 7 0" stroke="#5c4a63" strokeWidth="1.4" strokeLinecap="round" fill="none" opacity=".6" />}
+      {d >= 2 && <path d="M33.500 57l-1.500 3.500 2 2.500-1 4M63 57.500l1.800 3-1.300 2.500 1.500 3" stroke="#5a1f1f" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity=".85" />}
+      {d === 3 && <path d="M47 66.500l-1.200 2.500 2.200 1.500-.800 2.500M31 50l-2 1.500 1.500 2" stroke="#5a1f1f" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity=".85" />}
+    </g>
+  )
+}
+
+/** 표정 위에 덧그리는 것: 꿰맨 입, 찢어진 입꼬리, 검은 눈물, 붉은 눈동자. */
+function dreadOver(d: Dread): ReactNode {
+  if (d < 2) return null
+  return (
+    <g className="dread-over">
+      <path d="M42 59.500v4M45 59.800v4M48 60v4M51 59.800v4M54 59.500v4" stroke="var(--ink)" strokeWidth=".9" strokeLinecap="round" opacity={d === 3 ? 0.9 : 0.6} />
+      {d === 3 && (
+        <>
+          <path d="M31.500 57.500q3.500 4.500 8.500 4.500M64.500 57.500q-3.500 4.500-8.500 4.500" stroke="#2a0d0d" strokeWidth="1.3" strokeLinecap="round" fill="none" />
+          <path d="M38.500 55.500v8.500M57.500 55.500v6" stroke="#0b0b0f" strokeWidth="1.8" strokeLinecap="round" />
+          <path className="drop" d={`M38.500 61${drop}`} fill="#0b0b0f" />
+          <circle cx="40" cy="50.5" r="2.900" fill="#ff3b2f" opacity=".35" />
+          <circle cx="56" cy="50.5" r="2.900" fill="#ff3b2f" opacity=".35" />
+          <circle className="ember" cx="40" cy="50.5" r="1.500" fill="#ff3b2f" />
+          <circle className="ember" cx="56" cy="50.5" r="1.500" fill="#ff3b2f" />
+        </>
+      )}
+    </g>
+  )
+}
+
 /** 몸과 머리 뒤쪽. 얼굴보다 먼저 그린다. */
 function back(who: Who): ReactNode {
   if (who === 'do')
@@ -204,11 +244,11 @@ function front(who: Who, face: Face): ReactNode {
   )
 }
 
-export default function Portrait({ who, face, size }: { who: Who; face: Face; size?: 'small' }) {
+export default function Portrait({ who, face, size, dread = 0 }: { who: Who; face: Face; size?: 'small'; dread?: Dread }) {
   const clip = useId()
   const droop = face === 'confess'
   return (
-    <svg className={`portrait ${face}${size ? ` ${size}` : ''}`} viewBox="0 0 96 96" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}`}>
+    <svg className={`portrait ${face}${size ? ` ${size}` : ''}${dread ? ` dread-${dread}` : ''}`} viewBox="0 0 96 96" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}${DREAD_LABEL[dread]}`}>
       <clipPath id={clip}>
         <circle cx="48" cy="48" r="46" />
       </clipPath>
@@ -221,7 +261,9 @@ export default function Portrait({ who, face, size }: { who: Who; face: Face; si
           <circle cx="29.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
           <circle cx="66.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
           <ellipse cx="48" cy="51" rx="18.5" ry="20.5" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="2" />
+          {dreadUnder(dread)}
           {features(face)}
+          {dreadOver(dread)}
           {front(who, face)}
         </g>
       </g>
@@ -267,20 +309,25 @@ function body(who: Who): ReactNode {
 }
 
 /** 상반신 그림. 동그란 초상 대신 장면 안에 사람으로 세울 때 쓴다. 표정은 초상과 같다. */
-export function Figure({ who, face }: { who: Who; face: Face }) {
+export function Figure({ who, face, dread = 0 }: { who: Who; face: Face; dread?: Dread }) {
   return (
-    <svg className={`figure ${face}`} viewBox="0 0 200 238" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}`}>
+    <svg className={`figure ${face}${dread ? ` dread-${dread}` : ''}`} viewBox="0 0 200 238" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}${DREAD_LABEL[dread]}`}>
       {/* 어깨를 올려 목이 짧고 굵게 보이게 한다 */}
       <g transform="translate(0 -12)">{body(who)}</g>
       <g transform="translate(23.2 6) scale(1.6)">
-        {/* 표정이 바뀔 때마다 새로 그려 움찔하는 움직임을 준다 */}
-        <g key={face} className="pop">
-          {who === 'lumi' && <path d="M25 56c-3-24 8-39 23-39s26 15 23 39c-.5 7-2 12-4 15H29c-2-3-3.5-8-4-15z" fill="var(--ink)" />}
-          <circle cx="29.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
-          <circle cx="66.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
-          <ellipse cx="48" cy="51" rx="18.5" ry="20.5" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="2" />
-          {features(face)}
-          {front(who, face)}
+        {/* 틀릴수록 고개가 기울고 가끔 움찔한다 */}
+        <g className="dread-head">
+          {/* 표정이 바뀔 때마다 새로 그려 움찔하는 움직임을 준다 */}
+          <g key={face} className="pop">
+            {who === 'lumi' && <path d="M25 56c-3-24 8-39 23-39s26 15 23 39c-.5 7-2 12-4 15H29c-2-3-3.5-8-4-15z" fill="var(--ink)" />}
+            <circle cx="29.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
+            <circle cx="66.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
+            <ellipse cx="48" cy="51" rx="18.5" ry="20.5" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="2" />
+            {dreadUnder(dread)}
+            {features(face)}
+            {dreadOver(dread)}
+            {front(who, face)}
+          </g>
         </g>
       </g>
     </svg>
