@@ -83,5 +83,5 @@ export const SCREENS: { name: string; does: string; status: Status; statusText: 
   { name: '통과 화면', does: '배운 것 한 줄과 단서를 받고, 입장 전과 같은 퀴즈에 다시 응답', status: 'ok', statusText: '구현' },
   { name: '정문', does: '로비를 뒤져 가려진 최근 공지를 찾고, 세 방의 단서와 조합해 암호 네 자리 입력', status: 'ok', statusText: '구현' },
   { name: '탈출 결과', does: '별점, 시도와 힌트 횟수, 퀴즈 정답 변화 확인, 결과 카드 복사', status: 'ok', statusText: '구현' },
-  { name: '분석 페이지', does: '방별 탈출률과 퀴즈 정답률 변화 확인', status: 'plan', statusText: '7주차' },
+  { name: '분석 페이지', does: '공격 수법 분포, 조건별 유출률, 방별 통과와 퀴즈 정답률 변화 확인', status: 'ok', statusText: '구현' },
 ]

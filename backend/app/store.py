@@ -47,6 +47,16 @@ CREATE TABLE IF NOT EXISTS experiment_logs (
   leak text,
   blocked boolean
 );
+CREATE TABLE IF NOT EXISTS game_events (
+  id bigserial PRIMARY KEY,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  session text NOT NULL,
+  kind text NOT NULL,
+  room int NOT NULL,
+  data jsonb NOT NULL DEFAULT '{{}}'
+);
+CREATE INDEX IF NOT EXISTS game_events_session ON game_events (session);
+ALTER TABLE game_events ENABLE ROW LEVEL SECURITY;
 ALTER TABLE {config.DOC_TABLE} ENABLE ROW LEVEL SECURITY;
 ALTER TABLE play_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE experiment_logs ENABLE ROW LEVEL SECURITY;
@@ -144,3 +154,51 @@ def log_experiment(rows: list[tuple]) -> None:
             )
     except Exception as e:
         _fail(e)
+
+
+def log_event(session: str, kind: str, room: int, data: dict) -> None:
+    """퀴즈 응답, 방 통과, 탈출 기록. session은 브라우저가 만든 무작위 번호라서 누구인지는 알 수 없다."""
+    if not enabled():
+        return
+    try:
+        with _connect() as conn:
+            conn.execute(
+                "INSERT INTO game_events (session, kind, room, data) VALUES (%s, %s, %s, %s)",
+                (session, kind, room, json.dumps(data, ensure_ascii=False)),
+            )
+    except Exception as e:
+        _fail(e)
+
+
+def recent_events(limit: int = 20000) -> list[dict] | None:
+    """최근 게임 기록. DB를 쓸 수 없으면 None."""
+    if not enabled():
+        return None
+    try:
+        with _connect() as conn:
+            rows = conn.execute(
+                "SELECT session, kind, room, data FROM game_events ORDER BY id DESC LIMIT %s", (limit,)
+            ).fetchall()
+    except Exception as e:
+        _fail(e)
+        return None
+    return [{"session": r[0], "kind": r[1], "room": r[2], "data": r[3] if isinstance(r[3], dict) else json.loads(r[3] or "{}")} for r in rows]
+
+
+def recent_plays(limit: int = 20000) -> list[dict] | None:
+    """최근 플레이 로그에서 통계에 쓰는 칸만. 입력과 답변 원문은 꺼내지 않는다."""
+    if not enabled():
+        return None
+    try:
+        with _connect() as conn:
+            rows = conn.execute(
+                "SELECT room, event, attack_type, leak, engine, extra FROM play_logs ORDER BY id DESC LIMIT %s", (limit,)
+            ).fetchall()
+    except Exception as e:
+        _fail(e)
+        return None
+    return [
+        {"room": r[0], "event": r[1], "attack_type": r[2] or "", "leak": r[3] or "", "engine": r[4] or "",
+         "extra": r[5] if isinstance(r[5], dict) else json.loads(r[5] or "{}")}
+        for r in rows
+    ]

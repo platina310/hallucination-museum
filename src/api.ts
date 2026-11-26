@@ -38,6 +38,85 @@ function setServerState(next: ServerState) {
   if (next === serverState) return
   serverState = next
   listeners.forEach((fn) => fn())
+  if (next === 'on') void flushOutbox()
+}
+
+// ── 기록 보내기 ────────────────────────────────────────────
+// 퀴즈 응답과 방 통과 기록을 서버에 보낸다. 누구인지 알 수 없는 무작위 번호만 함께 보낸다.
+// 서버가 깨어나는 동안 생긴 기록은 브라우저에 쌓아 두었다가 연결되면 보낸다.
+const SESSION_STORE = 'mukbigwon.sid'
+const OUTBOX_STORE = 'mukbigwon.outbox'
+
+export interface TrackEvent {
+  kind: 'quiz' | 'clear' | 'escape'
+  room: number
+  phase?: 'pre' | 'post'
+  choice?: number
+  tries?: number
+  hints?: number
+  stars?: number
+}
+
+function sessionId(): string {
+  try {
+    let id = localStorage.getItem(SESSION_STORE)
+    if (!id) {
+      id = typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `s-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
+      localStorage.setItem(SESSION_STORE, id)
+    }
+    return id
+  } catch {
+    return 'no-storage-session'
+  }
+}
+
+function readOutbox(): TrackEvent[] {
+  try {
+    const raw = JSON.parse(localStorage.getItem(OUTBOX_STORE) ?? '[]') as unknown
+    return Array.isArray(raw) ? (raw as TrackEvent[]) : []
+  } catch {
+    return []
+  }
+}
+
+function writeOutbox(items: TrackEvent[]) {
+  try {
+    localStorage.setItem(OUTBOX_STORE, JSON.stringify(items.slice(-60)))
+  } catch {
+    // 쌓아 두지 못하면 이번 기록만 빠진다
+  }
+}
+
+let flushing = false
+async function flushOutbox(): Promise<void> {
+  if (usingMock || flushing || serverState !== 'on') return
+  flushing = true
+  try {
+    for (;;) {
+      const items = readOutbox()
+      const next = items[0]
+      if (!next) break
+      const res = await fetch(`${API_URL}/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session: sessionId(), ...next }),
+      })
+      // 서버가 받았거나, 형식이 틀려 다시 보내도 소용없는 기록은 지운다. 그 밖의 실패는 다음에 다시 보낸다
+      if (!res.ok && res.status !== 422) break
+      writeOutbox(readOutbox().slice(1))
+    }
+  } catch {
+    // 연결이 끊겼으면 다음 기회에 보낸다
+  } finally {
+    flushing = false
+  }
+}
+
+/** 기록 하나를 남긴다. 기다리지 않고, 실패해도 게임은 계속된다. */
+export function track(event: TrackEvent): void {
+  if (usingMock) return
+  writeOutbox([...readOutbox(), event])
+  void flushOutbox()
 }
 
 // ── 발표자 우선 모드 ────────────────────────────────────────
@@ -256,4 +335,48 @@ export async function checkFinalCode(code: string): Promise<{ correct: boolean; 
   const script = () => checkFinal(code)
   if (usingMock) return script()
   return serverFirst<{ correct: boolean; note: string }>('/final/check', { code }, script)
+}
+
+// ── 분석 페이지 ─────────────────────────────────────────────
+
+export interface RoomStat {
+  room: number
+  name: string
+  started: number
+  cleared: number
+  tries_median: number | null
+  hints_mean: number | null
+  quiz_pre: { n: number; right: number }
+  quiz_post: { n: number; right: number }
+  quiz_paired: { n: number; pre_right: number; post_right: number }
+}
+
+export interface LiveStats {
+  db: boolean
+  sessions?: number
+  escaped?: number
+  rooms?: RoomStat[]
+  talk?: { n: number; types: { type: string; n: number; leak: number }[] }
+  search?: { n: number; kinds: Record<string, number>; methods: Record<string, number> }
+  engine?: Record<string, number>
+  latency_ms?: { n: number; median: number | null; p90: number | null }
+}
+
+/** 서버의 집계를 가져온다. 서버가 잠들어 있으면 깨어날 때까지 기다린다. 끝내 실패하면 null. */
+export async function fetchStats(): Promise<LiveStats | null> {
+  if (usingMock) return null
+  for (let i = 0; i < 5; i++) {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 20000)
+    try {
+      const res = await fetch(`${API_URL}/stats`, { signal: controller.signal })
+      if (res.ok) return (await res.json()) as LiveStats
+    } catch {
+      // 깨어나는 중이면 다시 시도한다
+    } finally {
+      clearTimeout(timer)
+    }
+    await wait(4000)
+  }
+  return null
 }

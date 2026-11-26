@@ -26,6 +26,7 @@ export default function Idea() {
             <a href="#prototype">프로토타입</a>
             <a href="#trials">시행착오</a>
             <a href="#plan">일정</a>
+            <a href="/stats">분석</a>
             <a href="/prototype" className="nav-game">
               프로토타입 열기
             </a>

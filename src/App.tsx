@@ -2,18 +2,21 @@ import { useEffect, useState } from 'react'
 import Detail from './pages/Detail'
 import Idea from './pages/Idea'
 import Prototype from './pages/Prototype'
+import Stats from './pages/Stats'
 
 // 주소로 화면을 고른다. LMS에 내는 주소는 앞의 두 개다.
 //   /            아이디어 공유 (발표 URL)
 //   /prototype   UI 프로토타입 (프로토타입 URL)
 //   /detail      상세 자료
+//   /stats       분석 페이지
 // 화면 사이는 일반 링크로 이동한다. 통과한 방과 퀴즈 기록은 브라우저에 저장돼 있어 이동해도 이어진다.
-type Route = 'idea' | 'prototype' | 'detail'
+type Route = 'idea' | 'prototype' | 'detail' | 'stats'
 
 function routeOf(pathname: string): Route {
   const p = pathname.replace(/\/+$/, '')
   if (p === '/prototype') return 'prototype'
   if (p === '/detail') return 'detail'
+  if (p === '/stats') return 'stats'
   return 'idea'
 }
 
@@ -21,6 +24,7 @@ const TITLES: Record<Route, string> = {
   idea: '환각 미술관 · 팀 페이지',
   prototype: '환각 미술관 · UI 프로토타입',
   detail: '환각 미술관 · 상세 자료',
+  stats: '환각 미술관 · 분석 페이지',
 }
 
 // 예전에 공유한 주소(끝에 #game)는 새 프로토타입 주소로 보낸다.
@@ -55,5 +59,6 @@ export default function App() {
   if (legacy) return null
   if (route === 'prototype') return <Prototype />
   if (route === 'detail') return <Detail />
+  if (route === 'stats') return <Stats />
   return <Idea />
 }

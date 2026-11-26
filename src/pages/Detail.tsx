@@ -109,6 +109,7 @@ export default function Detail() {
             <a href="#checklist">강의 조건</a>
             <a href="#plan">일정</a>
             <a href="/">팀 페이지</a>
+            <a href="/stats">분석</a>
             <a href="/prototype" className="nav-game">
               프로토타입 열기
             </a>

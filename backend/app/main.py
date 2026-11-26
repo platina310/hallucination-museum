@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from . import config, final, guard, llm, room1, room2, room3, store
+from . import config, final, guard, llm, room1, room2, room3, stats, store
 
 logging.basicConfig(level=logging.INFO)
 
@@ -197,3 +197,38 @@ def final_check(body: CodeIn, tasks: BackgroundTasks) -> dict:
     r = final.check_final(body.code)
     tasks.add_task(store.log_play, 0, "final", extra={"correct": r["correct"]})
     return r
+
+
+# ── 기록과 통계 ─────────────────────────────────────────────
+
+
+class TrackIn(BaseModel):
+    """퀴즈 응답, 방 통과, 탈출 기록. 별명이나 주소는 받지 않는다"""
+
+    session: str = Field(min_length=8, max_length=40, pattern=r"^[A-Za-z0-9-]+$", description="브라우저가 만든 무작위 번호")
+    kind: str = Field(pattern=r"^(quiz|clear|escape)$")
+    room: int = Field(ge=0, le=5, description="방 번호. 정문과 탈출은 0")
+    phase: str = Field(default="", pattern=r"^(pre|post|)$")
+    choice: int = Field(default=-1, ge=-1, le=5)
+    tries: int = Field(default=0, ge=0, le=999)
+    hints: int = Field(default=0, ge=0, le=99)
+    stars: int = Field(default=0, ge=0, le=3)
+
+
+@app.post("/track", summary="퀴즈 응답과 방 통과 기록 저장")
+def track(body: TrackIn, tasks: BackgroundTasks) -> dict:
+    if body.kind == "quiz":
+        if body.phase == "":
+            raise HTTPException(422, "퀴즈 기록에는 phase가 필요합니다.")
+        data = {"phase": body.phase, "choice": body.choice, "correct": stats.quiz_correct(body.room, body.choice)}
+    elif body.kind == "clear":
+        data = {"tries": body.tries, "hints": body.hints, "stars": body.stars}
+    else:
+        data = {"tries": body.tries, "hints": body.hints}
+    tasks.add_task(store.log_event, body.session, body.kind, body.room, data)
+    return {"ok": True}
+
+
+@app.get("/stats", summary="분석 페이지용 집계 (건수와 비율만)")
+def get_stats() -> dict:
+    return stats.get()

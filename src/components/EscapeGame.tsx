@@ -1,5 +1,6 @@
 // 방탈출 전체 흐름: 수장고 지도 → 입장 전 퀴즈 → 방 → 탈출 후 퀴즈 → 지도 → 정문 자물쇠
 import { useRef, useState } from 'react'
+import { track, usingMock } from '../api'
 import { PROTOTYPE_URL } from '../content/shared'
 import { PLAYABLE_IDS, ROOMS } from '../game/rooms'
 import type { RoomInfo } from '../game/rooms'
@@ -258,7 +259,16 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
               onEnter={enter}
               onFinal={(correct) => {
                 tryFinal(correct)
-                if (correct) toTop()
+                if (correct) {
+                  const done = PLAYABLE_IDS.filter((id) => progress.stats[id])
+                  track({
+                    kind: 'escape',
+                    room: 0,
+                    tries: done.reduce((n, id) => n + progress.stats[id].tries, 0) + progress.finalTries + 1,
+                    hints: done.reduce((n, id) => n + progress.stats[id].hints, 0),
+                  })
+                  toTop()
+                }
               }}
               onReset={() => {
                 resetAll()
@@ -271,6 +281,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
               </button>
               <Presenter />
             </div>
+            {!usingMock && <p className="privacy-note">퀴즈 응답과 통과 기록은 이름 없이 모아 <a href="/stats">분석 페이지</a>의 통계에만 써요.</p>}
           </>
         )}
       </div>
@@ -287,6 +298,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
   function solved(stats: RoomStats) {
     if (!room) return
     clearRoom(room.id, stats)
+    track({ kind: 'clear', room: room.id, tries: stats.tries, hints: stats.hints, stars: starsOf(room.id, stats) })
     toTop()
   }
 
@@ -302,7 +314,10 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
         </h3>
       </div>
 
-      {!preAnswered && quiz && <Quiz quiz={quiz} mode="pre" onAnswer={(c) => answerPre(room.id, c)} />}
+      {!preAnswered && quiz && <Quiz quiz={quiz} mode="pre" onAnswer={(c) => {
+            answerPre(room.id, c)
+            track({ kind: 'quiz', room: room.id, phase: 'pre', choice: c })
+          }} />}
 
       {preAnswered && cleared && (
         <div className="cleared-panel" role="status">
@@ -318,7 +333,10 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
           <p className="cleared-clue">
             <b>단서 수첩에 적음</b> {CLUES[room.id]}
           </p>
-          {quiz && !postAnswered && <Quiz quiz={quiz} mode="post" onAnswer={(c) => answerPost(room.id, c)} />}
+          {quiz && !postAnswered && <Quiz quiz={quiz} mode="post" onAnswer={(c) => {
+                answerPost(room.id, c)
+                track({ kind: 'quiz', room: room.id, phase: 'post', choice: c })
+              }} />}
           {quiz && postAnswered && (
             <p className="quiz-result">
               {quizCorrect(room, progress.post) ? '퀴즈 정답입니다.' : `퀴즈는 아쉽습니다. 정답은 "${quiz.options[quiz.answer]}"입니다.`}{' '}

@@ -296,3 +296,39 @@ def test_personal_data_is_masked_before_logging():
     assert store.mask("제 번호는 010-1234-5678이고 메일은 kim.a@example.com 입니다") == "제 번호는 [전화번호]이고 메일은 [이메일] 입니다"
     assert store.mask("02 345 6789로 전화 주세요") == "[전화번호]로 전화 주세요"
     assert store.mask("비상문 비밀번호는 4712입니다. 11월 14일 22시") == "비상문 비밀번호는 4712입니다. 11월 14일 22시"
+
+
+def test_track_validates_and_stats_without_db():
+    ok = client.post("/track", json={"session": "abcd1234-ef", "kind": "quiz", "room": 1, "phase": "pre", "choice": 1})
+    assert ok.status_code == 200 and ok.json() == {"ok": True}
+    assert client.post("/track", json={"session": "abcd1234-ef", "kind": "quiz", "room": 1}).status_code == 422
+    assert client.post("/track", json={"session": "x", "kind": "clear", "room": 1}).status_code == 422
+    assert client.post("/track", json={"session": "abcd1234-ef", "kind": "hack", "room": 1}).status_code == 422
+    assert client.get("/stats").json() == {"db": False}
+
+
+def test_stats_summarize_counts_first_answer_per_session():
+    from app import stats
+
+    events = [  # 최근 것부터
+        {"session": "s2", "kind": "escape", "room": 0, "data": {}},
+        {"session": "s1", "kind": "quiz", "room": 1, "data": {"phase": "post", "correct": True}},
+        {"session": "s1", "kind": "clear", "room": 1, "data": {"tries": 9, "hints": 1}},
+        {"session": "s2", "kind": "quiz", "room": 1, "data": {"phase": "pre", "correct": True}},
+        {"session": "s1", "kind": "quiz", "room": 1, "data": {"phase": "pre", "correct": True}},
+        {"session": "s1", "kind": "quiz", "room": 1, "data": {"phase": "pre", "correct": False}},
+    ]
+    plays = [
+        {"room": 1, "event": "interrogate", "attack_type": "변환 요청", "leak": "부분", "engine": "gemini", "extra": {"ms": 1500}},
+        {"room": 1, "event": "interrogate", "attack_type": "직접 질문", "leak": "없음", "engine": "script", "extra": {}},
+        {"room": 3, "event": "ask", "attack_type": "", "leak": "", "engine": "gemini", "extra": {"kind": "old", "search": "pgvector", "ms": 900}},
+    ]
+    out = stats.summarize(events, plays)
+    r1 = out["rooms"][0]
+    assert out["sessions"] == 2 and out["escaped"] == 1
+    assert r1["started"] == 2 and r1["cleared"] == 1
+    assert r1["quiz_pre"] == {"n": 2, "right": 1}  # s1의 첫 답은 오답
+    assert r1["quiz_paired"] == {"n": 1, "pre_right": 0, "post_right": 1}
+    assert out["talk"]["types"][0]["n"] == 1 and sum(t["leak"] for t in out["talk"]["types"]) == 1
+    assert out["search"]["kinds"] == {"old": 1} and out["engine"] == {"gemini": 2, "script": 1}
+    assert out["latency_ms"]["median"] == 1200

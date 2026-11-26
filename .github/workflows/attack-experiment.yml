@@ -1,12 +1,13 @@
 name: 자동 실험
 
-# 공격문 표본을 도 씨에게 그대로 넣어 지시문 세 가지와 검사의 암호 유출률을 잰다. 한 건에 Gemini를 세 번 부른다.
+# 공격문을 도 씨에게 그대로 넣어 지시문과 검사에 따른 암호 유출률을 잰다. 조건 하나에 Gemini를 한 번 부른다.
+# experiments/trigger/experiment.txt 를 고쳐 올리면 그 파일의 줄마다 한 번씩 실행한다. 줄은 run_experiment.py의 옵션이다.
 on:
   workflow_dispatch:
     inputs:
-      n:
-        description: 이번에 실험할 공격문 수 (무료 등급은 100 이하 권장)
-        default: "100"
+      args:
+        description: run_experiment.py 옵션 (예 --set ko --conds NAB)
+        default: "--set en --conds GAB --n 100"
   push:
     branches: [main]
     paths:
@@ -36,7 +37,18 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONUNBUFFERED: "1"
-        run: python experiments/run_experiment.py --n "${{ github.event.inputs.n || '100' }}"
+          MANUAL_ARGS: ${{ github.event.inputs.args }}
+        run: |
+          if [ -n "$MANUAL_ARGS" ]; then
+            python experiments/run_experiment.py $MANUAL_ARGS
+          else
+            # '#'으로 시작하지 않는 줄을 옵션으로 보고 차례로 실행한다. 허용한 글자만 통과시킨다
+            grep -v '^#' experiments/trigger/experiment.txt | grep -E '^[-A-Za-z0-9 .]+$' | while read -r line; do
+              [ -z "$line" ] && continue
+              echo "== $line"
+              python experiments/run_experiment.py $line || true
+            done
+          fi
       - name: 결과를 저장소에 기록
         if: always()
         run: |
