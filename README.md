@@ -22,7 +22,7 @@ KAIST 디지털금융MBA 「금융빅데이터분석실습」 팀 프로젝트�
 | 1. 지시의 방 | 진술서의 모순을 사건 파일로 찔러 입을 열게 한 뒤, 돌려 물어 암호를 캐낸다 | 프롬프트 지시만으로는 비밀을 못 지킨다 | 역전재판 |
 | 2. 환각의 방 | AI의 설명을 한 건씩 통과시키거나 반려한다. 라운드마다 검수 규칙이 늘어난다 | AI는 자신 있게 틀린다. 출처는 열어서, 최근 기록으로 대조한다 | Papers, Please |
 | 3. 서가의 방 | 자료실을 뒤져 낱말을 찾고, 검색어로 문서를 찾는다. 앞의 3건만 AI에게 전달된다 | 검색된 문서가 답을 결정한다 (RAG) | Her Story |
-| 정문 | 세 방의 단서를 조합한다. 관장 AI는 옛 규칙을 말한다 | AI가 아는 것은 학습 시점까지다 | 방탈출의 최종 자물쇠 |
+| 정문 | 로비를 뒤져 가려진 최근 공지를 찾고, 세 방의 단서를 조합한다. 관장 AI는 옛 규칙을 말한다 | AI가 아는 것은 학습 시점까지다 | 방탈출의 최종 자물쇠 |
 | 4. 온도의 방 (예정) | 온도를 조절해 답이 흔들리는 지점을 찾는다 | temperature는 다양성을 바꾼다 | |
 | 5. 문지기의 방 (예정) | 내가 쓴 프롬프트로 AI가 자동 공격을 버티게 한다 | 방어 설계 | Tensor Trust |
 
@@ -46,7 +46,8 @@ npm run build    # 타입 검사 후 dist/ 생성
 | `src/content/shared.ts` | 세 화면이 같이 쓰는 내용. 주소, 팀명과 팀원(`TEAM`), 데이터 표, 일정, 주요 화면 목록 |
 | `src/game/rooms.ts` | 방 목록, 배우는 것, 퀴즈 |
 | `src/game/progress.ts` | 통과한 방과 퀴즈 기록 저장 |
-| `src/components/EscapeGame.tsx` | 수장고 지도, 방 진행 흐름, 정문 자물쇠, 결과 카드 |
+| `src/components/EscapeGame.tsx` | 수장고 지도, 방 진행 흐름, 결과 카드 |
+| `src/components/FinalGate.tsx` | 정문 (로비 수색, 관장 AI와의 대화, 정문 키패드) |
 | `src/components/Room1CrossExam.tsx` | 방 1 지시의 방 (추궁, 증거 제시, 자유 질문) |
 | `src/components/Room2Inspection.tsx` | 방 2 환각의 방 (라운드제 검수) |
 | `src/components/Room3Search.tsx` | 방 3 서가의 방 (자료실 수색, 검색) |

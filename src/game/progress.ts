@@ -16,7 +16,7 @@ export interface Progress {
 }
 
 const KEY = 'mukbigwon.escape.v2'
-const ROOM_KEYS = ['mukbigwon.room1.v2', 'mukbigwon.level1.v1', 'mukbigwon.escape.v1']
+const ROOM_KEYS = ['mukbigwon.room1.v3', 'mukbigwon.room1.v2', 'mukbigwon.level1.v1', 'mukbigwon.escape.v1']
 const EMPTY: Progress = { cleared: [], pre: {}, post: {}, stats: {}, escaped: false, finalTries: 0 }
 
 // 방마다 "이 정도면 능숙하다"고 보는 행동 횟수

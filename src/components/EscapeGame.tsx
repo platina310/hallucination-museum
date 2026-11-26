@@ -1,14 +1,13 @@
 // 방탈출 전체 흐름: 수장고 지도 → 입장 전 퀴즈 → 방 → 탈출 후 퀴즈 → 지도 → 정문 자물쇠
 import { useRef, useState } from 'react'
-import type { FormEvent } from 'react'
-import { checkFinalCode } from '../api'
 import { PROTOTYPE_URL } from '../content/shared'
 import { PLAYABLE_IDS, ROOMS } from '../game/rooms'
 import type { RoomInfo } from '../game/rooms'
 import { starsOf, starText, useProgress } from '../game/progress'
 import type { Progress, RoomStats } from '../game/progress'
-import { CLUES, DIRECTOR_SAYS, NOTICES } from '../mock/final'
+import { CLUES } from '../mock/final'
 import { Quiz } from './Guide'
+import FinalGate from './FinalGate'
 import Room1CrossExam from './Room1CrossExam'
 import Room2Inspection from './Room2Inspection'
 import Room3Search from './Room3Search'
@@ -50,97 +49,6 @@ function FlowBar({ stage }: { stage: Stage }) {
 
 function quizCorrect(room: RoomInfo, answers: Record<string, number>): boolean {
   return room.quiz !== undefined && answers[room.id] === room.quiz.answer
-}
-
-// 정문: 세 방에서 얻은 단서를 조합해야 열린다. 관장 AI의 말과 게시판 공지가 다르다.
-function FinalLock({ tries, onTry }: { tries: number; onTry: (correct: boolean) => void }) {
-  const [code, setCode] = useState('')
-  const [note, setNote] = useState('')
-  const [opened, setOpened] = useState<string[]>([])
-
-  async function submit(e: FormEvent) {
-    e.preventDefault()
-    if (code.trim() === '') return
-    try {
-      const r = await checkFinalCode(code)
-      setCode('')
-      setNote(r.correct ? '' : r.note)
-      onTry(r.correct)
-    } catch (err) {
-      setNote(err instanceof Error ? err.message : '입력하지 못했습니다. 다시 눌러 주세요.')
-    }
-  }
-
-  return (
-    <div className="final">
-      <div className="final-head">
-        <h3>수장고 정문</h3>
-        <p>방 세 개를 모두 통과했습니다. 마지막으로 정문 암호 네 자리를 맞히면 탈출입니다. 지금까지 배운 것을 써먹을 차례입니다.</p>
-      </div>
-      <div className="final-grid">
-        <div>
-          <p className="shelf-label">단서 수첩</p>
-          <ul className="notebook">
-            {PLAYABLE_IDS.map((id) => (
-              <li key={id}>
-                <span className="mono">방 {id}</span> {CLUES[id]}
-              </li>
-            ))}
-          </ul>
-          <div className="msg suspect">
-            <span className="who">관장 AI</span>
-            {DIRECTOR_SAYS}
-            <div className="meta">
-              <span className="chip nosrc">근거 없음: 관장이 아는 공지는 2024년까지</span>
-            </div>
-          </div>
-        </div>
-        <div>
-          <p className="shelf-label">게시판</p>
-          <div className="cards">
-            {NOTICES.map((n) => {
-              const open = opened.includes(n.title)
-              return (
-                <div key={n.title} className="record">
-                  <button
-                    type="button"
-                    aria-expanded={open}
-                    onClick={() => setOpened((prev) => (open ? prev.filter((x) => x !== n.title) : [...prev, n.title]))}
-                  >
-                    <span>{n.title}</span>
-                    <span aria-hidden="true">{open ? '접기' : '펼치기'}</span>
-                  </button>
-                  {open && <p>{n.text}</p>}
-                </div>
-              )
-            })}
-          </div>
-          <form className="submit" onSubmit={(e) => void submit(e)}>
-            <label htmlFor="final-input" className="sr-only">
-              정문 암호 네 자리
-            </label>
-            <input
-              id="final-input"
-              className="code-input"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={4}
-              placeholder="0000"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-            />
-            <button className="btn" type="submit">
-              정문 열기
-            </button>
-          </form>
-          <div className="verdict bad" role="status">
-            {note}
-          </div>
-          {tries > 0 && <p className="muted final-tries">시도 {tries}회</p>}
-        </div>
-      </div>
-    </div>
-  )
 }
 
 function Lobby({
@@ -206,7 +114,7 @@ function Lobby({
         </div>
       </div>
 
-      {allCleared && !progress.escaped && <FinalLock tries={progress.finalTries} onTry={onFinal} />}
+      {allCleared && !progress.escaped && <FinalGate tries={progress.finalTries} onTry={onFinal} />}
 
       {progress.escaped && (
         <div className="escaped" role="status">
@@ -319,7 +227,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
     // 이미 통과한 방에 다시 들어가면 새 판으로 시작한다 (별 3개 재도전)
     if (id === 1 && progress.cleared.includes(1)) {
       try {
-        localStorage.removeItem('mukbigwon.room1.v2')
+        localStorage.removeItem('mukbigwon.room1.v3')
       } catch {
         // 지우지 못하면 지난 기록이 보일 뿐이다
       }
