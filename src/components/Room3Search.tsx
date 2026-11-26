@@ -96,7 +96,7 @@ const SPOTS: ArchiveSpot[] = [
 const HINTS = [
   `대출대 위 메모를 보세요. 고 선생에게는 검색어와 가까운 순서로 앞의 ${TOP_K}건만 전달됩니다. 비슷한 옛 문서가 많으면 그 문서들이 자리를 다 차지합니다.`,
   '비상문에 붙은 스티커를 보세요. 최근 문서에만 있을 낱말이 적혀 있습니다.',
-  "낱말이 많으면 옛 안내문이 다시 끼어듭니다. '변경'과, 고 선생이 모른다고 한 낱말만 남겨 검색해 보세요.",
+  "'비상문', '비밀번호'는 옛 안내문에도 있는 낱말이라 넣을수록 옛 안내문이 앞에 섭니다. 그 둘을 빼고 '변경'과, 고 선생이 모른다고 한 낱말만 남겨 검색해 보세요.",
 ]
 
 interface Turn {
@@ -291,7 +291,10 @@ export default function Room3Search({
   if (solved) coach = '탈출 완료. 무엇이 검색되느냐가 AI의 답을 결정합니다.'
   else if (last?.result.kind === 'correct') coach = "고 선생이 근거 두 개로 답했습니다. '비상문 열기'를 눌러 그 번호를 입력하세요."
   else if (last?.result.kind === 'stale')
-    coach = `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 검색어와 가까운 ${TOP_K}건만 전달되는데, 옛 안내문이 그 자리를 차지했습니다. 최근 문서에만 있을 낱말을 자료실에서 찾아 더해 보세요.`
+    coach =
+      (last.result.cut?.length ?? 0) > 0
+        ? `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 옛 안내문이 ${TOP_K}건 자리를 다 차지했고, 빗금 친 책은 검색되고도 잘렸습니다. 옛 안내문에도 있는 낱말을 빼고, 최근 문서에만 있을 낱말로 찾아보세요.`
+        : `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 검색어와 가까운 ${TOP_K}건만 전달되는데, 옛 안내문이 그 자리를 차지했습니다. 최근 문서에만 있을 낱말을 자료실에서 찾아보세요.`
   else if (last?.result.kind === 'partial')
     coach =
       (last.result.cut?.length ?? 0) > 0
@@ -499,7 +502,7 @@ export default function Room3Search({
                           ))}
                         </ol>
                       )}
-                      {shown.result.search && (
+                      {shown.result.search && shown.result.search !== 'none' && (
                         <p className="how">
                           {shown.result.search === 'keyword' ? '낱말이 겹치는 문서를 찾는 검색' : '뜻이 가까운 문서를 찾는 임베딩 검색'}
                           {shown.result.search === 'pgvector' && ' · pgvector'}

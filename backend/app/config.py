@@ -25,9 +25,11 @@ DOC_TABLE = "room3_docs_gemini_768"
 # 테스트용 가짜 모델. 1이면 바깥으로 요청을 보내지 않는다
 FAKE_LLM = _env("FAKE_LLM") == "1"
 
-# 서가의 방: 사서에게 넘기는 문서 수와, 검색에 걸린 것으로 치는 최소 유사도
+# 서가의 방: 사서에게 넘기는 문서 수와, 검색에 걸린 것으로 치는 기준.
+# Gemini 임베딩의 유사도는 0.5~0.8에 몰려 있어 고정된 점수로는 가를 수 없었다 (data/room3 점검 결과).
+# 그래서 검색어마다 문서 12건의 평균보다 표준편차의 ROOM3_Z배 이상 가까운 문서만 걸린 것으로 친다.
 TOP_K = 3
-ROOM3_MIN_SCORE = float(_env("ROOM3_MIN_SCORE", "0.55"))
+ROOM3_Z = float(_env("ROOM3_Z", "0.5"))
 
 # 무료 등급 한도를 게임이 다 쓰지 않도록 하루 생성 호출 수를 막아 둔다. 넘으면 정해진 대본으로 답한다
 GAME_DAILY_LLM_CALLS = int(_env("GAME_DAILY_LLM_CALLS", "250"))

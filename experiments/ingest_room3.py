@@ -20,23 +20,38 @@ from app import config, llm, room3, store  # noqa: E402
 
 # 플레이어가 넣을 만한 검색어. 퍼즐이 풀리는지와 함정이 작동하는지를 이 목록으로 확인한다
 QUERIES = [
+    # 낱말 쪽지를 눌러서 나올 수 있는 조합
     "비상문 비밀번호",
     "비상문 비밀번호 변경",
     "비상문 비밀번호 변경 개관",
+    "비상문 비밀번호 개관",
     "변경",
     "변경 개관",
+    "변경 개관 연혁",
+    "변경 연혁",
     "개관",
-    "개관 연도",
+    "개관 연혁",
     "연혁",
+    "비밀번호 변경",
+    "비상문 변경",
     "비상문 비밀번호 휴게실",
     "휴게실",
+    "변경 휴게실",
+    # 직접 써 넣을 만한 말
+    "개관 연도",
     "바뀐 비밀번호",
     "최근 공지",
+    "시설 관리 공지",
     "새 비밀번호가 뭐예요",
+    "비상문 비밀번호가 바뀌었나요",
     "미술관이 문을 연 해",
+    "비밀번호",
     "점심 메뉴",
     "주차",
-    "asdf qwer",
+    # 아무 말
+    "안녕하세요",
+    "ㅋㅋㅋ",
+    "아무거나 찾아 주세요",
 ]
 
 
@@ -64,8 +79,9 @@ def main() -> int:
     for qi, query in enumerate(QUERIES):
         order = sorted(range(len(docs)), key=lambda j: (-sims[qi, j], j))
         ranking = [{"id": docs[j]["id"], "title": room3.label(docs[j]), "score": round(float(sims[qi, j]), 4)} for j in order]
-        passed = [r["id"] for r in ranking if r["score"] >= config.ROOM3_MIN_SCORE][: config.TOP_K]
-        rows.append({"query": query, "passed": passed, "kind": room3.kind_of(passed), "ranking": ranking})
+        hits = [i for i, _ in room3.select([(r["id"], r["score"]) for r in ranking], "memory")]
+        passed = hits[: config.TOP_K]
+        rows.append({"query": query, "passed": passed, "cut": hits[config.TOP_K :], "kind": room3.kind_of(passed), "ranking": ranking})
 
     # DB에 저장한 벡터로 계산한 순위가 위와 같은지 한 건만 맞춰 본다
     db_check = None
@@ -80,7 +96,7 @@ def main() -> int:
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "embed_model": config.EMBED_MODEL,
         "dim": config.EMBED_DIM,
-        "min_score": config.ROOM3_MIN_SCORE,
+        "rule": f"검색어마다 문서 평균보다 표준편차의 {config.ROOM3_Z}배 이상 가까운 문서만 검색에 걸린 것으로 침",
         "top_k": config.TOP_K,
         "stored_in_db": stored,
         "db_check": db_check,
@@ -96,16 +112,17 @@ def main() -> int:
         "",
         f"- 생성 시각(UTC): {report['generated_at']}",
         f"- 임베딩 모델: {config.EMBED_MODEL} · {config.EMBED_DIM}차원",
-        f"- 전달 기준: 유사도 {config.ROOM3_MIN_SCORE} 이상 중 앞의 {config.TOP_K}건",
+        f"- 전달 기준: 검색어마다 문서 평균보다 표준편차의 {config.ROOM3_Z}배 이상 가까운 문서 중 앞의 {config.TOP_K}건",
+        "- 처음에는 유사도 0.55 이상이라는 고정 기준을 썼으나, 유사도가 0.5~0.8에 몰려 있어 아무 말에도 문서가 다 걸렸음. 그래서 검색어별 상대 기준으로 바꿈",
         f"- DB 저장: {stored}건",
         f"- 유사도 분포: 최소 {report['score_range']['min']} · 중앙 {report['score_range']['median']} · 최대 {report['score_range']['max']}",
         "",
-        "| 검색어 | 전달된 문서 | 답의 종류 | 1위 | 2위 | 3위 | 4위 | 5위 |",
-        "|---|---|---|---|---|---|---|---|",
+        "| 검색어 | 전달된 문서 | 잘린 문서 | 답의 종류 | 1위 | 2위 | 3위 | 4위 | 5위 |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for r in rows:
         top = [f"{x['id']} {x['score']:.3f}" for x in r["ranking"][:5]]
-        lines.append(f"| {r['query']} | {', '.join(r['passed']) or '없음'} | {r['kind']} | " + " | ".join(top) + " |")
+        lines.append(f"| {r['query']} | {', '.join(r['passed']) or '없음'} | {', '.join(r['cut']) or '-'} | {r['kind']} | " + " | ".join(top) + " |")
     (out / "retrieval_report.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
     return 0

@@ -111,6 +111,7 @@ def test_room3_passes_at_most_three_docs_with_scores():
     assert 1 <= len(r["docs"]) <= 3 and all("score" in d for d in r["docs"])
     assert r["search"] == "memory" and r["found"] >= len(r["docs"])
     assert r["docs"][0]["score"] >= r["docs"][-1]["score"]
+    assert "ranking" not in r  # 문서 전체의 점수는 화면에 넘기지 않는다
     assert all(s["id"] in [d["id"] for d in r["docs"]] for s in r["sources"])
 
 
@@ -145,6 +146,20 @@ def test_room3_keyword_fallback_when_embedding_fails(monkeypatch):
     assert r["search"] == "keyword" and [d["id"] for d in r["docs"]] == ["D09", "D05"] and r["kind"] == "correct"
     r = post("/rooms/3/ask", {"query": "비상문 비밀번호"})
     assert [d["id"] for d in r["docs"]] == ["D01", "D02", "D04"] and r["kind"] == "stale" and "D09" in r["cut"]
+
+
+def test_room3_select_uses_relative_rule():
+    # 실제 Gemini 임베딩에서 나온 "비상문 비밀번호"의 유사도. 옛 안내문 셋이 전달되고 최근 공지는 잘린다
+    real = [("D01", 0.825), ("D02", 0.821), ("D04", 0.821), ("D09", 0.751), ("D03", 0.701), ("D06", 0.66), ("D08", 0.65),
+            ("D11", 0.62), ("D07", 0.6), ("D05", 0.59), ("D10", 0.58), ("D12", 0.55)]
+    hits = [i for i, _ in room3.select(real, "pgvector")]
+    assert hits[:3] == ["D01", "D02", "D04"] and "D09" in hits[3:]
+    assert room3.select([("D01", 0.6)] * 12, "memory") == []  # 모두 같은 거리면 걸린 문서가 없다
+
+
+def test_room3_ignores_query_without_korean_or_digits():
+    r = post("/rooms/3/ask", {"query": "asdf qwer"})
+    assert r["found"] == 0 and r["docs"] == [] and r["kind"] == "none" and r["search"] == "none"
 
 
 def test_door_and_final():

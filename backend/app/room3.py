@@ -205,15 +205,33 @@ def answer(query: str, ids: tuple[str, ...]) -> tuple[str, tuple[str, ...], str,
     return s["reply"], tuple(x["id"] for x in s["sources"]), "script", problem
 
 
+def select(scores: list[tuple[str, float]], engine: str) -> list[tuple[str, float]]:
+    """가까운 순서로 늘어놓은 문서 가운데 '검색에 걸린' 문서만 고른다.
+
+    임베딩 검색은 아무 말을 넣어도 가장 가까운 문서를 돌려준다. 그래서 다른 문서보다 눈에 띄게
+    가까운 것만 남긴다: 문서 전체 평균보다 표준편차의 ROOM3_Z배 이상 높은 문서.
+    """
+    if engine == "keyword":
+        return [(i, s) for i, s in scores if s >= 1]
+    values = np.array([s for _, s in scores], dtype=float)
+    sd = float(values.std())
+    if sd < 1e-9:
+        return []
+    floor = float(values.mean()) + config.ROOM3_Z * sd
+    return [(i, s) for i, s in scores if s >= floor]
+
+
 def search_and_answer(query: str) -> dict:
     query = " ".join(query.split())[:40]
-    scores, search_engine = rank(query)
-    floor = 0.5 if search_engine == "keyword" else config.ROOM3_MIN_SCORE
-    hits = [(i, s) for i, s in scores if s >= floor]
+    # 서가의 문서는 모두 한국어다. 한글도 숫자도 없는 검색어로는 찾지 않는다
+    if not re.search(r"[가-힣0-9]", query):
+        scores, search_engine, hits = [], "none", []
+    else:
+        scores, search_engine = rank(query)
+        hits = select(scores, search_engine)
     top = hits[: config.TOP_K]
     ids = tuple(i for i, _ in top)
     reply, source_ids, answer_engine, problem = answer(query, ids)
-    score_of = dict(scores)
     return {
         "found": len(hits),
         "docs": [{"id": i, "title": BY_ID[i]["title"], "date": BY_ID[i]["date"], "score": round(s, 3)} for i, s in top],
@@ -224,8 +242,6 @@ def search_and_answer(query: str) -> dict:
         "engine": answer_engine,
         "search": search_engine,
         "guard": problem,
-        # 화면의 순위표에 쓴다. 문서 본문은 넘기지 않는다
-        "ranking": [{"id": i, "score": round(score_of[i], 3)} for i, _ in scores[:6]],
     }
 
 

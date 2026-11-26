@@ -51,6 +51,6 @@ export interface SearchResult {
   sources: { id: string; label: string }[]
   kind?: 'correct' | 'stale' | 'partial' | 'none' // 전달된 문서 구성으로 코드가 정한다
   engine?: Engine
-  search?: 'pgvector' | 'memory' | 'keyword' // 검색 방식. 앞의 둘은 임베딩 검색, keyword는 낱말 검색
+  search?: 'pgvector' | 'memory' | 'keyword' | 'none' // 검색 방식. 앞의 둘은 임베딩 검색, keyword는 낱말 검색, none은 찾지 않음
   guard?: string // 모델의 답이 코드 검사에 걸려 대본으로 바뀌었을 때의 이유
 }
