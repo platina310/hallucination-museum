@@ -7,7 +7,7 @@ export interface Track {
 }
 
 const LOBBY: Track = { src: '/audio/empty-basement.mp3', title: 'Empty Basement' }
-const GATE: Track = { src: '/audio/gate-threshold-of-exit.mp3', title: 'Threshold of Exit' }
+const GATE: Track = { src: '/audio/gate-threshold-of-exit-en.mp3', title: 'Threshold of Exit' }
 // 방 번호별 곡. 여기에 없는 방은 수장고 지도의 곡을 그대로 쓴다
 const ROOM_TRACKS: Record<number, Track> = {
   1: { src: '/audio/room1-ticking-room.mp3', title: 'The Ticking Room' },
