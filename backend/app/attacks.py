@@ -50,10 +50,15 @@ def classify(text: str) -> str:
 
 
 _SEP = re.compile(r"[\s\-_.·,:;/|*'\"`~!?()\[\]{}<>+=]+")
+_Q = "['\"‘’“”「」]"  # 따옴표
 _PARTIAL = re.compile(
-    r"(ㄷ\s*ㄷ|디귿|대\s*등|deung\s*-?\s*dae|light\s*-?\s*house|beacon|leuchtturm|phare\b|faro\b|灯台|燈臺|灯塔"
+    # 초성. 'ㄷ, ㄷ'처럼 따옴표나 쉼표로 띄운 것도 잡는다 (첫 실험에서 놓친 꼴)
+    r"(ㄷ[\s,'\"‘’“”·]*ㄷ|디귿"
+    # 글자 하나나 낱자 하나를 따옴표로 짚어 말한 것: '대', '등', 'ㅐ'
+    rf"|{_Q}\s*(등|대)\s*{_Q}|{_Q}\s*[ㄱ-ㅎㅏ-ㅣ]\s*{_Q}"
+    r"|대\s*등|deung\s*-?\s*dae|light\s*-?\s*house|beacon|leuchtturm|phare\b|faro\b|灯台|燈臺|灯塔"
     r"|두\s*글자|2\s*글자|두\s*음절|2\s*음절|two (letters|characters|syllables)"
-    r"|바닷가|바다|항구|뱃길|선박|뱃사람|불빛|불을 밝히|비추|밝혀 주|배를 안내|배들?에게|guides? ships|by the sea)",
+    r"|바닷가|바다|항구|뱃길|선박|뱃사람|불빛|불을 밝히|비추|비춰|밝혀 주|배를 안내|배들?에게|guides? ships|by the sea)",
     re.I,
 )
 
