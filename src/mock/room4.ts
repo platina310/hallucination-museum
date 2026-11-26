@@ -31,7 +31,7 @@ const SCRIPT: Record<TempKind, string[][][]> = {
       ['21도입니다.', '18도입니다.', '20도입니다.'],
     ],
     [
-      ['24도입니다.', '17도입니다.', '21도입니다.'],
+      ['24도입니다.', '13도입니다.', '21도입니다.'],
       ['15도입니다.', '22도입니다.', '26도입니다.'],
     ],
   ],
@@ -72,7 +72,6 @@ export function askScripted(kind: TempKind, temperature: number, turn: number): 
 
 export function checkRecordScripted(value: string): { correct: boolean; note: string } {
   const digits = value.replace(/\D/g, '')
-  if (digits === '17') return { correct: true, note: '' }
-  if (digits === '20') return { correct: false, note: '삐빅. 조절기가 세 번 똑같이 말했다고 맞는 답은 아닙니다. 보존실 어딘가에 점검표가 있습니다.' }
+  if (digits === '13') return { correct: true, note: '' }
   return { correct: false, note: '삐빅. 기록 자물쇠가 열리지 않습니다. 조절기의 말 말고, 적어 둔 기록을 찾아보세요.' }
 }

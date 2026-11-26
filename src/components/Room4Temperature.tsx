@@ -19,7 +19,7 @@ const SPOTS = [
     id: 'drawer',
     label: '보존실 서랍',
     note: '서랍 안쪽에 코팅된 종이가 붙어 있어요.',
-    card: { label: '보존 점검표 (2026년 11월)', text: "작품 '새벽 등대' 적정 보존 온도 17도, 습도 50%. 조절기에는 아직 입력하지 않음." },
+    card: { label: '보존 점검표 (2026년 11월)', text: "작품 '새벽 등대'는 컬러 사진 인화지라 저온 보존. 적정 보존 온도 13도, 습도 40%. 조절기에는 아직 입력하지 않음." },
     icon: 'M5 12h30v18H5zM5 21h30M17 16h6M17 26h6',
   },
   {
@@ -108,6 +108,7 @@ export default function Room4Temperature({ onSolved }: { onSolved: (s: RoomStats
   const [busy, setBusy] = useState(false)
   const [result, setResult] = useState<TempResult | null>(null)
   const [lastTitle, setLastTitle] = useState<TempResult | null>(null)
+  const [lastRecord, setLastRecord] = useState<TempResult | null>(null)
   const [log, setLog] = useState<LogRow[]>([])
   const [value, setValue] = useState('')
   const [recordOpen, setRecordOpen] = useState(false)
@@ -152,6 +153,7 @@ export default function Room4Temperature({ onSolved }: { onSolved: (s: RoomStats
       const r = await askTemperature(kind, t, log.filter((l) => l.kind === kind).length)
       setResult(r)
       if (r.kind === 'title') setLastTitle(r)
+      else setLastRecord(r)
       setLog((p) => [...p, { kind: r.kind, t: r.temperature, distinct: r.distinct, engine: r.engine }])
       stamp(r.distinct === 1 ? '셋 다 같음!' : r.distinct === 3 ? '셋 다 다름!' : '둘이 같음!', false)
     } finally {
@@ -174,7 +176,9 @@ export default function Room4Temperature({ onSolved }: { onSolved: (s: RoomStats
         finish(true, titleOpen, n)
       } else {
         setGood(false)
-        setFeedback(r.note)
+        // 조절기가 방금 한 답을 그대로 넣었다면 그 점을 짚어 준다
+        const echoed = lastRecord?.numbers?.includes(Number(value.replace(/\D/g, '')))
+        setFeedback(echoed ? '삐빅. 조절기가 자신 있게 되풀이한 답이라고 맞는 답은 아닙니다. 조절기는 점검표를 받은 적이 없습니다. 보존실 어딘가에 기록이 있습니다.' : r.note)
         stamp('삐빅!', true)
       }
     } finally {

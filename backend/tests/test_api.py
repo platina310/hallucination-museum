@@ -350,9 +350,9 @@ def test_room4_scripted_answers_follow_temperature():
 def test_room4_api():
     r = post("/rooms/4/ask", {"kind": "record", "temperature": 0})
     assert r["engine"] == "gemini" and len(r["answers"]) == 3 and r["same"] == 3
-    assert post("/rooms/4/check", {"value": "17"})["correct"] is True
+    assert post("/rooms/4/check", {"value": "13"})["correct"] is True
     wrong = post("/rooms/4/check", {"value": "20도"})
-    assert wrong["correct"] is False and "세 번" in wrong["note"]
+    assert wrong["correct"] is False and "기록" in wrong["note"]
     assert client.post("/rooms/4/ask", json={"kind": "title", "temperature": 3}).status_code == 422
 
 
