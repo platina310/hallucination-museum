@@ -24,8 +24,16 @@ def available() -> bool:
     return config.FAKE_LLM or config.LLM_API_KEY != ""
 
 
-def chat(system: str, user: str, *, json_mode: bool = False, max_tokens: int = 400, temperature: float = 0.7) -> str:
-    """시스템 지시와 사용자 말을 보내고 답 글자를 돌려준다."""
+def chat(
+    system: str,
+    user: str,
+    *,
+    history: list[tuple[str, str]] | None = None,
+    json_mode: bool = False,
+    max_tokens: int = 400,
+    temperature: float = 0.7,
+) -> str:
+    """시스템 지시와 사용자 말을 보내고 답 글자를 돌려준다. history는 앞서 오간 (물음, 답) 목록이다."""
     if config.FAKE_LLM:
         return _fake_chat(system, user, json_mode)
     if config.LLM_API_KEY == "":
@@ -43,7 +51,11 @@ def chat(system: str, user: str, *, json_mode: bool = False, max_tokens: int = 4
             extra["response_format"] = {"type": "json_object"}
         resp = _chat_client.chat.completions.create(
             model=config.LLM_MODEL,
-            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+            messages=[
+                {"role": "system", "content": system},
+                *[m for q, a in (history or []) for m in ({"role": "user", "content": q}, {"role": "assistant", "content": a})],
+                {"role": "user", "content": user},
+            ],
             max_tokens=max_tokens,
             temperature=temperature,
             **extra,

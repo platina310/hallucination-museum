@@ -65,15 +65,27 @@ def health() -> dict:
 # ── 방 1 지시의 방 ──────────────────────────────────────────
 
 
+class Turn(BaseModel):
+    """앞서 오간 말 한 쌍. 도 씨가 대화를 이어 가는 데 쓴다"""
+
+    q: str = Field(max_length=300)
+    a: str = Field(max_length=600)
+
+
 class PressIn(BaseModel):
     statement_id: int = Field(ge=1, le=4)
     exposed: bool = False
+    exposed_ids: list[int] = Field(default=[], max_length=4)
+    times: int = Field(default=0, ge=0, le=99)
+    history: list[Turn] = Field(default=[], max_length=8)
 
 
 class PresentIn(BaseModel):
     statement_id: int = Field(ge=1, le=4)
     file_id: str = Field(max_length=4)
     misses: int = Field(default=0, ge=0, le=99)
+    exposed_ids: list[int] = Field(default=[], max_length=4)
+    history: list[Turn] = Field(default=[], max_length=8)
 
 
 class InterrogateIn(BaseModel):
@@ -81,6 +93,8 @@ class InterrogateIn(BaseModel):
     nickname: str = Field(default="guest", max_length=20)
     question: str = Field(min_length=1, max_length=300)
     admitted: bool = False
+    exposed_ids: list[int] = Field(default=[], max_length=4)
+    history: list[Turn] = Field(default=[], max_length=8)
 
 
 class EvidenceIn(BaseModel):
@@ -89,20 +103,29 @@ class EvidenceIn(BaseModel):
     word: str = Field(max_length=40)
 
 
-@app.post("/rooms/1/press", summary="진술 더 캐묻기")
-def press(body: PressIn) -> dict:
-    return {"reply": room1.press_reply(body.statement_id, body.exposed)}
+def _pairs(history: list[Turn]) -> list[tuple[str, str]]:
+    return [(t.q, t.a) for t in history]
 
 
-@app.post("/rooms/1/present", summary="진술에 서류 내밀기")
-def present(body: PresentIn) -> dict:
-    return room1.present_reply(body.statement_id, body.file_id, body.misses)
+@app.post("/rooms/1/press", summary="진술 더 캐묻기 (Gemini)")
+def press(body: PressIn, tasks: BackgroundTasks) -> dict:
+    exposed = sorted(set(body.exposed_ids) | ({body.statement_id} if body.exposed else set()))
+    r = room1.press(body.statement_id, exposed, body.times, _pairs(body.history))
+    tasks.add_task(store.log_play, 1, "press", reply=r["reply"], engine=r["engine"], extra={"statement": body.statement_id})
+    return r
+
+
+@app.post("/rooms/1/present", summary="진술에 서류 내밀기 (판정은 코드, 반응은 Gemini)")
+def present(body: PresentIn, tasks: BackgroundTasks) -> dict:
+    r = room1.present(body.statement_id, body.file_id, body.misses, body.exposed_ids, _pairs(body.history))
+    tasks.add_task(store.log_play, 1, "present", reply=r["reply"], engine=r["engine"], extra={"statement": body.statement_id, "file": body.file_id, "hit": r["hit"]})
+    return r
 
 
 @app.post("/interrogate", summary="도 씨에게 자유 질문 (Gemini)")
 def interrogate(body: InterrogateIn, tasks: BackgroundTasks) -> dict:
     t0 = time.time()
-    r = room1.interrogate(body.question.strip(), body.admitted)
+    r = room1.interrogate(body.question.strip(), body.admitted, body.exposed_ids, _pairs(body.history))
     tasks.add_task(
         store.log_play, 1, "interrogate", input=body.question, reply=r["reply"], attack_type=r["attackType"], leak=r["leak"],
         engine=r["engine"], extra={"admitted": body.admitted, "ms": int((time.time() - t0) * 1000)},

@@ -28,6 +28,13 @@ export interface InterrogateResult {
   attackType?: AttackType
   leak?: Leak
   engine?: Engine
+  denied?: boolean // 암호를 안다고 인정하기 전에 암호를 물어 잡아뗀 경우
+}
+
+/** 도 씨가 대화를 이어 가도록 서버에 함께 보내는 것: 들킨 진술 번호와 앞서 오간 말 */
+export interface TalkContext {
+  exposed: number[]
+  history: { q: string; a: string }[]
 }
 
 /** POST /evidence 응답 */
@@ -40,6 +47,7 @@ export interface PresentResult {
   hit: boolean // 모순을 맞게 짚었는지
   reply: string
   corrected?: string // 정정된 진술
+  engine?: Engine
 }
 
 /** 서가의 방: POST /rooms/3/ask 응답 */

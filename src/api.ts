@@ -5,7 +5,7 @@ import { checkFinal } from './mock/final'
 import { checkEvidence, presentReply, pressReply, scriptedReply } from './mock/level1'
 import { judgeRound } from './mock/room2'
 import { checkDoor, searchAndAnswer } from './mock/room3'
-import type { EvidenceResult, InterrogateResult, PresentResult, SearchResult } from './types'
+import type { EvidenceResult, InterrogateResult, PresentResult, SearchResult, TalkContext } from './types'
 
 const API_URL = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '')
 
@@ -119,41 +119,51 @@ async function mockDelay(mockNet: MockNet, onError: string, ms = 900) {
 
 // ── 방 1 지시의 방 ──────────────────────────────────────────
 
-// admitted: 도 씨가 암호를 안다고 인정했는지. 실제 서버에서는 서버가 진행 상태를 기억한다.
+const NO_CONTEXT: TalkContext = { exposed: [], history: [] }
+
+// admitted: 도 씨가 암호를 안다고 인정했는지. ctx: 들킨 진술과 앞서 오간 말. 서버의 도 씨는 이것을 보고 대화를 이어 간다.
 export async function interrogate(
   level: number,
   nickname: string,
   question: string,
   admitted: boolean,
   mockNet: MockNet = 'ok',
+  ctx: TalkContext = NO_CONTEXT,
 ): Promise<InterrogateResult> {
   const script = async (): Promise<InterrogateResult> => {
     await mockDelay(
       mockNet,
       "서버가 응답하지 않았습니다 (503). 도 씨가 묵비권을 너무 열심히 행사한 모양입니다. 질문은 위에 남아 있으니 '다시 보내기'를 눌러 주세요.",
     )
-    return { ...scriptedReply(question, admitted), engine: 'script' }
+    const r = scriptedReply(question, admitted)
+    return { ...r, engine: 'script', denied: !admitted && r.reply.includes('모른다니까요') }
   }
   if (usingMock) return script()
-  return serverFirst<InterrogateResult>('/interrogate', { level, nickname, question, admitted }, script)
+  return serverFirst<InterrogateResult>('/interrogate', { level, nickname, question, admitted, exposed_ids: ctx.exposed, history: ctx.history }, script)
 }
 
-export async function pressStatement(statementId: number, exposed: boolean): Promise<{ reply: string }> {
+// times: 이 진술을 앞서 캐물은 횟수. 대본은 횟수에 따라 다른 말을 한다.
+export async function pressStatement(
+  statementId: number,
+  exposed: boolean,
+  times = 0,
+  ctx: TalkContext = NO_CONTEXT,
+): Promise<{ reply: string; engine?: 'gemini' | 'script' }> {
   const script = async () => {
     await wait(600)
-    return { reply: pressReply(statementId, exposed) }
+    return { reply: pressReply(statementId, exposed, times), engine: 'script' as const }
   }
   if (usingMock) return script()
-  return serverFirst<{ reply: string }>('/rooms/1/press', { statement_id: statementId, exposed }, script)
+  return serverFirst('/rooms/1/press', { statement_id: statementId, exposed, times, exposed_ids: ctx.exposed, history: ctx.history }, script)
 }
 
-export async function presentEvidence(statementId: number, fileId: string, misses: number): Promise<PresentResult> {
-  const script = async () => {
+export async function presentEvidence(statementId: number, fileId: string, misses: number, ctx: TalkContext = NO_CONTEXT): Promise<PresentResult> {
+  const script = async (): Promise<PresentResult> => {
     await wait(700)
-    return presentReply(statementId, fileId, misses)
+    return { ...presentReply(statementId, fileId, misses), engine: 'script' }
   }
   if (usingMock) return script()
-  return serverFirst<PresentResult>('/rooms/1/present', { statement_id: statementId, file_id: fileId, misses }, script)
+  return serverFirst<PresentResult>('/rooms/1/present', { statement_id: statementId, file_id: fileId, misses, exposed_ids: ctx.exposed, history: ctx.history }, script)
 }
 
 export async function submitEvidence(level: number, nickname: string, word: string): Promise<EvidenceResult> {

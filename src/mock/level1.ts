@@ -57,12 +57,30 @@ const CONTRADICTIONS: Record<number, { file: string; reply: string; corrected: s
   },
 }
 
-const PRESS: Record<number, string> = {
-  1: '근무일지에 적힌 그대로입니다. 더 드릴 말씀이 없습니다.',
-  2: '저는 담배도 안 피웁니다. 밤중에 나갈 일이 없습니다. 못 믿겠으면 출입기록이라도 보시든가요.',
-  3: '모니터를 제가 직접 봤습니다. 점검표요? 그런 건 관리실 소관입니다.',
-  4: '암호는 윗분들만 압니다. 저 같은 경비원에게 누가 알려 주겠습니까. 인수인계 같은 것도 받은 적 없습니다.',
+// 같은 진술을 거듭 캐물으면 다른 말이 나온다. 말끝에 어느 서류를 봐야 하는지 흘린다. 서버(backend/app/room1.py)와 같다
+const PRESS: Record<number, string[]> = {
+  1: [
+    '근무일지에 적힌 그대로입니다. 더 드릴 말씀이 없습니다.',
+    '밤 10시에 와서 아침 6시에 갑니다. 11년째 똑같습니다. 뭘 더 캐시려고요.',
+    '두 시간마다 한 바퀴씩 돕니다. 그게 답니다. 남는 건 허리 통증뿐이죠.',
+  ],
+  2: [
+    '저는 담배도 안 피웁니다. 밤중에 나갈 일이 없습니다. 못 믿겠으면 출입기록이라도 보시든가요.',
+    '그 시간에 나갈 데가 어디 있습니까. 문마다 카드를 찍어야 열리는 건물입니다.',
+    '안 나갔다니까요. 자꾸 같은 걸 물으시네. 출입기록 떼어 보면 될 일 아닙니까.',
+  ],
+  3: [
+    '모니터를 제가 직접 봤습니다. 점검표요? 그런 건 관리실 소관입니다.',
+    '화면 넷 다 멀쩡했습니다. …뭐, 제가 밤새 모니터만 본 건 아니지만요.',
+    '카메라는 제 담당이 아닙니다. 꺼졌으면 점검표에 적혔겠죠. 저는 본 게 없습니다.',
+  ],
+  4: [
+    '암호는 윗분들만 압니다. 저 같은 경비원에게 누가 알려 주겠습니까. 인수인계 같은 것도 받은 적 없습니다.',
+    '수장고는 제 구역이 아닙니다. 암호 같은 건 들을 일이 없죠.',
+    '모른다니까요. 인수인계 대장이라도 있으면 가져와 보시든가요. 서랍은 잠겨 있을 텐데.',
+  ],
 }
+const PRESSED_AGAIN = ['그 얘기는 이미 정정했잖습니까.', '아까 다 말씀드렸습니다. 같은 걸 또 물으시면 저도 같은 말밖에 못 합니다.', '정정한 대로입니다. 더 나올 게 없어요.']
 
 const MISS = [
   '그 서류가 이 진술과 무슨 상관입니까. 조사관님, 헛다리 짚으셨습니다.',
@@ -70,9 +88,11 @@ const MISS = [
   '그걸로는 아무것도 증명이 안 됩니다. 물이나 한 잔 더 주시죠.',
 ]
 
-export function pressReply(statementId: number, exposed: boolean): string {
-  if (exposed) return '그 얘기는 이미 정정했잖습니까.'
-  return PRESS[statementId] ?? '드릴 말씀이 없습니다.'
+/** times: 이 진술을 앞서 캐물은 횟수 */
+export function pressReply(statementId: number, exposed: boolean, times = 0): string {
+  if (exposed) return PRESSED_AGAIN[times % PRESSED_AGAIN.length]
+  const lines = PRESS[statementId]
+  return lines ? lines[times % lines.length] : '드릴 말씀이 없습니다.'
 }
 
 export function presentReply(statementId: number, fileId: string, misses: number): PresentResult {

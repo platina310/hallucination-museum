@@ -9,7 +9,7 @@ import type { MockNet } from '../api'
 import type { RoomStats } from '../game/progress'
 import { ADMIT_STATEMENT, CASE_FILES, CONTRADICTION_COUNT, ROOM_FILES, TESTIMONY } from '../mock/level1'
 import GuardRoom from './GuardRoom'
-import type { AttackType, CaseFile, Engine, Leak } from '../types'
+import type { AttackType, CaseFile, Engine, Leak, TalkContext } from '../types'
 import { Coach, Mission } from './Guide'
 import Portrait, { Figure } from './Portrait'
 import type { Face } from './Portrait'
@@ -214,6 +214,17 @@ export default function Room1CrossExam({
   const canSend = !busy && !over && input.trim() !== ''
   const submitLocked = solved || submits >= MAX_SUBMIT
 
+  // 도 씨가 대화를 이어 가도록 서버에 함께 보내는 것: 들킨 진술과, 앞서 오간 말 여섯 쌍
+  function talkContext(): TalkContext {
+    const history: TalkContext['history'] = []
+    for (let i = 0; i < msgs.length - 1; i++) {
+      const q = msgs[i]
+      const a = msgs[i + 1]
+      if (q.who === 'me' && a.who === 'suspect') history.push({ q: q.text.slice(0, 300), a: a.text.slice(0, 600) })
+    }
+    return { exposed, history: history.slice(-6) }
+  }
+
   // 진술 추궁: 도 씨가 말을 덧붙인다
   async function press(id: number) {
     if (busy || struckOut) return
@@ -222,8 +233,9 @@ export default function Room1CrossExam({
     setActions((a) => a + 1)
     setBusy(true)
     try {
-      const r = await pressStatement(id, exposed.includes(id))
-      setMsgs((prev) => [...prev, { who: 'suspect', text: r.reply }])
+      const times = msgs.filter((m) => m.who === 'me' && m.tag === '추궁' && m.text.startsWith(`진술 ${id}`)).length
+      const r = await pressStatement(id, exposed.includes(id), times, talkContext())
+      setMsgs((prev) => [...prev, { who: 'suspect', text: r.reply, engine: r.engine }])
       setLatest(r.reply)
       setLastMiss(false)
       say(r.reply)
@@ -242,8 +254,8 @@ export default function Room1CrossExam({
     setActions((a) => a + 1)
     setBusy(true)
     try {
-      const r = await presentEvidence(statementId, file.id, strikes)
-      const next: Msg[] = [{ who: 'suspect', text: r.reply }]
+      const r = await presentEvidence(statementId, file.id, strikes, talkContext())
+      const next: Msg[] = [{ who: 'suspect', text: r.reply, engine: r.engine }]
       if (r.hit) {
         const now = exposed.includes(statementId) ? exposed : [...exposed, statementId]
         setExposed(now)
@@ -293,10 +305,10 @@ export default function Room1CrossExam({
     setNet('ok') // 시연용 서버 상태는 한 번만 적용한다
 
     try {
-      const r = await interrogate(LEVEL, NICKNAME, question, admitted, netForThisRequest)
+      const r = await interrogate(LEVEL, NICKNAME, question, admitted, netForThisRequest, talkContext())
       setMsgs((prev) => [...prev, { who: 'suspect', text: r.reply, n, source: r.source, attackType: r.attackType, leak: r.leak, engine: r.engine }])
       setLastMiss(false)
-      if (!admitted && r.reply.includes('모른다니까요')) setDeniedOnce(true)
+      if (!admitted && r.denied) setDeniedOnce(true)
       say(r.reply)
     } catch (e) {
       const text = e instanceof Error ? e.message : "오류가 발생했습니다. '다시 보내기'를 눌러 주세요."
