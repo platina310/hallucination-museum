@@ -767,7 +767,7 @@ table.fit{min-width:0;width:100%}
 .choices>button.act{background:var(--ink);color:var(--sheet);justify-content:center;border-color:var(--ink);font-size:1.15rem}
 .choices>button.act.present{background:var(--seal);border-color:var(--seal);color:#fff}
 .choices>button.act:hover:not(:disabled),.choices>button.act:focus-visible{background:var(--mark);color:var(--on-mark);border-color:var(--ink)}
-/* 하드 모드: 틀릴수록 변하는 문지기. 색은 화면 테마와 상관없이 고정하고, 표정은 그대로 읽히게 둔다 */
+/* 하드 모드: 맞힐 때마다 변하는 문지기. 색은 화면 테마와 상관없이 고정하고, 표정은 그대로 읽히게 둔다 */
 .portrait.dread-1,.figure.dread-1{--ink:#18202b;--ink-soft:#4f5b68;--paper:#e9ece8;--sheet:#dfe6da}
 .portrait.dread-2,.figure.dread-2{--ink:#141a16;--ink-soft:#46524a;--paper:#d5dccf;--sheet:#bfc9b7}
 .portrait.dread-3,.figure.dread-3{--ink:#0d110e;--ink-soft:#3a443c;--paper:#b9c3b4;--sheet:#9aa997;--seal:#7d1a10;--mark:#a8963a}

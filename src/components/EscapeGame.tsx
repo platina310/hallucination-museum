@@ -116,7 +116,7 @@ function Lobby({
           게임에서 배울 내용입니다. 어느 방부터 들어가도 됩니다. 방을 나올 때마다 단서가 하나씩 수첩에 적히고, 정문은 그 다섯 개를 모두 써야 열립니다.
         </p>
         <p className="mission-mode">
-          <b>하드 모드</b> 화면 위쪽에서 켜면, 틀릴수록 문지기가 무섭게 변합니다. 문제와 음악은 일반 모드와 같습니다.
+          <b>하드 모드</b> 화면 위쪽에서 켜면, 맞힐 때마다 문지기가 조금씩 무섭게 변합니다. 문제와 음악은 일반 모드와 같습니다.
         </p>
         <div className="meter" role="img" aria-label={`방 ${GATE_IDS.length}개 중 ${clearedCount}개 통과${progress.escaped ? ', 정문 통과' : ''}`}>
           {GATE_IDS.map((id) => (

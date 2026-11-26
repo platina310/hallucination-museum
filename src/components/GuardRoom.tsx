@@ -45,7 +45,7 @@ export default function GuardRoom({
   found: string[]
   drawerOpen: boolean
   face: Face
-  dread: Dread // 하드 모드에서 틀릴수록 도 씨가 변하는 정도
+  dread: Dread // 하드 모드에서 모순을 잡을 때마다 도 씨가 변하는 정도
   calm: boolean // 깜빡임과 그림자 끄기. 심문 화면과 같이 쓴다
   onCalm: (v: boolean) => void
   onFind: (fileId: string) => void

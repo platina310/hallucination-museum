@@ -30,7 +30,7 @@ const FACE_LABEL: Record<Face, string> = {
   sure: '자신만만한 표정',
 }
 
-// 틀릴수록 문지기가 사람 같지 않게 변하는 정도. 0은 평소 모습
+// 하드 모드에서 문지기가 사람 같지 않게 변한 정도. 플레이어가 맞힐 때마다 한 단계씩 오른다. 0은 평소 모습
 export type Dread = 0 | 1 | 2 | 3
 const DREAD_LABEL = ['', ', 어딘가 창백해진 모습', ', 눈가가 검게 꺼진 모습', ', 사람 같지 않게 변한 모습']
 
@@ -315,7 +315,7 @@ export function Figure({ who, face, dread = 0 }: { who: Who; face: Face; dread?:
       {/* 어깨를 올려 목이 짧고 굵게 보이게 한다 */}
       <g transform="translate(0 -12)">{body(who)}</g>
       <g transform="translate(23.2 6) scale(1.6)">
-        {/* 틀릴수록 고개가 기울고 가끔 움찔한다 */}
+        {/* 단계가 오를수록 고개가 기울고 가끔 움찔한다 */}
         <g className="dread-head">
           {/* 표정이 바뀔 때마다 새로 그려 움찔하는 움직임을 준다 */}
           <g key={face} className="pop">

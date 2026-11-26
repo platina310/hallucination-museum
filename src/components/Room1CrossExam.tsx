@@ -357,11 +357,11 @@ export default function Room1CrossExam({
     mood = struckOut ? '여유만만. 변호사 옆에서 웃고 있습니다' : '피식. 헛다리라는 표정입니다'
   }
 
-  // 하드 모드에서는 틀릴수록 도 씨가 사람 같지 않게 변한다. 헛다리와 틀린 제출을 함께 센다. 문을 열면 원래대로 돌아온다
-  const mistakes = strikes + (solved ? 0 : submits)
-  const dread: Dread = !hard || solved ? 0 : mistakes >= 5 ? 3 : mistakes >= 4 ? 2 : mistakes >= 2 ? 1 : 0
-  if (!solved && !jolt && dread === 3) mood = struckOut ? '웃고 있습니다. 아까부터 눈을 깜빡이지 않습니다' : `${mood}. 그런데 눈을 깜빡이지 않습니다`
-  else if (!solved && !jolt && dread === 2) mood = `${mood}. 눈가가 유난히 어둡습니다`
+  // 하드 모드에서는 모순을 하나 잡을 때마다 도 씨가 조금씩 사람 같지 않게 변한다. 세 개를 다 잡으면 끝까지 변한 모습이다
+  const dread: Dread = hard ? (Math.min(exposed.length, 3) as Dread) : 0
+  if (!jolt && dread === 3) mood = `${mood}. 그런데 눈을 깜빡이지 않습니다`
+  else if (!jolt && dread === 2) mood = `${mood}. 눈가가 유난히 어둡습니다`
+  else if (!jolt && dread === 1) mood = `${mood}. 낯빛이 조금 창백해졌습니다`
 
   // 방금 상황을 보고 다음에 할 일을 한 줄로 알려 준다
   const lastReply = logRows.length > 0 ? logRows[logRows.length - 1] : undefined
