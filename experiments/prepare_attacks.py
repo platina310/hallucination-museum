@@ -26,10 +26,40 @@ SAMPLE_SIZE = 600
 SEED = 42
 MIN_LEN, MAX_LEN = 8, 1500  # 정제 기준 (글자 수)
 SAMPLE_MIN_LEN, SAMPLE_MAX_LEN = 15, 600  # 표본은 비용을 줄이려고 더 좁게 잡는다
-CLUSTERS = 12
+CLUSTERS = 15
 
 # 공격이 아닌 잡담. 인사말이나 시험 삼아 넣은 말만 있는 입력이다
 CHITCHAT = re.compile(r"^(hi+|hello+|hey+|yo|test(ing)?|ok(ay)?|thanks?( you)?|how are you|who are you|what'?s up|good (morning|evening|night)|lol|\?+|\.+)[\s!?.]*$", re.I)
+
+
+DOMAIN_STOP = ["password", "passwords", "secret", "word", "words", "tell", "say", "give", "know", "please", "want", "need", "like", "just", "does", "don", "did", "can", "ll", "ve"]
+
+
+def cluster(df: pd.DataFrame) -> list[dict]:
+    """공격문을 CLUSTERS개로 묶고, 묶음마다 대표 낱말과 수법 구성, 예시를 돌려준다. df에 cluster 열을 채운다."""
+    import numpy as np
+    from sklearn.cluster import KMeans
+    from sklearn.decomposition import TruncatedSVD
+    from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS, TfidfVectorizer
+    from sklearn.preprocessing import normalize
+
+    vec = TfidfVectorizer(max_features=20000, ngram_range=(1, 2), stop_words=list(ENGLISH_STOP_WORDS.union(DOMAIN_STOP)), min_df=5, sublinear_tf=True)
+    x = vec.fit_transform(df["prompt"])
+    dims = min(100, x.shape[1] - 1)
+    reduced = normalize(TruncatedSVD(n_components=dims, random_state=SEED).fit_transform(x))
+    df["cluster"] = KMeans(n_clusters=CLUSTERS, random_state=SEED, n_init=5).fit_predict(reduced)
+    terms = vec.get_feature_names_out()
+    out = []
+    for c in range(CLUSTERS):
+        mask = (df["cluster"] == c).to_numpy()
+        part = df[mask]
+        center = np.asarray(x[mask].mean(axis=0)).ravel()
+        top = [terms[i] for i in center.argsort()[::-1][:8]]
+        mix = part["type"].value_counts(normalize=True).round(3).head(3).to_dict()
+        examples = part[(part["len"] >= 20) & (part["len"] <= 140)]["prompt"].head(2).tolist()
+        out.append({"cluster": c, "rows": int(len(part)), "share": round(len(part) / len(df), 4), "top_terms": top, "type_mix": mix, "examples": examples})
+    out.sort(key=lambda r: -r["rows"])
+    return out
 
 
 def norm(text: str) -> str:
@@ -64,23 +94,9 @@ def main() -> int:
     df["ascii"] = df["prompt"].map(lambda t: sum(c.isascii() for c in t) / len(t) >= 0.9)
     df["id"] = df["prompt"].map(lambda t: hashlib.sha1(t.encode()).hexdigest()[:10])
 
-    # 낱말 빈도(TF-IDF)로 벡터를 만들고 비슷한 공격문끼리 묶는다 (2주차 텍스트 애널리틱스)
-    from sklearn.cluster import MiniBatchKMeans
-    from sklearn.feature_extraction.text import TfidfVectorizer
-
-    vec = TfidfVectorizer(max_features=20000, ngram_range=(1, 2), stop_words="english", min_df=5, sublinear_tf=True)
-    x = vec.fit_transform(df["prompt"])
-    km = MiniBatchKMeans(n_clusters=CLUSTERS, random_state=SEED, n_init=3, batch_size=4096)
-    df["cluster"] = km.fit_predict(x)
-    terms = vec.get_feature_names_out()
-    clusters = []
-    for c in range(CLUSTERS):
-        part = df[df["cluster"] == c]
-        top = [terms[i] for i in km.cluster_centers_[c].argsort()[::-1][:10]]
-        mix = part["type"].value_counts(normalize=True).round(3).head(3).to_dict()
-        example = part[part["len"] <= 160]["prompt"].head(1).tolist()
-        clusters.append({"cluster": c, "rows": int(len(part)), "top_terms": top, "type_mix": mix, "example": example[0] if example else ""})
-    clusters.sort(key=lambda r: -r["rows"])
+    # 낱말 빈도(TF-IDF)로 벡터를 만들고, 차원을 줄인 뒤 비슷한 공격문끼리 묶는다 (2주차 텍스트 애널리틱스).
+    # 거의 모든 공격문에 나오는 낱말(password, secret 등)은 묶음을 가르는 데 도움이 안 돼서 뺀다.
+    clusters = cluster(df)
 
     # 표본: 수법별로 고르게 뽑되, 드문 수법도 30건은 넣는다
     pool = df[(df["len"] >= SAMPLE_MIN_LEN) & (df["len"] <= SAMPLE_MAX_LEN)]
