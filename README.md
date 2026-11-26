@@ -21,7 +21,7 @@ KAIST 디지털금융MBA 「금융빅데이터분석실습」 팀 프로젝트�
 |---|---|---|---|
 | 1. 지시의 방 | 진술서의 모순을 사건 파일로 찔러 입을 열게 한 뒤, 돌려 물어 암호를 캐낸다 | 프롬프트 지시만으로는 비밀을 못 지킨다 | 역전재판 |
 | 2. 환각의 방 | AI의 설명을 한 건씩 통과시키거나 반려한다. 라운드마다 검수 규칙이 늘어난다 | AI는 자신 있게 틀린다. 출처는 열어서, 최근 기록으로 대조한다 | Papers, Please |
-| 3. 서가의 방 | 검색어로 문서를 찾는다. 앞의 3건만 AI에게 전달된다 | 검색된 문서가 답을 결정한다 (RAG) | Her Story |
+| 3. 서가의 방 | 자료실을 뒤져 낱말을 찾고, 검색어로 문서를 찾는다. 앞의 3건만 AI에게 전달된다 | 검색된 문서가 답을 결정한다 (RAG) | Her Story |
 | 정문 | 세 방의 단서를 조합한다. 관장 AI는 옛 규칙을 말한다 | AI가 아는 것은 학습 시점까지다 | 방탈출의 최종 자물쇠 |
 | 4. 온도의 방 (예정) | 온도를 조절해 답이 흔들리는 지점을 찾는다 | temperature는 다양성을 바꾼다 | |
 | 5. 문지기의 방 (예정) | 내가 쓴 프롬프트로 AI가 자동 공격을 버티게 한다 | 방어 설계 | Tensor Trust |
@@ -49,7 +49,7 @@ npm run build    # 타입 검사 후 dist/ 생성
 | `src/components/EscapeGame.tsx` | 수장고 지도, 방 진행 흐름, 정문 자물쇠, 결과 카드 |
 | `src/components/Room1CrossExam.tsx` | 방 1 지시의 방 (추궁, 증거 제시, 자유 질문) |
 | `src/components/Room2Inspection.tsx` | 방 2 환각의 방 (라운드제 검수) |
-| `src/components/Room3Search.tsx` | 방 3 서가의 방 (검색) |
+| `src/components/Room3Search.tsx` | 방 3 서가의 방 (자료실 수색, 검색) |
 | `src/components/Guide.tsx` | 임무, 다음 수, 힌트, 퀴즈 공통 요소 |
 | `src/api.ts` | 화면과 서버 사이의 유일한 연결 지점 |
 | `src/mock/` | 백엔드가 없을 때 쓰는 시연용 대본과 정답 |
@@ -89,7 +89,7 @@ POST /final/check      요청 {"code": "0000"}
 |---|---|---|
 | 문지기 초상 | `src/components/Portrait.tsx`. 도 씨, 루미, 고 선생의 얼굴과 표정 10가지 | 공사 중인 두 방의 문지기 |
 | 전시 작품 | `src/components/Artwork.tsx`. 환각의 방 작품 3점을 코드로 그린 그림 | 유화, 수채 질감의 그림으로 교체 |
-| 서가 | `src/components/Bookshelf.tsx`. 전달된 책과 잘린 책을 보여 주는 책장, 책 넘기는 움직임 | 임베딩 검색의 순위와 점수 표시 |
+| 서가 | `src/components/Archive.tsx`. 자료실 장면과, 전달된 책과 잘린 책을 보여 주는 서가. 책 넘기는 움직임은 `Bookshelf.tsx` | 임베딩 검색의 순위와 점수 표시 |
 | 목소리 | 브라우저 기본 음성(Web Speech API). 기본은 꺼짐 | ElevenLabs. 키는 서버에 두고 FastAPI `/tts`가 호출 |
 | 배경음·효과음 | 버튼 자리만 있음 | Suno로 만든 음원 파일 |
 
