@@ -14,21 +14,28 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from . import config, final, guard, llm, room1, room2, room3, stats, store
+from . import config, final, guard, llm, mcp_server, room1, room2, room3, room4, room5, stats, store
 
 logging.basicConfig(level=logging.INFO)
 
 
 
+_mcp, _mcp_http = mcp_server.build()
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     store.init_schema()  # DB가 있으면 테이블을 준비한다. 없어도 서버는 뜬다
-    yield
+    if _mcp is None:
+        yield
+        return
+    async with _mcp.session_manager.run():  # MCP 서버(/mcp)를 함께 띄운다
+        yield
 
 
 app = FastAPI(
     title="환각 미술관 API",
-    version="0.6.0",
+    version="0.7.0",
     description="AI 방탈출 '환각 미술관'의 방 규칙, 검색, 모델 호출, 판정",
     lifespan=lifespan,
 )
@@ -62,6 +69,7 @@ def health() -> dict:
         "calls_left_today": guard.calls_left(),
         "presenter_mode": config.PRESENTER_KEY != "",  # 발표자 우선 모드가 켜져 있는지
         "presenter": guard.presenter.get(),  # 이 요청이 발표자의 것으로 인정됐는지
+        "mcp": _mcp is not None,  # MCP 서버(/mcp)가 떠 있는지
     }
 
 
@@ -189,6 +197,53 @@ def door(body: CodeIn, tasks: BackgroundTasks) -> dict:
     return r
 
 
+# ── 방 4 온도의 방 ──────────────────────────────────────────
+
+
+class TempIn(BaseModel):
+    kind: str = Field(pattern=r"^(record|title)$", description="record 보존 온도 질문, title 전시 제목 짓기")
+    temperature: float = Field(ge=0, le=2)
+    turn: int = Field(default=0, ge=0, le=999)
+
+
+class ValueIn(BaseModel):
+    value: str = Field(max_length=8)
+
+
+@app.post("/rooms/4/ask", summary="같은 질문을 세 번 던지기 (temperature 조절, Gemini)")
+def temp_ask(body: TempIn, tasks: BackgroundTasks) -> dict:
+    r = room4.ask(body.kind, body.temperature, body.turn)
+    tasks.add_task(store.log_play, 4, "ask", reply=" / ".join(r["answers"]), engine=r["engine"],
+                   extra={"kind": r["kind"], "temperature": r["temperature"], "same": r["same"], "distinct": r["distinct"], "pass": r.get("pass")})
+    return r
+
+
+@app.post("/rooms/4/check", summary="기록 자물쇠 (보존 온도) 확인")
+def temp_check(body: ValueIn, tasks: BackgroundTasks) -> dict:
+    r = room4.check_record(body.value)
+    tasks.add_task(store.log_play, 4, "door", extra={"correct": r["correct"]})
+    return r
+
+
+# ── 방 5 문지기의 방 ─────────────────────────────────────────
+
+
+class DefenseIn(BaseModel):
+    prompt: str = Field(max_length=400, description="플레이어가 쓴 지시문")
+    wave: int = Field(ge=0, le=1)
+    input_check: str = Field(default="off", pattern=r"^(off|known|strict)$")
+    output_check: bool = False
+
+
+@app.post("/rooms/5/run", summary="내가 쓴 지시문으로 공격 네 건과 정상 질문 한 건 시험 (Gemini, 판정은 코드)")
+def defense_run(body: DefenseIn, tasks: BackgroundTasks) -> dict:
+    r = room5.run(body.prompt, body.wave, body.input_check, body.output_check)
+    tasks.add_task(store.log_play, 5, "run", input=body.prompt, engine=r["engine"],
+                   extra={"wave": r["wave"], "held": r["held"], "total": r["total"], "visitor": r["visitor"]["ok"], "passed": r["passed"],
+                          "input_check": body.input_check, "output_check": body.output_check, "leaked": [x["id"] for x in r["results"] if x["leaked"]]})
+    return r
+
+
 # ── 정문 ────────────────────────────────────────────────
 
 
@@ -232,3 +287,9 @@ def track(body: TrackIn, tasks: BackgroundTasks) -> dict:
 @app.get("/stats", summary="분석 페이지용 집계 (건수와 비율만)")
 def get_stats() -> dict:
     return stats.get()
+
+
+# ── MCP 서버 ────────────────────────────────────────────────
+# 맨 끝에 붙인다. 위의 주소에 맞지 않는 요청 가운데 /mcp만 MCP 서버가 받는다.
+if _mcp_http is not None:
+    app.mount("/", _mcp_http)

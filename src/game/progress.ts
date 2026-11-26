@@ -20,7 +20,7 @@ const ROOM_KEYS = ['mukbigwon.room1.v3', 'mukbigwon.room1.v2', 'mukbigwon.level1
 const EMPTY: Progress = { cleared: [], pre: {}, post: {}, stats: {}, escaped: false, finalTries: 0 }
 
 // 방마다 "이 정도면 능숙하다"고 보는 행동 횟수
-const PAR: Record<number, number> = { 1: 12, 2: 3, 3: 5 }
+const PAR: Record<number, number> = { 1: 12, 2: 3, 3: 5, 4: 7, 5: 4 }
 
 /** 별 1~3개. 힌트 없이 적은 횟수로 통과할수록 많다. 통과하지 않았으면 0. */
 export function starsOf(id: number, stats?: RoomStats): number {

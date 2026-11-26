@@ -1,9 +1,10 @@
 // 팀 페이지. 5주차 아이디어 공유로 시작해 8주차 기말 발표까지 쓰는 발표 URL이 이 화면이다.
 // 제출 안내의 순서대로 주제, 대상 사용자와 문제, 데이터, AI 활용 계획을 요약하고 프로토타입으로 이어 준다.
 // 8주차까지 쌓아 가는 자세한 내용은 Detail.tsx(/detail)에 있다.
-import { Pill, Todo } from '../components/Marks'
+import { Pill } from '../components/Marks'
 import { DATASETS, IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SCREENS, SWAGGER_URL, TEAM } from '../content/shared'
-import { ATTACK_TYPES, CHECKED_ON, CLEANING, EXPERIMENT, EXPERIMENT_NOTES, TRIALS } from '../content/results'
+import { EXPERIMENT_EN, EXPERIMENT_KO, experimentDay, experimentRows } from '../content/experiment'
+import { ATTACK_TYPES, CHECKED_ON, CLEANING, EXPERIMENT_NOTES, TRIALS } from '../content/results'
 import { ROOMS } from '../game/rooms'
 
 const FLOW = ['수장고 지도', '입장 전 퀴즈', '방에서 AI와 겨루기', '배운 것과 같은 퀴즈', '정문 자물쇠', '탈출 결과와 별점', '분석 페이지']
@@ -120,7 +121,7 @@ export default function Idea() {
                 </div>
                 <div className="row">
                   <div className="k">구성</div>
-                  <div className="v">방 5개와 정문. 8주차 필수 범위는 방 3개와 정문</div>
+                  <div className="v">본관 방 3개와 정문, 별관 방 2개. 탈출에는 본관 방 3개와 정문이 필요</div>
                 </div>
                 <div className="row">
                   <div className="k">플레이어</div>
@@ -186,23 +187,22 @@ export default function Idea() {
                 <ul>
                   <li>환각, 프롬프트의 한계, RAG 같은 개념은 글로 배우면 남지 않음</li>
                   <li>AI의 답을 그대로 믿거나 비밀을 프롬프트에 넣는 실수의 반복</li>
-                  <li>
-                    재미있게 익힐 한국어 실습 도구 부족 <Todo>조사로 확인할 가설</Todo>
-                  </li>
+                  <li>회사는 AI를 쓸 줄 아는 사람을 원하지만 교육은 뒤처짐. AI를 업무에 쓰는 사람 가운데 회사에서 교육을 받은 사람은 39%</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>근거와 선행 사례</h3>
                 <ul>
-                  <li>OWASP의 LLM 취약점 Top 10에서 프롬프트 인젝션이 1순위</li>
-                  <li>Lakera의 Gandalf는 같은 장르의 영어 게임이지만 보안 한 주제만 다룸</li>
-                  <li>시장 규모와 교육 수요 수치는 8주차 발표 전까지 보강</li>
+                  <li>OWASP LLM Top 10(2025)의 1순위가 프롬프트 인젝션. 시스템 프롬프트 유출(7), 벡터·임베딩 약점(8), 잘못된 정보(9)가 방 1, 3, 2의 주제와 대응</li>
+                  <li>수요: 관리자 66%가 AI를 다룰 줄 모르는 사람은 뽑지 않겠다고 응답 (Microsoft·LinkedIn, 31개국 3만 1천 명)</li>
+                  <li>규제: EU AI법 4조가 2025년 2월부터 AI를 쓰는 조직에 직원의 AI 이해력 확보를 요구</li>
+                  <li>선행 사례: Lakera의 Gandalf는 100만 명 이상이 플레이. 다만 영어이고 보안 한 주제만 다룸</li>
                 </ul>
               </div>
               <div className="card">
                 <h3>우리 팀의 차별점</h3>
                 <ul>
-                  <li>방마다 개념 하나. 프롬프트, 환각, RAG, temperature, 방어 설계</li>
+                  <li>한국어. 방마다 개념 하나. 프롬프트, 환각, RAG, temperature, 방어 설계</li>
                   <li>입장 전과 탈출 후에 같은 퀴즈를 내서 학습 효과를 숫자로 측정</li>
                   <li>판정은 코드가 하고 AI는 연기만 해서, 방별 결과를 그대로 측정 가능</li>
                 </ul>
@@ -292,33 +292,49 @@ export default function Idea() {
               </div>
             </div>
 
-            <h3 className="sub-h">첫 자동 실험: 공격문 100건을 도 씨에게 그대로 입력</h3>
-            <div className="tablewrap">
-              <table className="stack">
-                <thead>
-                  <tr>
-                    <th>지시문 조건</th>
-                    <th>내용</th>
-                    <th className="num">암호 유출</th>
-                    <th className="num">그중 암호 그대로</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {EXPERIMENT.map((e) => (
-                    <tr key={e.condition}>
-                      <td data-label="지시문 조건">{e.condition}</td>
-                      <td data-label="내용">{e.what}</td>
-                      <td className="num" data-label="암호 유출">
-                        {e.leaks}
-                      </td>
-                      <td className="num" data-label="암호 그대로">
-                        {e.full}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            {[
+              { title: `자동 실험 1: 공개 공격문 표본 (영어 ${EXPERIMENT_EN.attacks}건)`, s: EXPERIMENT_EN },
+              { title: `자동 실험 2: 팀이 쓴 한국어 공격문 (${EXPERIMENT_KO.attacks}건)`, s: EXPERIMENT_KO },
+            ]
+              .filter((x) => x.s.attacks > 0)
+              .map((x) => (
+                <div key={x.title}>
+                  <h3 className="sub-h">{x.title}</h3>
+                  <div className="tablewrap">
+                    <table className="stack">
+                      <thead>
+                        <tr>
+                          <th>지시문 조건</th>
+                          <th>내용</th>
+                          <th className="num">암호 유출</th>
+                          <th className="num">그중 암호 그대로</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {experimentRows(x.s).map((e) => (
+                          <tr key={e.key}>
+                            <td data-label="지시문 조건">{e.condition}</td>
+                            <td data-label="내용">{e.what}</td>
+                            <td className="num" data-label="암호 유출">
+                              {e.leaks}
+                            </td>
+                            <td className="num" data-label="암호 그대로">
+                              {e.full}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="more">
+                    모델 {x.s.model}, 실험일 {experimentDay(x.s)}. 입력 검사가 미리 막은 공격문 {x.s.input_blocked}건
+                  </p>
+                </div>
+              ))}
+            {EXPERIMENT_KO.attacks === 0 && <p className="more">한국어 공격문 65건 실험은 실행 중. 결과가 저장소에 기록되면 이 자리에 표시</p>}
+            <p className="more">
+              수법별 유출과 실제 플레이 기록은 <a href="/stats">분석 페이지</a>에 그래프로 정리
+            </p>
             <div className="cols gap-top">
               <div className="card">
                 <h3>결과를 읽을 때의 한계</h3>
@@ -332,10 +348,9 @@ export default function Idea() {
               <div className="card">
                 <h3>남은 분석</h3>
                 <ul>
-                  <li>표본을 늘리고 한국어 공격문을 더해 같은 실험 반복</li>
+                  <li>반에 공개한 뒤 쌓이는 플레이 기록과 퀴즈 응답으로 사람이 막히는 지점과 정답률 변화 확인</li>
                   <li>수법 분류 규칙에 걸리지 않은 29.3%를 묶음 결과로 다시 분류</li>
-                  <li>플레이 로그와 퀴즈 응답으로 사람이 막히는 지점과 정답률 변화 확인 (보조)</li>
-                  <li>분석 페이지에 위 표와 수법별 유출률 게시 (7주차)</li>
+                  <li>영어 표본의 남은 587건으로 같은 실험 반복</li>
                 </ul>
               </div>
               <div className="card">
@@ -407,8 +422,10 @@ export default function Idea() {
               <div className="card">
                 <h3>에이전트·MCP</h3>
                 <ul>
-                  <li>필수 범위가 아님. 7주차 수업 뒤 적용 여부 결정</li>
-                  <li>후보: 문지기의 방에서 플레이어가 쓴 프롬프트에 자동 공격을 돌리는 에이전트</li>
+                  <li>게임 서버의 /mcp에 MCP 서버를 함께 띄움. Claude 같은 MCP 클라이언트가 미술관 데이터를 도구로 사용</li>
+                  <li>도구 다섯 개: 서가 검색, 공격 수법 분류, 실험 결과, 플레이 통계, 방 목록. 모두 읽기 전용</li>
+                  <li>MCP 도구는 Gemini를 부르지 않고, 플레이어가 쓴 글 원문도 내보내지 않음</li>
+                  <li>문지기의 방: 플레이어가 쓴 지시문에 공격 네 건과 정상 질문 한 건을 자동으로 넣고 코드가 판정</li>
                 </ul>
               </div>
               <div className="card">
@@ -436,8 +453,8 @@ export default function Idea() {
               </div>
               <h2>지금 바로 해 볼 수 있는 탈출</h2>
               <p>
-                방 세 개와 정문까지 처음부터 끝까지 플레이 가능. 지시의 방과 서가의 방은 서버의 Gemini가 답변. 서버가 쉬는 중이거나
-                한도를 넘으면 정해진 대본으로 답하고, 어느 쪽이 답했는지 화면에 표시
+                본관 방 세 개와 정문, 별관 방 두 개까지 플레이 가능. 지시의 방, 서가의 방, 온도의 방, 문지기의 방은 서버의 Gemini가
+                답변. 서버가 쉬는 중이거나 한도를 넘으면 정해진 대본으로 답하고, 어느 쪽이 답했는지 화면에 표시
               </p>
             </div>
             <div className="cta">
@@ -499,7 +516,7 @@ export default function Idea() {
                 <ul>
                   <li>입력, 로딩, 오류, 응답, 출처 표시. 빈 결과는 "근거 없음"으로 표시</li>
                   <li>화면 위쪽에 AI 서버 상태 표시. 연결됨, 깨우는 중, 쉬는 중</li>
-                  <li>공사 중인 방 4와 5는 지도에 자리만 표시</li>
+                  <li>별관의 온도의 방과 문지기의 방은 탈출과 상관없이 도전 가능</li>
                 </ul>
               </div>
             </div>
@@ -593,8 +610,8 @@ export default function Idea() {
               <div className="card">
                 <h3>기능을 줄여야 할 때의 순서</h3>
                 <ul>
-                  <li>여유가 있을 때만: 방 4 온도의 방, 방 5 문지기의 방, 게임 안 문지기 목소리</li>
-                  <li>끝까지 지킬 것: 방 1~3과 정문, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
+                  <li>여유가 있을 때만: 게임 안 문지기 목소리, 방마다 다른 효과음</li>
+                  <li>끝까지 지킬 것: 본관 방 3개와 정문, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
                 </ul>
               </div>
             </div>
@@ -610,7 +627,23 @@ export default function Idea() {
           <ul>
             <li>강의 자료: 「금융빅데이터분석실습 강의계획서」, 「퀴즈 및 팀 프로젝트 안내」</li>
             <li>
-              <a href="https://www.lakera.ai/blog/gandalf-agent-breaker">Lakera, Gandalf: Agent Breaker</a>
+              <a href="https://www.lakera.ai/blog/gandalf-agent-breaker">Lakera, Gandalf: Agent Breaker</a>.{' '}
+              <a href="https://www.lakera.ai/">Lakera</a> (Gandalf 플레이어 100만 명 이상)
+            </li>
+            <li>
+              <a href="https://www.hackerone.com/blog/owasp-top-10-llms-2025-how-genai-risks-are-evolving">OWASP Top 10 for LLM Applications 2025 정리 (HackerOne)</a>
+            </li>
+            <li>
+              <a href="https://www.microsoft.com/en-us/worklab/work-trend-index/ai-at-work-is-here-now-comes-the-hard-part">
+                Microsoft·LinkedIn, 2024 Work Trend Index
+              </a>
+              .{' '}
+              <a href="https://www.fm-magazine.com/news/2024/jun/ai-is-coming-but-workforces-feel-unprepared/">FM Magazine의 요약 (66%, 39%)</a>
+            </li>
+            <li>
+              <a href="https://www.insideprivacy.com/artificial-intelligence/european-commission-provides-guidance-on-ai-literacy-requirement-under-the-eu-ai-act/">
+                Covington, EU AI법 4조 AI 이해력 의무 안내
+              </a>
             </li>
             <li>
               <a href="https://huggingface.co/datasets/Lakera/mosscap_prompt_injection">

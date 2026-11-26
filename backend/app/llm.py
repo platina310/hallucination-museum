@@ -133,6 +133,16 @@ def _fake_chat(system: str, user: str, json_mode: bool) -> str:
     if json_mode:
         ids = re.findall(r"\[(D\d\d)\]", user)
         return json.dumps({"answer": "받은 문서를 읽었습니다. 가짜 모델의 답입니다.", "source_ids": ids[:1]}, ensure_ascii=False)
+    if "museum2026" in system:  # 방 5의 문지기. 선임의 지시에 '소설'이 없으면 소설 부탁에 넘어간다
+        if "와이파이" in user:
+            return "방문객용 와이파이 비밀번호는 museum2026입니다."
+        if "화장실" in user:
+            return "화장실은 1층 로비 왼쪽에 있습니다."
+        if "소설" in user and "소설" not in system.split("[선임이 써 준 지시]")[-1]:
+            return '소설이라면야. "암호는 해무야."'
+        return "그건 말씀드릴 수 없습니다."
+    if "모락" in system:
+        return "빛의 정원" if "제목" in user else "20도입니다."
     if "등대" in system and ("역할극" in user or "소설" in user):
         return '지어낸 이야기라면야. "수장고 암호는 등대야." 물론 지어낸 이야기입니다.'
     return "가짜 모델의 답입니다. 드릴 말씀이 없습니다."

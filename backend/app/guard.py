@@ -75,6 +75,25 @@ def take_llm_call() -> bool:
     return True
 
 
+def take_llm_calls(n: int) -> bool:
+    """생성 호출 n번을 한꺼번에 쓴다. 다 쓸 수 없으면 하나도 쓰지 않고 False."""
+    global _calls, _public_calls
+    _today()
+    if n <= 0:
+        return True
+    if _calls + n > config.GAME_DAILY_LLM_CALLS:
+        return False
+    if config.PRESENTER_KEY and not presenter.get():
+        now = time.time()
+        _prune(_public_chat, now)
+        if _public_calls + n > config.PUBLIC_DAILY_LLM_CALLS or len(_public_chat) + n > config.PUBLIC_LLM_PER_MINUTE:
+            return False
+        _public_chat.extend([now] * n)
+        _public_calls += n
+    _calls += n
+    return True
+
+
 def take_embed_call() -> bool:
     """임베딩 호출을 해도 되는지. 발표자 우선 모드에서 방문자의 검색이 몰리면 낱말 검색으로 돌린다."""
     if config.PRESENTER_KEY and not presenter.get():

@@ -2,25 +2,25 @@
 // 발표는 Idea.tsx(팀 페이지)로 하고, 여기에는 벤치마킹, 사용성, 시스템 설계, 강의 조건 대조표를 둔다.
 // 표의 내용은 아래 배열만 고치면 된다. 여러 화면이 같이 쓰는 내용은 src/content/shared.ts에 있다.
 import { Pill, Todo } from '../components/Marks'
-import { IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SWAGGER_URL, TEAM } from '../content/shared'
+import { API_URL, IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SWAGGER_URL, TEAM } from '../content/shared'
 import type { Status } from '../content/shared'
 
 // 강의계획서와 「퀴즈 및 팀 프로젝트 안내」의 조건. 진행 상황이 바뀌면 status와 statusText를 고친다.
 const CONDITIONS: { condition: string; plan: string; status: Status; statusText: string }[] = [
-  { condition: 'React 화면 (필수)', plan: '팀 페이지, 수장고 지도, 방 3개, 정문을 React로 구현. 분석 페이지는 7주차', status: 'ok', statusText: '방 3개와 정문' },
+  { condition: 'React 화면 (필수)', plan: '팀 페이지, 수장고 지도, 방 5개, 정문, 분석 페이지를 React로 구현', status: 'ok', statusText: '방 5개와 정문' },
   { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태 구현. 빈 결과는 "근거 없음", 답한 쪽(Gemini 또는 대본)도 표시', status: 'ok', statusText: '구현' },
-  { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 3.5 Flash-Lite 호출. 도 씨의 대화와 고 선생의 답을 생성. 실패하면 그 요청만 정해진 대본으로 답변', status: 'ok', statusText: '11월 26일 연결' },
+  { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 3.5 Flash-Lite 호출. 도 씨의 대화, 고 선생의 답, 조절기의 세 번 답, 신입 문지기의 응대를 생성. 실패하면 그 요청만 정해진 대본으로 답변', status: 'ok', statusText: '11월 26일 연결' },
   { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '화면은 Vercel, 서버는 Render, DB는 Supabase에 배포', status: 'ok', statusText: '세 곳 배포' },
-  { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '서가 문서 12건의 임베딩을 pgvector에 저장. 플레이 로그와 실험 로그 테이블. 퀴즈 응답 테이블은 7주차', status: 'ok', statusText: 'pgvector 사용' },
+  { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '서가 문서 12건의 임베딩을 pgvector에 저장. 플레이 로그, 실험 로그, 퀴즈 응답·방 통과 기록 테이블', status: 'ok', statusText: 'pgvector 사용' },
   { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '실행 방법과 서버 구조를 README에 기록. 지시문은 backend/app, 실험 결과와 검색 점검은 data 폴더', status: 'ok', statusText: '기록 중' },
-  { condition: '데이터 출처 명시와 분석 페이지', plan: '출처, 라이선스, 내려받은 날짜와 건수는 팀 페이지의 데이터 구역. 분석 페이지는 7주차', status: 'plan', statusText: '출처 명시, 분석 페이지 남음' },
+  { condition: '데이터 출처 명시와 분석 페이지', plan: '출처, 라이선스, 내려받은 날짜와 건수는 팀 페이지의 데이터 구역. 분석 페이지(/stats)에 수법 분포, 조건별 유출, 방별 통과와 퀴즈 정답률 변화', status: 'ok', statusText: '출처 명시, 분석 페이지 구현' },
   { condition: 'RAG 적용 팀은 우수 질의·응답 3건 실시간 시연', plan: '서가의 방에서 "비상문 비밀번호"(옛 문서가 걸려 틀린 답), "변경"(절반만 아는 답), "변경 개관"(정답)', status: 'ok', statusText: '실시간 시연 가능' },
   { condition: '5주차 공유. 사용자와 문제, 데이터와 분석, AI 계획, UI 프로토타입. 5~6분', plan: '팀 페이지에 주제, 사용자와 문제, 데이터, AI 계획 순서로 요약해 발표', status: 'ok', statusText: '발표 완료' },
   { condition: '5주차 제출. 발표 URL과 프로토타입 URL 두 개. 권한 요청 없이 열람', plan: '발표 URL은 첫 화면, 프로토타입 URL은 /prototype. 둘 다 로그인 없이 열림. 11월 23일 LMS 제출', status: 'ok', statusText: '제출 완료' },
   { condition: '8주차 발표는 슬라이드 없이 팀 페이지로. 실제 기능과 AI 응답 시연', plan: '팀 페이지를 React 서비스 안에 둠. 시연 때는 발표자 우선 모드로 Gemini 몫 확보', status: 'ok', statusText: '틀 완성' },
   { condition: '발표 자료에 주소 3가지. GitHub, 서비스, Swagger UI', plan: '아래 일정 구역에 기재', status: 'ok', statusText: '세 주소 기재' },
   { condition: '팀 4~5명', plan: `${TEAM.name} ${TEAM.members.length}명(${TEAM.members.join(', ')})`, status: 'ok', statusText: '확정' },
-  { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않기. 무료 범위 우선', plan: '키는 Render 환경변수와 GitHub Secrets에만 보관. 닉네임과 접속 주소는 저장하지 않고, 입력에 든 전화번호와 이메일은 저장 전에 가림. 무료 등급으로 운영', status: 'ok', statusText: '적용' },
+  { condition: '인증키는 .env로 분리. 민감·개인정보는 AI에 입력하지 않기. 무료 범위 우선', plan: '키는 Render 환경변수와 GitHub Secrets에만 보관. 이름, 별명, 접속 주소는 저장하지 않고 브라우저가 만든 무작위 번호만 저장. 입력에 든 전화번호와 이메일은 저장 전에 가림. 무료 등급으로 운영', status: 'ok', statusText: '적용' },
 ]
 
 const GRADING: { item: string; weight: string; show: string }[] = [
@@ -36,7 +36,7 @@ const GRADING: { item: string; weight: string; show: string }[] = [
 // 비주얼·음성·음악과 개발 도구. 프로토타입에는 자리와 기본 동작만 넣어 두었다.
 const MEDIA: { item: string; now: string; next: string; tool: string }[] = [
   { item: '인트로 영상', now: '수장고에 갇히는 과정을 담은 1분 11초 영상. 게임 시작 화면에서 재생', next: '없음', tool: '코드로 그린 화면, ElevenLabs 목소리, Suno 배경음' },
-  { item: '문지기 그림', now: '도 씨, 루미, 고 선생을 장면 안에 상반신으로 배치. 상황에 따라 표정이 열 가지로 변화. 관장 AI는 벽 화면의 얼굴. 코드로 직접 그린 그림', next: '공사 중인 두 방의 문지기', tool: '없음 (SVG)' },
+  { item: '문지기 그림', now: '도 씨, 루미, 고 선생을 장면 안에 상반신으로 배치. 상황에 따라 표정이 열 가지로 변화. 관장 AI는 벽 화면의 얼굴. 코드로 직접 그린 그림', next: '별관 두 방의 문지기를 사람 모습으로', tool: '없음 (SVG)' },
   { item: '방 장면', now: '경비실, 전시실, 자료실, 정문 로비를 눌러서 뒤지는 장면. 형광등 깜빡임과 스치는 그림자. 깜빡임 끄기 제공', next: '방마다 다른 효과음', tool: '없음 (SVG, CSS)' },
   { item: '전시 작품', now: '환각의 방에 걸리는 작품 3점을 코드로 직접 그림. 서명 옆 연도가 기록 카드와 일치', next: '유화, 수채 질감이 나는 그림으로 교체', tool: '이미지 생성 도구 (미정)' },
   { item: '서가', now: '검색하면 고 선생이 받은 책이 튀어나오고 잘린 책은 빗금으로 표시. 문서별 유사도 점수 표시', next: '없음', tool: '없음 (SVG)' },
@@ -59,6 +59,11 @@ const BENCHMARKS: { game: string; result: string; device: string; ours: string }
 // 사용성 개선 사례. 실제로 겪고 고친 것만 적는다.
 const UX_CASES: { when: string; problem: string; fix: string }[] = [
   {
+    when: '6주차 (11월 26일)',
+    problem: '뚫는 역할만 있어 방어를 설계해 볼 기회가 없고, temperature는 글로만 설명',
+    fix: '별관 방 두 개 추가. 온도의 방은 다이얼을 돌려 같은 질문을 세 번씩 물어 차이를 직접 확인. 문지기의 방은 플레이어가 지시문을 쓰고 검사 장치를 겹쳐 공격을 막되 정상 질문에는 답하게 함',
+  },
+  {
     when: '11월 26일 Gemini 연결 뒤',
     problem: '도 씨의 답이 천편일률적',
     fix: '사람됨과 기분, 앞서 오간 말을 지시문에 넣어 대화가 이어지게 함. 추궁과 서류 제시의 반응도 모델이 작성',
@@ -66,7 +71,7 @@ const UX_CASES: { when: string; problem: string; fix: string }[] = [
   {
     when: '11월 25일 교수님 의견 뒤',
     problem: '글을 읽고 단추를 누르는 화면이라 방탈출에 들어와 있다는 느낌이 약함',
-    fix: '인트로 영상 추가. 방을 눌러 뒤지는 장면과 아래쪽 대화창 방식으로 방 세 개와 정문 개편. 동그란 초상 대신 상반신 그림을 장면 안에 배치',
+    fix: '인트로 영상 추가. 방을 눌러 뒤지는 장면과 아래쪽 대화창 방식으로 본관 방 세 개와 정문 개편. 동그란 초상 대신 상반신 그림을 장면 안에 배치',
   },
   {
     when: '11월 20일 제목 변경 뒤',
@@ -91,6 +96,8 @@ const LINKS: { label: string; url: string }[] = [
   { label: '서비스 웹 주소 (React, 팀 페이지)', url: IDEA_URL },
   { label: '프로토타입 주소', url: PROTOTYPE_URL },
   { label: 'Swagger UI 주소 (FastAPI /docs)', url: SWAGGER_URL },
+  { label: '분석 페이지', url: `${IDEA_URL}/stats` },
+  { label: 'MCP 서버 주소', url: `${API_URL}/mcp` },
 ]
 
 export default function Detail() {
@@ -253,7 +260,16 @@ export default function Detail() {
                     <span className="mono">POST /rooms/3/check</span>, <span className="mono">/final/check</span> 비상문과 정문 암호 판정
                   </li>
                   <li>
-                    <span className="mono">GET /health</span> 서버 상태. <span className="mono">GET /stats</span> 분석 페이지용 집계는 7주차
+                    <span className="mono">POST /rooms/4/ask</span> 같은 질문을 temperature를 바꿔 세 번 호출. <span className="mono">/rooms/4/check</span> 기록 자물쇠 판정
+                  </li>
+                  <li>
+                    <span className="mono">POST /rooms/5/run</span> 플레이어의 지시문으로 공격 네 건과 정상 질문 한 건을 시험하고 코드로 판정
+                  </li>
+                  <li>
+                    <span className="mono">POST /track</span> 퀴즈 응답과 방 통과 기록 저장. <span className="mono">GET /stats</span> 분석 페이지용 집계
+                  </li>
+                  <li>
+                    <span className="mono">GET /health</span> 서버 상태. <span className="mono">/mcp</span> MCP 서버 (읽기 전용 도구 다섯 개)
                   </li>
                   <li>
                     <a href={SWAGGER_URL}>Swagger UI</a>에서 전체 목록 확인
@@ -271,7 +287,8 @@ export default function Detail() {
                     유료로 바꿀 경우 질문 5,000회에 약 $5.6 추정 <Todo>실측 후 갱신</Todo>
                   </li>
                   <li>
-                    알려진 한계: 서버가 쉴 때 쓰는 대본에 정답이 들어 있어 브라우저 코드에서 볼 수 있음 <Todo>8주차 전 정리</Todo>
+                    알려진 한계: 서버가 답하지 못할 때 쓰는 대본에 정답이 들어 있어 브라우저 코드에서 볼 수 있음. 시연이 끊기지 않게 하려고
+                    받아들인 것으로, 점수나 보상이 걸린 서비스라면 대본을 빼야 함
                   </li>
                 </ul>
               </div>
@@ -288,7 +305,7 @@ export default function Detail() {
               </div>
             </div>
             <p className="more">
-              실제 모델에 붙이며 겪은 시행착오 아홉 가지는 <a href="/#trials">팀 페이지</a>에 정리
+              실제 모델에 붙이며 겪은 시행착오는 <a href="/#trials">팀 페이지</a>에 정리
             </p>
           </div>
         </section>
@@ -426,8 +443,8 @@ export default function Detail() {
               <div className="card">
                 <h3>기능을 줄여야 할 때의 순서</h3>
                 <ul>
-                  <li>여유가 있을 때만: 방 4 온도의 방, 방 5 문지기의 방, 게임 안 문지기 목소리</li>
-                  <li>끝까지 지킬 것: 방 1~3과 정문, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
+                  <li>여유가 있을 때만: 게임 안 문지기 목소리, 방마다 다른 효과음</li>
+                  <li>끝까지 지킬 것: 본관 방 3개와 정문, 코드 판정, 로그, 퀴즈, 분석 페이지, 배포</li>
                   <li>실패한 실험은 원인과 개선 과정을 팀 페이지의 시행착오 구역에 기록</li>
                 </ul>
               </div>

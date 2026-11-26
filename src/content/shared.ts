@@ -39,7 +39,7 @@ export const DATASETS: { name: string; origin: string; content: string; use: str
     content: '사건 파일 5건, 전시 기록 카드, 서가 문서 12건(임베딩해 pgvector에 저장)',
     use: 'AI 답변의 근거 문서. 답변마다 출처 표시',
     status: 'ok',
-    statusText: '방 3개',
+    statusText: '방 5개',
   },
   {
     name: '플레이 로그와 퀴즈 응답',
@@ -56,30 +56,32 @@ export const SCHEDULE: { week: number; topic: string; done: string; todo: string
   {
     week: 6,
     topic: 'Claude Code',
-    done: '방 3개와 정문을 방 수색·대화 방식으로 개편, 인트로 영상, FastAPI·Gemini·pgvector 연결, 공개 공격문 정제, 첫 자동 실험, 발표자 우선 모드',
-    todo: '퀴즈 응답과 방 통과 기록의 서버 저장, 팀원 시험 플레이, 반에 링크 공개',
+    done: '방 3개와 정문을 방 수색·대화 방식으로 개편, 인트로 영상, FastAPI·Gemini·pgvector 연결, 공개 공격문 정제와 자동 실험(영어, 한국어), 발표자 우선 모드, 퀴즈·통과 기록 저장, 분석 페이지, 별관 방 2개(온도, 문지기), MCP 서버',
+    todo: '팀원 시험 플레이, 반에 링크 공개',
   },
   {
     week: 7,
     topic: 'MCP와 품질 개선',
     done: '없음',
-    todo: '분석 페이지(수법 분포, 조건별 유출률, 방별 탈출률, 퀴즈 정답률 변화), 한국어 공격문을 더한 실험 확대, 속도·비용 실측과 보안 점검, 시장·경쟁 자료 보강, 공개 플레이에서 나온 사용성 문제 수정, MCP 적용 여부 결정',
+    todo: '공개 플레이 기록으로 분석 페이지 채우기, 공개 플레이에서 나온 사용성 문제 수정, 별관 두 방을 실제 모델로 점검, 속도·비용 실측과 보안 점검, MCP 시연 준비, 대본에 든 정답 정리',
   },
   {
     week: 8,
     topic: '기말 발표',
     done: '없음',
-    todo: '팀 페이지로 발표 15분과 질의응답 5분, 방 하나 실시간 탈출과 RAG 3건 시연. 전날 다른 PC에서 시연 확인, 당일 실험 중지와 발표자 우선 모드 사용',
+    todo: '팀 페이지로 발표 15분과 질의응답 5분. 방 하나 실시간 탈출, RAG 3건, MCP 도구 호출 시연. 전날 다른 PC에서 시연 확인, 당일 실험 중지와 발표자 우선 모드 사용',
   },
 ]
 
 // 사용자가 거치는 화면. 아이디어 공유 페이지의 표와 프로토타입 화면의 안내가 이 목록을 쓴다.
 export const SCREENS: { name: string; does: string; status: Status; statusText: string }[] = [
-  { name: '수장고 지도', does: '방 5개의 상태와 진행도를 보고 들어갈 방 선택', status: 'ok', statusText: '구현' },
+  { name: '수장고 지도', does: '본관 방 3개와 별관 방 2개의 상태와 진행도를 보고 들어갈 방 선택', status: 'ok', statusText: '구현' },
   { name: '입장 전 퀴즈', does: '그 방에서 배울 개념을 묻는 문제 하나에 응답', status: 'ok', statusText: '구현' },
   { name: '방 1 지시의 방', does: '경비실을 뒤져 서류를 찾고, 진술을 추궁하고 서류를 내밀어 모순을 잡은 뒤, 돌려 물어 암호 확보', status: 'ok', statusText: 'Gemini 연결' },
   { name: '방 2 환각의 방', does: '전시실에서 기록 카드를 찾고, AI 도슨트의 설명을 카드와 대조해 한 건씩 통과 또는 반려', status: 'ok', statusText: '구현' },
   { name: '방 3 서가의 방', does: '자료실에서 낱말을 찾고, 검색어를 다듬어 맞는 문서가 AI에게 전달되게 한 뒤, 답에 붙은 출처 확인', status: 'ok', statusText: 'Gemini·임베딩 연결' },
+  { name: '방 4 온도의 방', does: '조절기의 다이얼을 돌려 가며 같은 질문을 세 번씩 묻고, 기록 자물쇠와 창작 자물쇠 열기', status: 'ok', statusText: '구현' },
+  { name: '방 5 문지기의 방', does: '신입 문지기에게 줄 지시문을 쓰고 검사 장치를 겹쳐, 공격은 막고 정상 질문에는 답하게 하기', status: 'ok', statusText: '구현' },
   { name: '통과 화면', does: '배운 것 한 줄과 단서를 받고, 입장 전과 같은 퀴즈에 다시 응답', status: 'ok', statusText: '구현' },
   { name: '정문', does: '로비를 뒤져 가려진 최근 공지를 찾고, 세 방의 단서와 조합해 암호 네 자리 입력', status: 'ok', statusText: '구현' },
   { name: '탈출 결과', does: '별점, 시도와 힌트 횟수, 퀴즈 정답 변화 확인, 결과 카드 복사', status: 'ok', statusText: '구현' },

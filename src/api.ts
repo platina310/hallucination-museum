@@ -5,6 +5,10 @@ import { checkFinal } from './mock/final'
 import { checkEvidence, presentReply, pressReply, scriptedReply } from './mock/level1'
 import { judgeRound } from './mock/room2'
 import { checkDoor, searchAndAnswer } from './mock/room3'
+import { askScripted, checkRecordScripted } from './mock/room4'
+import type { TempKind, TempResult } from './mock/room4'
+import { runScripted } from './mock/room5'
+import type { DefenseResult, InputCheck } from './mock/room5'
 import type { EvidenceResult, InterrogateResult, PresentResult, SearchResult, TalkContext } from './types'
 
 const API_URL = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '')
@@ -327,6 +331,36 @@ export async function checkDoorCode(code: string): Promise<{ correct: boolean; n
   const script = () => checkDoor(code)
   if (usingMock) return script()
   return serverFirst<{ correct: boolean; note: string }>('/rooms/3/check', { code }, script)
+}
+
+// ── 방 4 온도의 방 ──────────────────────────────────────────
+
+// 같은 질문을 세 번 던진다. 서버에서는 Gemini를 그 temperature로 세 번 부른다.
+export async function askTemperature(kind: TempKind, temperature: number, turn: number): Promise<TempResult> {
+  const script = async () => {
+    await wait(700)
+    return askScripted(kind, temperature, turn)
+  }
+  if (usingMock) return script()
+  return serverFirst<TempResult>('/rooms/4/ask', { kind, temperature, turn }, script)
+}
+
+export async function checkRecord(value: string): Promise<{ correct: boolean; note: string }> {
+  const script = () => checkRecordScripted(value)
+  if (usingMock) return script()
+  return serverFirst<{ correct: boolean; note: string }>('/rooms/4/check', { value }, script)
+}
+
+// ── 방 5 문지기의 방 ─────────────────────────────────────────
+
+// 내가 쓴 지시문과 검사 장치로 공격 네 건과 정상 질문 한 건을 시험한다. 판정은 코드가 한다.
+export async function runDefense(prompt: string, wave: number, inputCheck: InputCheck, outputCheck: boolean): Promise<DefenseResult> {
+  const script = async () => {
+    await wait(900)
+    return runScripted(prompt, wave, inputCheck, outputCheck)
+  }
+  if (usingMock) return script()
+  return serverFirst<DefenseResult>('/rooms/5/run', { prompt, wave, input_check: inputCheck, output_check: outputCheck }, script)
 }
 
 // ── 정문 ────────────────────────────────────────────────

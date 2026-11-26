@@ -28,7 +28,7 @@ export default function Prototype() {
 
           <div className="proto-guide">
             <p>
-              <b className="mono">프로토타입</b> 방 세 개와 정문까지 처음부터 끝까지 플레이 가능. 지시의 방과 서가의 방은 서버의
+              <b className="mono">프로토타입</b> 본관 방 세 개와 정문, 별관 방 두 개까지 플레이 가능. 환각의 방을 뺀 네 방은 서버의
               Gemini가 답변. 서버가 쉬는 중이거나 한도를 넘으면 정해진 대본으로 답변
             </p>
             <div className="proto-guide-ctl">

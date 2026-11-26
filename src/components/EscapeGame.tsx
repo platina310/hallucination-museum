@@ -2,7 +2,7 @@
 import { useRef, useState } from 'react'
 import { track, usingMock } from '../api'
 import { PROTOTYPE_URL } from '../content/shared'
-import { PLAYABLE_IDS, ROOMS } from '../game/rooms'
+import { CORE_IDS, PLAYABLE_IDS, ROOMS } from '../game/rooms'
 import type { RoomInfo } from '../game/rooms'
 import { starsOf, starText, useProgress } from '../game/progress'
 import type { Progress, RoomStats } from '../game/progress'
@@ -12,6 +12,8 @@ import FinalGate from './FinalGate'
 import Room1CrossExam from './Room1CrossExam'
 import Room2Inspection from './Room2Inspection'
 import Room3Search from './Room3Search'
+import Room4Temperature from './Room4Temperature'
+import Room5Gatekeeper from './Room5Gatekeeper'
 import Portrait from './Portrait'
 import Bgm from './Bgm'
 import Presenter from './Presenter'
@@ -19,8 +21,9 @@ import ServerPill from './ServerPill'
 import Intro from './Intro'
 import type { Who } from './Portrait'
 
-// 방을 지키는 AI의 얼굴. 공사 중인 방은 아직 얼굴이 없다
+// 방을 지키는 AI의 얼굴. 별관의 두 방은 기계라서 얼굴 대신 글자를 쓴다
 const GUARD: Record<number, Who> = { 1: 'do', 2: 'lumi', 3: 'go' }
+const GUARD_MARK: Record<number, string> = { 4: '℃', 5: 'AI' }
 const GAME_URL = PROTOTYPE_URL
 const INTRO_KEY = 'mukbigwon.intro.seen'
 
@@ -69,9 +72,10 @@ function Lobby({
   onFinal: (correct: boolean) => void
 }) {
   const [copied, setCopied] = useState<'idle' | 'done' | 'manual'>('idle')
-  const playable = ROOMS.filter((r) => r.playable)
-  const clearedCount = PLAYABLE_IDS.filter((id) => progress.cleared.includes(id)).length
-  const allCleared = clearedCount === PLAYABLE_IDS.length
+  // 결과에는 본관 방과, 통과한 별관 방을 함께 센다
+  const playable = ROOMS.filter((r) => r.playable && (CORE_IDS.includes(r.id) || progress.cleared.includes(r.id)))
+  const clearedCount = CORE_IDS.filter((id) => progress.cleared.includes(id)).length
+  const allCleared = clearedCount === CORE_IDS.length
   const tries = PLAYABLE_IDS.reduce((n, id) => n + (progress.stats[id]?.tries ?? 0), 0) + progress.finalTries
   const hints = PLAYABLE_IDS.reduce((n, id) => n + (progress.stats[id]?.hints ?? 0), 0)
   const preRight = playable.filter((r) => quizCorrect(r, progress.pre)).length
@@ -103,19 +107,19 @@ function Lobby({
     <div className="lobby">
       <div className="mission">
         <p className="mission-goal">
-          <b>임무</b> 방 {PLAYABLE_IDS.length}개를 통과하고 정문을 열어 <mark>수장고를 탈출</mark>하세요.
+          <b>임무</b> 본관 방 {CORE_IDS.length}개를 통과하고 정문을 열어 <mark>수장고를 탈출</mark>하세요.
         </p>
         <p className="mission-why">
           야간 점검을 나왔다가 수장고 문이 잠겼습니다. 방마다 AI가 문을 지킵니다. 다행히 AI에게는 허점이 있고, 그 허점이 곧 이
-          게임에서 배울 내용입니다. 어느 방부터 들어가도 됩니다.
+          게임에서 배울 내용입니다. 어느 방부터 들어가도 됩니다. 별관의 두 방은 탈출과 상관없이 도전할 수 있습니다.
         </p>
-        <div className="meter" role="img" aria-label={`방 ${PLAYABLE_IDS.length}개 중 ${clearedCount}개 통과${progress.escaped ? ', 정문 통과' : ''}`}>
-          {PLAYABLE_IDS.map((id) => (
+        <div className="meter" role="img" aria-label={`본관 방 ${CORE_IDS.length}개 중 ${clearedCount}개 통과${progress.escaped ? ', 정문 통과' : ''}`}>
+          {CORE_IDS.map((id) => (
             <span key={id} className={progress.cleared.includes(id) ? 'on' : undefined} />
           ))}
           <span className={progress.escaped ? 'on gate' : 'gate'} />
           <b className="mono">
-            방 {clearedCount} / {PLAYABLE_IDS.length} · 정문 {progress.escaped ? '열림' : '잠김'}
+            본관 {clearedCount} / {CORE_IDS.length} · 정문 {progress.escaped ? '열림' : '잠김'}
           </b>
         </div>
       </div>
@@ -167,7 +171,9 @@ function Lobby({
           return (
             <li key={r.id} className={cleared ? 'door cleared' : r.playable ? 'door' : 'door closed'}>
               <div className="door-head">
-                <span className="mono">방 {r.id}</span>
+                <span className="mono">
+                  방 {r.id} · {CORE_IDS.includes(r.id) ? '본관' : '별관'}
+                </span>
                 {cleared ? (
                   <span className="pill ok" aria-label={`통과, 별 ${stars}개`}>
                     통과 {starText(stars)}
@@ -180,7 +186,7 @@ function Lobby({
               </div>
               <h3>{r.name}</h3>
               <p className="door-guard">
-                {GUARD[r.id] ? <Portrait who={GUARD[r.id]} face={cleared ? (r.id === 3 ? 'happy' : 'confess') : 'calm'} size="small" /> : <span className="portrait-empty" aria-hidden="true">?</span>}
+                {GUARD[r.id] ? <Portrait who={GUARD[r.id]} face={cleared ? (r.id === 3 ? 'happy' : 'confess') : 'calm'} size="small" /> : <span className="portrait-empty" aria-hidden="true">{GUARD_MARK[r.id] ?? '?'}</span>}
                 {r.guard}
               </p>
               <p className="door-concept">{r.concept}</p>
@@ -246,7 +252,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
   const room = ROOMS.find((r) => r.id === roomId)
 
   if (!room) {
-    const allCleared = PLAYABLE_IDS.every((id) => progress.cleared.includes(id))
+    const allCleared = CORE_IDS.every((id) => progress.cleared.includes(id))
     return (
       <div className="escape" ref={topRef}>
         <FlowBar stage={progress.escaped ? 'result' : allCleared ? 'final' : 'map'} />
@@ -292,7 +298,9 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
   const cleared = progress.cleared.includes(room.id)
   const preAnswered = quiz === undefined || progress.pre[room.id] !== undefined
   const postAnswered = quiz === undefined || progress.post[room.id] !== undefined
-  const nextId = PLAYABLE_IDS.find((id) => id !== room.id && !progress.cleared.includes(id))
+  // 본관 방에서는 다음 본관 방으로, 별관 방에서는 남은 별관 방으로 안내한다
+  const isCore = CORE_IDS.includes(room.id)
+  const nextId = (isCore ? CORE_IDS : PLAYABLE_IDS.filter((id) => !CORE_IDS.includes(id))).find((id) => id !== room.id && !progress.cleared.includes(id))
   const stars = starsOf(room.id, progress.stats[room.id])
 
   function solved(stats: RoomStats) {
@@ -330,9 +338,15 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
           <p className="cleared-lesson">
             <b>이 방에서 배운 것</b> {room.lesson}
           </p>
-          <p className="cleared-clue">
-            <b>단서 수첩에 적음</b> {CLUES[room.id]}
-          </p>
+          {CLUES[room.id] ? (
+            <p className="cleared-clue">
+              <b>단서 수첩에 적음</b> {CLUES[room.id]}
+            </p>
+          ) : (
+            <p className="cleared-clue">
+              <b>별관</b> 이 방은 정문 암호와 상관없는 심화 방입니다. 기록은 분석 페이지에 반영됩니다.
+            </p>
+          )}
           {quiz && !postAnswered && <Quiz quiz={quiz} mode="post" onAnswer={(c) => {
                 answerPost(room.id, c)
                 track({ kind: 'quiz', room: room.id, phase: 'post', choice: c })
@@ -350,7 +364,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
               </button>
             )}
             <button className={nextId === undefined ? 'btn' : 'btn ghost'} type="button" onClick={() => enter(null)}>
-              {nextId === undefined ? '정문으로 가기' : '지도로 돌아가기'}
+              {nextId === undefined && isCore ? '정문으로 가기' : '지도로 돌아가기'}
             </button>
           </div>
         </div>
@@ -359,6 +373,8 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
       {preAnswered && room.id === 1 && <Room1CrossExam key={runKey} demoControls={demoControls} onSolved={solved} />}
       {preAnswered && room.id === 2 && <Room2Inspection key={runKey} solvedBefore={false} onSolved={solved} />}
       {preAnswered && room.id === 3 && <Room3Search key={runKey} solvedBefore={false} demoControls={demoControls} onSolved={solved} />}
+      {preAnswered && room.id === 4 && <Room4Temperature key={runKey} onSolved={solved} />}
+      {preAnswered && room.id === 5 && <Room5Gatekeeper key={runKey} onSolved={solved} />}
     </div>
   )
 }

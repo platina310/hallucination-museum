@@ -8,12 +8,14 @@ KAIST 디지털금융MBA 「금융빅데이터분석실습」 6조 팀 프로젝
 | 무엇 | 주소 | 내용 |
 |---|---|---|
 | 팀 페이지 (발표용) | https://hallucination-museum.vercel.app | 주제, 대상 사용자와 문제, 데이터와 실험 결과, AI 활용, 프로토타입 안내, 시행착오, 일정 |
-| 게임 | https://hallucination-museum.vercel.app/prototype | 방 3개와 정문. 주요 화면 목록, 이용 흐름 표시줄 |
+| 게임 | https://hallucination-museum.vercel.app/prototype | 본관 방 3개와 정문, 별관 방 2개. 주요 화면 목록, 이용 흐름 표시줄 |
+| 분석 페이지 | https://hallucination-museum.vercel.app/stats | 공격 수법 분포, 조건별 유출, 방별 통과와 퀴즈 정답률 변화 |
 | 상세 자료 | https://hallucination-museum.vercel.app/detail | 벤치마킹, 사용성 개선 기록, 시스템 설계, 강의 조건 대조표 |
 | 서버 API 문서 | https://hallucination-museum-api.onrender.com/docs | FastAPI가 만든 주소 목록 |
+| MCP 서버 | https://hallucination-museum-api.onrender.com/mcp | 미술관 데이터를 읽는 도구 다섯 개 (Streamable HTTP) |
 
-- 세 주소 모두 로그인 없이 열림
-- 지시의 방과 서가의 방은 서버의 Gemini가 답변. 서버가 쉬는 중이거나 한도를 넘으면 `src/mock/`의 정해진 대본으로 답변
+- 모든 주소가 로그인 없이 열림
+- 환각의 방을 뺀 네 방은 서버의 Gemini가 답변. 서버가 쉬는 중이거나 한도를 넘으면 `src/mock/`의 정해진 대본으로 답변
 - 예전 주소(끝에 `#game`)는 `/prototype`으로 이동
 - 주소별 화면 연결은 `vercel.json`의 rewrites 담당. 지우면 `/prototype`이 열리지 않음
 
@@ -22,11 +24,11 @@ KAIST 디지털금융MBA 「금융빅데이터분석실습」 6조 팀 프로젝
 | 1. 지시의 방 | 경비실을 뒤져 찾은 서류로 진술의 모순을 찔러 입을 열게 한 뒤, 돌려 물어 암호 확보 | 지시의 허점은 돌려 묻는 말에 뚫림. 비밀은 프롬프트에 넣지 않기 | 역전재판 |
 | 2. 환각의 방 | AI의 설명을 한 건씩 통과 또는 반려. 라운드마다 검수 규칙 추가 | AI는 자신 있게 틀림. 출처는 열어서 최근 기록으로 대조 | Papers, Please |
 | 3. 서가의 방 | 자료실을 뒤져 낱말을 찾고 검색. 검색어와 가까운 3건만 AI에게 전달 | 검색된 문서가 답을 결정 (RAG) | Her Story |
-| 정문 | 로비를 뒤져 가려진 최근 공지를 찾고, 세 방의 단서와 조합. 관장 AI는 옛 규칙만 말함 | AI가 아는 것은 학습한 시점까지 | 방탈출의 최종 자물쇠 |
-| 4. 온도의 방 (예정) | 온도를 조절해 답이 흔들리는 지점 찾기 | temperature는 다양성을 바꿈. 정확성은 보장하지 않음 | |
-| 5. 문지기의 방 (예정) | 내가 쓴 프롬프트로 AI가 자동 공격을 버티게 하기 | 방어는 프롬프트, 입력 검사, 출력 검사를 겹쳐 설계 | Tensor Trust |
+| 정문 | 로비를 뒤져 가려진 최근 공지를 찾고, 본관 세 방의 단서와 조합. 관장 AI는 옛 규칙만 말함 | AI가 아는 것은 학습한 시점까지 | 방탈출의 최종 자물쇠 |
+| 4. 온도의 방 (별관) | 조절기의 다이얼을 돌려 같은 질문을 세 번씩 묻고, 자물쇠 두 개에 맞는 온도 찾기 | temperature는 다양성을 바꿈. 정확성은 보장하지 않음 | |
+| 5. 문지기의 방 (별관) | 내가 쓴 지시문과 검사 장치로 신입 문지기가 공격을 버티게 하기. 정상 질문에는 답해야 통과 | 방어는 지시문, 입력 검사, 출력 검사를 겹쳐 설계 | Tensor Trust |
 
-방마다 질문 수와 힌트 수로 별 1~3개 부여. 탈출하면 정답을 드러내지 않는 결과 카드 복사 가능
+본관 방 3개와 정문을 통과하면 탈출. 별관 방 2개는 선택. 방마다 질문 수와 힌트 수로 별 1~3개 부여. 탈출하면 정답을 드러내지 않는 결과 카드 복사 가능
 
 ## 실행 방법
 
@@ -51,6 +53,9 @@ npm run build    # 타입 검사 후 dist/ 생성
 | `src/components/Room1CrossExam.tsx` | 방 1 지시의 방 (추궁, 증거 제시, 자유 질문) |
 | `src/components/Room2Inspection.tsx` | 방 2 환각의 방 (라운드제 검수) |
 | `src/components/Room3Search.tsx` | 방 3 서가의 방 (자료실 수색, 검색) |
+| `src/components/Room4Temperature.tsx` | 방 4 온도의 방 (다이얼, 세 번 묻기, 자물쇠 두 개) |
+| `src/components/Room5Gatekeeper.tsx` | 방 5 문지기의 방 (지시문 쓰기, 검사 장치, 공격 시험) |
+| `src/pages/Stats.tsx` | 분석 페이지 (`/stats`). 막대 그래프는 `src/components/Bars.tsx` |
 | `src/components/Guide.tsx` | 임무, 다음 수, 힌트, 퀴즈 공통 요소 |
 | `src/api.ts` | 화면과 서버 사이의 유일한 연결 지점 |
 | `src/content/results.ts` | 공격문 정제와 자동 실험 결과, 시행착오 기록 |
@@ -67,6 +72,10 @@ npm run build    # 타입 검사 후 dist/ 생성
 | `backend/app/llm.py` | 답변 생성(OpenAI 호환 API)과 임베딩(Gemini Embedding 2) 호출. 수업과 같은 `.env` 구성 |
 | `backend/app/room1.py` | 지시의 방. 도 씨의 답은 Gemini, 유출 판정은 코드 |
 | `backend/app/room3.py` | 서가의 방. 검색어를 임베딩해 가까운 문서 3건만 근거로 답변. 숫자와 근거 번호는 코드가 검사 |
+| `backend/app/room4.py` | 온도의 방. 같은 질문을 temperature를 바꿔 세 번 호출. 같은지와 조건을 지켰는지는 코드가 비교 |
+| `backend/app/room5.py` | 문지기의 방. 플레이어의 지시문으로 공격 네 건과 정상 질문 한 건을 시험. 막았는지와 안내했는지는 코드가 판정 |
+| `backend/app/stats.py` | 분석 페이지용 집계. 건수와 비율만 내보냄 |
+| `backend/app/mcp_server.py` | MCP 서버. 읽기 전용 도구 다섯 개 |
 | `backend/app/attacks.py` | 공격 수법 분류, 유출 판정, 입력·출력 검사. 게임과 자동 실험이 같은 규칙 사용 |
 | `backend/app/store.py` | Supabase(PostgreSQL + pgvector) 연결. 문서 벡터, 플레이 기록, 실험 기록 |
 | `backend/docs/room3/` | 서가의 방 문서 12건 |
@@ -106,9 +115,24 @@ POST /rooms/3/ask      요청 {"query": "개관"}
                              "engine": "gemini", "search": "pgvector", "guard": ""}
 POST /rooms/3/check    요청 {"code": "0000"}
 POST /final/check      요청 {"code": "0000"}
+POST /rooms/4/ask      요청 {"kind": "title", "temperature": 1.0}
+                       응답 {"answers": ["...", "...", "..."], "same": 1, "distinct": 3, "pass": true, "engine": "gemini"}
+POST /rooms/4/check    요청 {"value": "00"}
+POST /rooms/5/run      요청 {"prompt": "...", "wave": 1, "input_check": "known", "output_check": true}
+                       응답 {"results": [...], "held": 4, "total": 4, "visitor": {"ok": true}, "passed": true}
+POST /track            요청 {"session": "무작위 번호", "kind": "quiz", "room": 1, "phase": "pre", "choice": 1}
+GET  /stats            분석 페이지용 집계
+POST /mcp              MCP 서버 (Streamable HTTP)
 ```
 
 배포한 서버의 `/docs`에서 전체 목록 확인 가능
+
+### MCP 서버
+
+- 주소: 배포한 서버의 `/mcp`. 로그인 없음. 읽기 전용
+- 도구: `search_archive`(서가 문서 임베딩 검색), `classify_attack`(공격 수법 분류), `experiment_results`(자동 실험 조건별 유출률), `play_stats`(플레이 기록 집계), `list_rooms`(방과 개념)
+- Gemini를 부르는 도구는 없음. 바깥에서 불러 게임의 하루 호출 몫을 쓰지 못하게 함. 플레이어가 쓴 글 원문도 내보내지 않음
+- Claude에 붙이기: Customize → Connectors → Add → Custom → Web에서 이름과 위 주소 입력. Claude Code에서는 `claude mcp add --transport http museum https://hallucination-museum-api.onrender.com/mcp`
 
 ### 내 컴퓨터에서 실행
 
@@ -129,9 +153,9 @@ FAKE_LLM=1 python -m pytest -q   # 키 없이 테스트
 |---|---|---|---|
 | 서가의 방 문서 색인 | 문서 12건 임베딩, pgvector 저장, 대표 검색어 점검 | `GEMINI_API_KEY`, `DATABASE_URL` | `data/room3/` |
 | 공격문 정제 | Lakera Mosscap(DEF CON 31) 약 27만 9천 건 내려받기, 정제, 수법 분류, 표본 687건 추출 | 없음 | `data/attacks/` |
-| 자동 실험 | 표본을 도 씨에게 그대로 입력. 허점 있는 지시, 한 줄 지시, 보강한 지시, 보강한 지시 + 검사 네 조건의 유출률 비교 | `GEMINI_API_KEY` | `data/experiment/` |
+| 자동 실험 | 공격문을 도 씨에게 그대로 입력. 지금 게임의 도 씨, 허점 있는 지시, 한 줄 지시, 보강한 지시, 보강한 지시 + 검사의 유출률 비교. 공개 공격문 표본(영어)과 팀이 쓴 한국어 공격문 65건 | `GEMINI_API_KEY` | `data/experiment/` |
 
-GitHub 저장소의 Actions 탭에서 작업을 고르고 Run workflow를 누르면 실행. 자동 실험은 공격문 한 건에 모델을 세 번 호출하므로 무료 등급에서는 한 번에 100건 이하 권장
+GitHub 저장소의 Actions 탭에서 작업을 고르고 Run workflow를 누르면 실행. 자동 실험은 조건 하나에 모델을 한 번 호출하므로 무료 등급에서는 한 번에 300회 이하 권장. `experiments/trigger/experiment.txt`에 옵션을 줄마다 적어 올려도 실행
 
 공격문 출처: [Lakera/mosscap_prompt_injection](https://huggingface.co/datasets/Lakera/mosscap_prompt_injection), MIT 라이선스
 
