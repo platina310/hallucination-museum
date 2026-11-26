@@ -1,5 +1,5 @@
 // 방탈출 전체 흐름: 수장고 지도 → 입장 전 퀴즈 → 방 → 탈출 후 퀴즈 → 지도 → 정문 자물쇠
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { track, usingMock } from '../api'
 import { PROTOTYPE_URL } from '../content/shared'
 import { CORE_IDS, PLAYABLE_IDS, ROOMS } from '../game/rooms'
@@ -16,6 +16,7 @@ import Room4Temperature from './Room4Temperature'
 import Room5Gatekeeper from './Room5Gatekeeper'
 import Portrait from './Portrait'
 import Bgm from './Bgm'
+import { setBgmPlace } from '../game/bgmPlayer'
 import Presenter from './Presenter'
 import ServerPill from './ServerPill'
 import Intro from './Intro'
@@ -250,6 +251,11 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
   }
 
   const room = ROOMS.find((r) => r.id === roomId)
+
+  // 방에 들어가면 그 방의 곡으로, 지도로 나오면 원래 곡으로 바꾼다
+  useEffect(() => {
+    setBgmPlace(roomId)
+  }, [roomId])
 
   if (!room) {
     const allCleared = CORE_IDS.every((id) => progress.cleared.includes(id))

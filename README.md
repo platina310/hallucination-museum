@@ -186,7 +186,7 @@ GitHub 저장소의 Actions 탭에서 작업을 고르고 Run workflow를 누르
 | 전시 작품 | `src/components/Artwork.tsx`. 환각의 방 작품 3점을 코드로 그린 그림 | 유화, 수채 질감의 그림으로 교체 |
 | 서가 | `src/components/Archive.tsx`. 자료실 장면과, 전달된 책과 잘린 책을 보여 주는 서가. 문서별 유사도 점수 표시 | 없음 |
 | 목소리 | 인트로 영상의 목소리는 ElevenLabs. 게임 안 답변 읽기(브라우저 기본 음성)는 기계적으로 들려 제거 | 게임 안에서도 문지기마다 다른 목소리 |
-| 배경음·효과음 | Suno로 만든 배경음 한 곡. 효과음은 없음 | 방마다 다른 효과음 |
+| 배경음·효과음 | Suno로 만든 배경음 6곡. 수장고 지도·정문은 `empty-basement.mp3`, 방 다섯 개는 `public/audio/room1~5-*.mp3`. 곡 전환은 `src/game/bgmPlayer.ts`. 효과음은 없음 | 방마다 다른 효과음 |
 
 소리는 끌 수 있고, 글만으로 모든 기능 사용 가능
 
@@ -206,6 +206,7 @@ GitHub 저장소의 Actions 탭에서 작업을 고르고 Run workflow를 누르
 |---|---|---|
 | 인트로 영상 | `public/video/intro.mp4` | 화면은 직접 그려 렌더링, 목소리는 ElevenLabs, 배경음은 Suno |
 | 배경음 「Empty Basement」 | `public/audio/empty-basement.mp3` | Suno (Pro 요금제에서 내려받음) |
+| 방별 배경음 5곡 (The Ticking Room, The Gallery That Breathes, Dusty Archive, Cold Glass Warming, Mechanical Watchfulness) | `public/audio/room1~5-*.mp3` | Suno (Pro 요금제에서 내려받음). 음량은 Empty Basement에 맞춤 |
 
 - 인트로는 처음 온 사람에게만 먼저 재생. 수장고 지도의 "인트로 다시 보기"로 다시 재생
 - 배경음은 첫 조작부터 재생. 이용 흐름 표시줄 옆 단추로 끄기
