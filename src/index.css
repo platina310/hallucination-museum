@@ -767,3 +767,22 @@ table.fit{min-width:0;width:100%}
 .choices>button.act{background:var(--ink);color:var(--sheet);justify-content:center;border-color:var(--ink);font-size:1.15rem}
 .choices>button.act.present{background:var(--seal);border-color:var(--seal);color:#fff}
 .choices>button.act:hover:not(:disabled),.choices>button.act:focus-visible{background:var(--mark);color:var(--on-mark);border-color:var(--ink)}
+/* 틀릴수록 변하는 문지기. 색은 화면 테마와 상관없이 고정하고, 표정은 그대로 읽히게 둔다 */
+.portrait.dread-1,.figure.dread-1{--ink:#18202b;--ink-soft:#4f5b68;--paper:#e9ece8;--sheet:#dfe6da}
+.portrait.dread-2,.figure.dread-2{--ink:#141a16;--ink-soft:#46524a;--paper:#d5dccf;--sheet:#bfc9b7}
+.portrait.dread-3,.figure.dread-3{--ink:#0d110e;--ink-soft:#3a443c;--paper:#b9c3b4;--sheet:#9aa997;--seal:#7d1a10;--mark:#a8963a}
+.figure .dread-head{transform-box:fill-box;transform-origin:50% 92%}
+.figure.dread-1 .dread-head{animation:twitch 11s steps(1) infinite}
+.figure.dread-2 .dread-head{transform:rotate(-4deg);animation:twitch2 7s steps(1) infinite}
+.figure.dread-3 .dread-head{transform:rotate(-9deg);animation:twitch3 4.5s steps(1) infinite}
+@keyframes twitch{0%,96%,100%{transform:none}97%{transform:translateX(1.5px) skewX(3deg)}98%{transform:translateX(-1px)}}
+@keyframes twitch2{0%,93%,100%{transform:rotate(-4deg)}94%{transform:rotate(-4deg) translateX(2.5px) skewX(5deg)}95%{transform:rotate(-7deg) translateX(-2px)}96%{transform:rotate(-2deg)}}
+@keyframes twitch3{0%,88%,100%{transform:rotate(-9deg)}89%{transform:rotate(-9deg) translateX(3px) skewX(7deg)}90%{transform:rotate(-14deg) translateX(-3px)}91%{transform:rotate(-5deg) skewX(-5deg)}92%{transform:rotate(-11deg)}}
+.dread-3 .ember{animation:ember 2.6s ease-in-out infinite}
+@keyframes ember{0%,100%{opacity:1}50%{opacity:.45}}
+.figure .dread-over .drop,.portrait .dread-over .drop{animation:drip 2.2s ease-in infinite}
+/* 방도 함께 어두워진다 */
+.scene.dread-2::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.1) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 42%,rgba(18,0,0,.62) 100%)}
+.scene.dread-3::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,rgba(40,0,0,.12) 0,rgba(40,0,0,.22) 34%,rgba(8,0,0,.82) 100%)}
+.scene.dread-3 .tube{animation-duration:2.3s}
+@media (prefers-reduced-motion:reduce){.figure .dread-head,.dread-3 .ember,.dread-over .drop{animation:none!important}}

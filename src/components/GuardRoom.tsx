@@ -5,7 +5,7 @@ import type { FormEvent } from 'react'
 import type { CaseFile } from '../types'
 import { DRAWER_CODE, DRAWER_FILE, ROOM_FILES } from '../mock/level1'
 import { Figure } from './Portrait'
-import type { Face } from './Portrait'
+import type { Dread, Face } from './Portrait'
 
 // 방 안의 살펴볼 곳. 자리는 그림 크기에 대한 백분율이다.
 interface Spot {
@@ -34,6 +34,7 @@ export default function GuardRoom({
   found,
   drawerOpen,
   face,
+  dread,
   calm,
   onCalm,
   onFind,
@@ -44,7 +45,8 @@ export default function GuardRoom({
   found: string[]
   drawerOpen: boolean
   face: Face
-  calm: boolean // 깜빡임과 그림자 끄기. 심문 화면과 같이 쓴다
+  dread: Dread // 틀릴수록 도 씨가 변하는 정도
+  calm: boolean // 깜빡임, 그림자, 도 씨의 변화 끄기. 심문 화면과 같이 쓴다
   onCalm: (v: boolean) => void
   onFind: (fileId: string) => void
   onDrawerOpen: () => void
@@ -104,7 +106,7 @@ export default function GuardRoom({
 
   return (
     <div className="scene-wrap">
-      <div className={`scene${calm ? ' calm' : ''}${showSpots ? ' show-spots' : ''}`}>
+      <div className={`scene${calm ? ' calm' : ''}${showSpots ? ' show-spots' : ''}${dread ? ` dread-${dread}` : ''}`}>
         <svg viewBox="0 0 800 450" role="img" aria-label="형광등이 켜진 누런 경비실. 왼쪽에 게시판, 가운데에 CCTV 모니터와 책상, 오른쪽에 문과 카드 리더기가 있다.">
           <rect width="800" height="330" fill="#d9c98a" />
           <path d="M0 330h800" stroke="#a8955a" strokeWidth="5" />
@@ -166,7 +168,7 @@ export default function GuardRoom({
 
         {/* 도 씨는 책상 뒤에 앉아 있다. 누르면 말을 건다 */}
         <button type="button" className="spot guard" style={{ left: '23.500%', top: '27%', width: '15%', height: '33.500%' }} onClick={onTalk}>
-          <Figure who="do" face={face} />
+          <Figure who="do" face={face} dread={dread} />
           <span className="spot-tag">도 씨에게 말 걸기</span>
         </button>
         {SPOTS.map((s) => (
@@ -201,7 +203,7 @@ export default function GuardRoom({
             살펴볼 곳 표시
           </button>
           <button type="button" className="toggle" aria-pressed={calm} onClick={() => onCalm(!calm)}>
-            깜빡임 끄기
+            무서운 효과 끄기
           </button>
         </span>
       </div>
