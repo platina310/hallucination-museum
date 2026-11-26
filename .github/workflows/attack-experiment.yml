@@ -1,12 +1,12 @@
 name: 자동 실험
 
-# 공격문 표본을 도 씨에게 그대로 넣어 방어 전후의 암호 유출률을 잰다. 한 건에 Gemini를 두 번 부른다.
+# 공격문 표본을 도 씨에게 그대로 넣어 지시문 세 가지와 검사의 암호 유출률을 잰다. 한 건에 Gemini를 세 번 부른다.
 on:
   workflow_dispatch:
     inputs:
       n:
-        description: 이번에 실험할 공격문 수 (무료 등급은 150 이하 권장)
-        default: "150"
+        description: 이번에 실험할 공격문 수 (무료 등급은 100 이하 권장)
+        default: "100"
   push:
     branches: [main]
     paths:
@@ -35,7 +35,7 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: python experiments/run_experiment.py --n "${{ github.event.inputs.n || '150' }}"
+        run: python experiments/run_experiment.py --n "${{ github.event.inputs.n || '100' }}"
       - name: 결과를 저장소에 기록
         if: always()
         run: |

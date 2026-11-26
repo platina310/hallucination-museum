@@ -121,9 +121,9 @@ FAKE_LLM=1 python -m pytest -q   # 키 없이 테스트
 |---|---|---|---|
 | 서가의 방 문서 색인 | 문서 12건 임베딩, pgvector 저장, 대표 검색어 점검 | `GEMINI_API_KEY`, `DATABASE_URL` | `data/room3/` |
 | 공격문 정제 | Lakera Mosscap(DEF CON 31) 약 27만 9천 건 내려받기, 정제, 수법 분류, 표본 600건 추출 | 없음 | `data/attacks/` |
-| 자동 실험 | 표본을 도 씨에게 그대로 입력. 허술한 지시, 보강한 지시, 지시 + 검사 세 조건의 유출률 비교 | `GEMINI_API_KEY` | `data/experiment/` |
+| 자동 실험 | 표본을 도 씨에게 그대로 입력. 허점 있는 지시, 한 줄 지시, 보강한 지시, 보강한 지시 + 검사 네 조건의 유출률 비교 | `GEMINI_API_KEY` | `data/experiment/` |
 
-GitHub 저장소의 Actions 탭에서 작업을 고르고 Run workflow를 누르면 실행. 자동 실험은 공격문 한 건에 모델을 두 번 호출하므로 무료 등급에서는 한 번에 150건 이하 권장
+GitHub 저장소의 Actions 탭에서 작업을 고르고 Run workflow를 누르면 실행. 자동 실험은 공격문 한 건에 모델을 세 번 호출하므로 무료 등급에서는 한 번에 100건 이하 권장
 
 공격문 출처: [Lakera/mosscap_prompt_injection](https://huggingface.co/datasets/Lakera/mosscap_prompt_injection), MIT 라이선스
 
