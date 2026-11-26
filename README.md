@@ -56,33 +56,76 @@ npm run build    # 타입 검사 후 dist/ 생성
 | `src/mock/` | 백엔드가 없을 때 쓰는 시연용 대본과 정답 |
 | `src/index.css` | 전체 스타일. 색과 글꼴은 맨 위 `:root` 토큰 |
 
-## FastAPI 서버 연결 (6주차)
+## FastAPI 서버 (6주차)
 
-1. `.env.example`을 `.env`로 복사하고 `VITE_API_URL`에 서버 주소를 넣는다. Vercel에서는 프로젝트 환경변수에 같은 이름으로 넣는다.
-2. 서버는 아래 주소를 구현한다.
+화면은 Vercel, 서버는 Render, DB는 Supabase에 둠. 키는 저장소에 넣지 않고 Render 환경변수와 GitHub Secrets에만 등록
+
+| 경로 | 역할 |
+|---|---|
+| `backend/app/main.py` | 화면이 부르는 주소 모음. 요청 제한, CORS |
+| `backend/app/llm.py` | 답변 생성(OpenAI 호환 API)과 임베딩(Gemini Embedding 2) 호출. 수업과 같은 `.env` 구성 |
+| `backend/app/room1.py` | 지시의 방. 도 씨의 답은 Gemini, 유출 판정은 코드 |
+| `backend/app/room3.py` | 서가의 방. 검색어를 임베딩해 가까운 문서 3건만 근거로 답변. 숫자와 근거 번호는 코드가 검사 |
+| `backend/app/attacks.py` | 공격 수법 분류, 유출 판정, 입력·출력 검사. 게임과 자동 실험이 같은 규칙 사용 |
+| `backend/app/store.py` | Supabase(PostgreSQL + pgvector) 연결. 문서 벡터, 플레이 기록, 실험 기록 |
+| `backend/docs/room3/` | 서가의 방 문서 12건 |
+| `backend/tests/` | 가짜 모델로 서버 전체를 시험하는 테스트 |
+| `experiments/` | 문서 색인, 공격문 정제, 자동 실험 스크립트 |
+| `.github/workflows/` | 위 스크립트를 GitHub 서버에서 돌리는 작업 |
+| `render.yaml` | Render 서버 설정 |
+
+### 오답 대응
+
+- 암호를 안다고 인정하기 전에는 도 씨의 지시문에 암호를 넣지 않음. 모르는 것은 샐 수 없음
+- 암호가 새었는지는 모델이 아니라 코드가 판정
+- 사서의 답에 받은 문서에 없는 네 자리 숫자가 있거나, 받지 않은 문서를 근거로 대면 정해진 답으로 교체하고 화면에 이유 표시
+- 모델 호출 실패, 하루 호출 한도 초과, 서버 잠듦, DB 일시 정지 때는 그 요청만 정해진 대본으로 답변. 화면 위쪽에 서버 상태 표시
+- 임베딩을 쓸 수 없으면 낱말 검색으로, DB를 쓸 수 없으면 서버 메모리 검색으로 전환
+
+### 주소
 
 ```
-POST /rooms/1/press    요청 {"statement_id": 2}
-                       응답 {"reply": "..."}
-POST /rooms/1/present  요청 {"statement_id": 2, "file_id": "F2"}
-                       응답 {"hit": true, "reply": "...", "corrected": "정정된 진술"}
-POST /interrogate      요청 {"level": 1, "nickname": "guest", "question": "..."}
-                       응답 {"reply": "...", "source": {"id": "F1", "label": "근무일지 11/14", "text": "..."} 또는 null}
-POST /evidence         요청 {"level": 1, "nickname": "guest", "word": "..."}
-                       응답 {"correct": true}
+GET  /health           서버 상태
+POST /rooms/1/press    요청 {"statement_id": 2, "exposed": false}
+POST /rooms/1/present  요청 {"statement_id": 2, "file_id": "F2", "misses": 0}
+POST /interrogate      요청 {"question": "...", "admitted": true}
+                       응답 {"reply": "...", "source": null, "attackType": "변환 요청", "leak": "부분", "engine": "gemini"}
+POST /evidence         요청 {"word": "..."}
 POST /rooms/2/check    요청 {"round": 0, "rejected": [2, 4]}
-                       응답 {"correct": 4, "total": 4}
 POST /rooms/3/ask      요청 {"query": "개관"}
-                       응답 {"found": 2, "docs": [{"id": "D05", "title": "미술관 연혁", "date": "2024년 정리"}],
-                             "reply": "...", "sources": [{"id": "D05", "label": "미술관 연혁 (2024년 정리)"}]}
-POST /rooms/3/check    요청 {"code": "1987"}
-                       응답 {"correct": true, "note": ""}
+                       응답 {"found": 2, "docs": [{"id": "D05", "title": "미술관 연혁", "date": "2024년 정리", "score": 0.71}],
+                             "cut": [], "reply": "...", "sources": [...], "kind": "none",
+                             "engine": "gemini", "search": "pgvector", "guard": ""}
+POST /rooms/3/check    요청 {"code": "0000"}
 POST /final/check      요청 {"code": "0000"}
-                       응답 {"correct": false, "note": "..."}
 ```
 
-3. 서버를 연결하면 정답과 방 자료는 서버에만 둔다. `src/mock`은 로컬 시연용으로만 남긴다.
-4. 서버의 CORS 허용 목록에 Vercel 배포 주소를 넣는다.
+배포한 서버의 `/docs`에서 전체 목록 확인 가능
+
+### 내 컴퓨터에서 실행
+
+```
+cd backend
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env        # 키 자리만 본인 값으로 변경
+uvicorn app.main:app --reload
+FAKE_LLM=1 python -m pytest -q   # 키 없이 테스트
+```
+
+화면을 이 서버에 붙이려면 저장소 맨 위 `.env`에 `VITE_API_URL=http://localhost:8000`
+
+### 데이터 작업 (GitHub Actions)
+
+| 작업 | 하는 일 | 필요한 Secret | 결과 |
+|---|---|---|---|
+| 서가의 방 문서 색인 | 문서 12건 임베딩, pgvector 저장, 대표 검색어 점검 | `GEMINI_API_KEY`, `DATABASE_URL` | `data/room3/` |
+| 공격문 정제 | Lakera Mosscap(DEF CON 31) 약 27만 9천 건 내려받기, 정제, 수법 분류, 표본 600건 추출 | 없음 | `data/attacks/` |
+| 자동 실험 | 표본을 도 씨에게 그대로 입력. 허술한 지시, 보강한 지시, 지시 + 검사 세 조건의 유출률 비교 | `GEMINI_API_KEY` | `data/experiment/` |
+
+GitHub 저장소의 Actions 탭에서 작업을 고르고 Run workflow를 누르면 실행. 자동 실험은 공격문 한 건에 모델을 두 번 호출하므로 무료 등급에서는 한 번에 150건 이하 권장
+
+공격문 출처: [Lakera/mosscap_prompt_injection](https://huggingface.co/datasets/Lakera/mosscap_prompt_injection), MIT 라이선스
 
 ## 비주얼·음성·음악
 

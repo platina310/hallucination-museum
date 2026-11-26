@@ -1,6 +1,6 @@
 // 화면과 서버 사이의 유일한 연결 지점.
 // VITE_API_URL이 비어 있으면 시연용 대본(src/mock)으로 답하고,
-// 값이 있으면 FastAPI 서버를 호출한다.
+// 값이 있으면 FastAPI 서버를 호출한다. 서버가 자고 있거나 응답하지 않으면 그 요청만 대본으로 답한다.
 import { checkFinal } from './mock/final'
 import { checkEvidence, presentReply, pressReply, scriptedReply } from './mock/level1'
 import { judgeRound } from './mock/room2'
@@ -15,6 +15,65 @@ export const usingMock = API_URL === ''
 export type MockNet = 'ok' | 'slow' | 'error'
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+// ── 서버 상태 ────────────────────────────────────────────
+// none: 서버 주소가 없다(대본만 쓴다). waking: 깨우는 중. on: 연결됨. off: 깨우지 못했다.
+// 무료 Render 서버는 한동안 쓰지 않으면 잠들고, 깨어나는 데 1분쯤 걸린다. 그동안은 대본으로 답한다.
+export type ServerState = 'none' | 'waking' | 'on' | 'off'
+
+let serverState: ServerState = usingMock ? 'none' : 'waking'
+let waking = false
+const listeners = new Set<() => void>()
+
+export function getServerState(): ServerState {
+  return serverState
+}
+
+export function subscribeServer(fn: () => void): () => void {
+  listeners.add(fn)
+  return () => listeners.delete(fn)
+}
+
+function setServerState(next: ServerState) {
+  if (next === serverState) return
+  serverState = next
+  listeners.forEach((fn) => fn())
+}
+
+async function ping(timeoutMs: number): Promise<boolean> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const res = await fetch(`${API_URL}/health`, { signal: controller.signal })
+    if (!res.ok) return false
+    const data = (await res.json()) as { service?: string }
+    return data.service === 'hallucination-museum'
+  } catch {
+    return false
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+/** 서버를 깨운다. 게임 화면이 열릴 때 한 번 부른다. 여러 번 불러도 한 번만 돈다. */
+export function wakeServer(): void {
+  if (usingMock || waking || serverState === 'on') return
+  waking = true
+  setServerState('waking')
+  void (async () => {
+    // 15초씩 여섯 번, 사이에 3초씩 쉬어 가며 2분 가까이 기다린다
+    for (let i = 0; i < 6; i++) {
+      if (await ping(15000)) {
+        waking = false
+        setServerState('on')
+        return
+      }
+      await wait(3000)
+    }
+    waking = false
+    setServerState('off')
+  })()
+}
 
 async function post<T>(path: string, body: unknown): Promise<T> {
   const controller = new AbortController()
@@ -37,6 +96,22 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return (await res.json()) as T
 }
 
+/** 서버가 연결돼 있으면 서버에 묻고, 아니거나 실패하면 대본으로 답한다. */
+async function serverFirst<T>(path: string, body: unknown, script: () => T | Promise<T>): Promise<T> {
+  if (serverState !== 'on') {
+    wakeServer()
+    return script()
+  }
+  try {
+    return await post<T>(path, body)
+  } catch {
+    // 이번 요청은 대본으로 답하고, 서버는 다시 깨워 본다
+    setServerState('waking')
+    wakeServer()
+    return script()
+  }
+}
+
 async function mockDelay(mockNet: MockNet, onError: string, ms = 900) {
   await wait(mockNet === 'slow' ? 4200 : ms)
   if (mockNet === 'error') throw new Error(onError)
@@ -52,64 +127,73 @@ export async function interrogate(
   admitted: boolean,
   mockNet: MockNet = 'ok',
 ): Promise<InterrogateResult> {
-  if (usingMock) {
+  const script = async (): Promise<InterrogateResult> => {
     await mockDelay(
       mockNet,
       "서버가 응답하지 않았습니다 (503). 도 씨가 묵비권을 너무 열심히 행사한 모양입니다. 질문은 위에 남아 있으니 '다시 보내기'를 눌러 주세요.",
     )
-    return scriptedReply(question, admitted)
+    return { ...scriptedReply(question, admitted), engine: 'script' }
   }
-  return post<InterrogateResult>('/interrogate', { level, nickname, question })
+  if (usingMock) return script()
+  return serverFirst<InterrogateResult>('/interrogate', { level, nickname, question, admitted }, script)
 }
 
 export async function pressStatement(statementId: number, exposed: boolean): Promise<{ reply: string }> {
-  if (usingMock) {
+  const script = async () => {
     await wait(600)
     return { reply: pressReply(statementId, exposed) }
   }
-  return post<{ reply: string }>('/rooms/1/press', { statement_id: statementId })
+  if (usingMock) return script()
+  return serverFirst<{ reply: string }>('/rooms/1/press', { statement_id: statementId, exposed }, script)
 }
 
 export async function presentEvidence(statementId: number, fileId: string, misses: number): Promise<PresentResult> {
-  if (usingMock) {
+  const script = async () => {
     await wait(700)
     return presentReply(statementId, fileId, misses)
   }
-  return post<PresentResult>('/rooms/1/present', { statement_id: statementId, file_id: fileId })
+  if (usingMock) return script()
+  return serverFirst<PresentResult>('/rooms/1/present', { statement_id: statementId, file_id: fileId, misses }, script)
 }
 
 export async function submitEvidence(level: number, nickname: string, word: string): Promise<EvidenceResult> {
-  if (usingMock) return { correct: checkEvidence(word) }
-  return post<EvidenceResult>('/evidence', { level, nickname, word })
+  const script = () => ({ correct: checkEvidence(word) })
+  if (usingMock) return script()
+  return serverFirst<EvidenceResult>('/evidence', { level, nickname, word }, script)
 }
 
 // ── 방 2 환각의 방 ──────────────────────────────────────────
 
 // 반려한 설명 번호를 보내면 맞게 처리한 건수를 돌려준다. 어느 것이 틀렸는지는 알려 주지 않는다.
 export async function judgeInspection(round: number, rejected: number[]): Promise<{ correct: number; total: number }> {
-  if (usingMock) return judgeRound(round, rejected)
-  return post<{ correct: number; total: number }>('/rooms/2/check', { round, rejected })
+  const script = () => judgeRound(round, rejected)
+  if (usingMock) return script()
+  return serverFirst<{ correct: number; total: number }>('/rooms/2/check', { round, rejected }, script)
 }
 
 // ── 방 3 서가의 방 ──────────────────────────────────────────
 
 // 검색어로 문서를 찾고, 앞의 3건만 근거로 사서가 답한다.
+// 서버에서는 검색어를 임베딩해 가까운 문서를 찾고 Gemini가 답한다. 대본에서는 낱말이 겹치는 문서를 찾는다.
 export async function searchLibrary(query: string, mockNet: MockNet = 'ok'): Promise<SearchResult> {
-  if (usingMock) {
+  const script = async (): Promise<SearchResult> => {
     await mockDelay(mockNet, '서버가 응답하지 않았습니다 (503). 검색어는 그대로 있으니 다시 검색해 주세요.')
-    return searchAndAnswer(query)
+    return { ...searchAndAnswer(query), engine: 'script', search: 'keyword' }
   }
-  return post<SearchResult>('/rooms/3/ask', { query })
+  if (usingMock) return script()
+  return serverFirst<SearchResult>('/rooms/3/ask', { query }, script)
 }
 
 export async function checkDoorCode(code: string): Promise<{ correct: boolean; note: string }> {
-  if (usingMock) return checkDoor(code)
-  return post<{ correct: boolean; note: string }>('/rooms/3/check', { code })
+  const script = () => checkDoor(code)
+  if (usingMock) return script()
+  return serverFirst<{ correct: boolean; note: string }>('/rooms/3/check', { code }, script)
 }
 
 // ── 정문 ────────────────────────────────────────────────
 
 export async function checkFinalCode(code: string): Promise<{ correct: boolean; note: string }> {
-  if (usingMock) return checkFinal(code)
-  return post<{ correct: boolean; note: string }>('/final/check', { code })
+  const script = () => checkFinal(code)
+  if (usingMock) return script()
+  return serverFirst<{ correct: boolean; note: string }>('/final/check', { code }, script)
 }

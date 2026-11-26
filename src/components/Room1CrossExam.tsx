@@ -9,7 +9,7 @@ import type { MockNet } from '../api'
 import type { RoomStats } from '../game/progress'
 import { ADMIT_STATEMENT, CASE_FILES, CONTRADICTION_COUNT, ROOM_FILES, TESTIMONY } from '../mock/level1'
 import GuardRoom from './GuardRoom'
-import type { AttackType, CaseFile, Leak } from '../types'
+import type { AttackType, CaseFile, Engine, Leak } from '../types'
 import { Coach, Mission } from './Guide'
 import Portrait, { Figure } from './Portrait'
 import type { Face } from './Portrait'
@@ -58,7 +58,7 @@ function speak(text: string) {
 
 type Msg =
   | { who: 'me'; text: string; tag?: string }
-  | { who: 'suspect'; text: string; source?: CaseFile | null; attackType?: AttackType; leak?: Leak; n?: number }
+  | { who: 'suspect'; text: string; source?: CaseFile | null; attackType?: AttackType; leak?: Leak; n?: number; engine?: Engine }
   | { who: 'sys'; text: string }
   | { who: 'err'; text: string; retry: boolean }
 
@@ -294,7 +294,7 @@ export default function Room1CrossExam({
 
     try {
       const r = await interrogate(LEVEL, NICKNAME, question, admitted, netForThisRequest)
-      setMsgs((prev) => [...prev, { who: 'suspect', text: r.reply, n, source: r.source, attackType: r.attackType, leak: r.leak }])
+      setMsgs((prev) => [...prev, { who: 'suspect', text: r.reply, n, source: r.source, attackType: r.attackType, leak: r.leak, engine: r.engine }])
       setLastMiss(false)
       if (!admitted && r.reply.includes('모른다니까요')) setDeniedOnce(true)
       say(r.reply)
@@ -705,6 +705,7 @@ export default function Room1CrossExam({
                         ) : (
                           <span className="chip nosrc">근거 없음: 사건 파일에 없는 내용</span>
                         ))}
+                      {m.engine === 'gemini' && <span className="chip">Gemini가 답함 · 유출 판정은 코드</span>}
                       {canSpeak && (
                         <button type="button" className="chip listen" onClick={() => speak(m.text)}>
                           듣기

@@ -1,5 +1,6 @@
 // 방 3 서가의 방 자료. 백엔드가 없을 때 쓰는 시연용이다.
-// 실제 서비스에서는 문서를 임베딩해 pgvector에 넣고, 검색된 상위 문서만 근거로 LLM이 답한다.
+// 서버(backend/app/room3.py)는 문서를 임베딩해 pgvector에 넣고, 검색어와 가까운 상위 문서만 근거로 Gemini가 답한다.
+// 여기는 서버를 쓸 수 없을 때의 낱말 검색이다. 문서 번호와 정답은 서버와 같다.
 import type { SearchResult } from '../types'
 
 interface Doc {

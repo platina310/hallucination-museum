@@ -1,0 +1,43 @@
+name: 서가의 방 문서 색인
+
+# 서가의 방 문서 12건을 임베딩해 Supabase(pgvector)에 넣고, 대표 검색어의 검색 결과를 저장소에 기록한다.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - experiments/trigger/ingest.txt
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r backend/requirements.txt
+      - name: 문서 임베딩과 검색 점검
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python experiments/ingest_room3.py
+      - name: 결과를 저장소에 기록
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && exit 0
+          git commit -m "서가의 방 임베딩 검색 점검 결과 기록"
+          git pull --rebase origin main
+          git push

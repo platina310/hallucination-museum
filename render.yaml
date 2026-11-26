@@ -1,0 +1,25 @@
+# Render 설정. Render에서 New → Blueprint로 이 저장소를 고르면 아래대로 서버가 만들어진다.
+# 키 두 개(GEMINI_API_KEY, DATABASE_URL)는 만들 때 Render 화면에 직접 넣는다. 저장소에는 넣지 않는다.
+services:
+  - type: web
+    name: hallucination-museum-api
+    runtime: python
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: LLM_BASE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai/
+      - key: LLM_MODEL
+        value: gemini-3.5-flash-lite
+      - key: LLM_REASONING
+        value: low
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false

@@ -13,6 +13,7 @@ import Room2Inspection from './Room2Inspection'
 import Room3Search from './Room3Search'
 import Portrait from './Portrait'
 import Bgm from './Bgm'
+import ServerPill from './ServerPill'
 import Intro from './Intro'
 import type { Who } from './Portrait'
 
@@ -42,7 +43,10 @@ function FlowBar({ stage }: { stage: Stage }) {
           </li>
         ))}
       </ol>
-      <Bgm />
+      <span className="flow-tools">
+        <ServerPill />
+        <Bgm />
+      </span>
     </div>
   )
 }

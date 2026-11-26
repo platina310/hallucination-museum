@@ -652,3 +652,9 @@ h1,h2,h3,.lede,.mission-goal{word-break:keep-all;overflow-wrap:anywhere}
 .gate .spot.guard .spot-tag{opacity:0;top:auto;bottom:calc(100% + 2px);background:rgba(11,14,19,.86)}
 .gate .spot.guard:hover .spot-tag,.gate .spot.guard:focus-visible .spot-tag,.gate.show-spots .spot.guard .spot-tag{opacity:1}
 .gap-small{margin-top:8px}
+/* AI 서버 상태, 임베딩 검색 점수 */
+.flow-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px}
+.pill.server{font-weight:500;white-space:normal}
+.dlg .retrieved .score{margin-left:8px;font-family:var(--f-mono);font-size:.74rem;color:var(--ok)}
+.dlg .retrieved .how{margin-top:6px;font-family:var(--f-mono);font-size:.72rem;color:var(--ink-soft)}
+.guard-note{margin-top:8px;font-size:.86rem;color:var(--seal)}

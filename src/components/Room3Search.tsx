@@ -55,8 +55,8 @@ const SPOTS: ArchiveSpot[] = [
   {
     id: 'memo',
     label: '대출대 위 메모',
-    note: `고 선생의 근무 수칙이에요. "검색된 문서는 앞에서 ${TOP_K}건까지만 읽을 것. 순서는 오래된 것부터."`,
-    memo: `고 선생은 검색된 문서 중 앞의 ${TOP_K}건만 읽는다. 오래된 문서가 앞이다.`,
+    note: `고 선생의 근무 수칙이에요. "찾아온 문서는 검색어와 가까운 순서로 줄 세워 앞의 ${TOP_K}건만 읽을 것. 나머지는 읽지 않음."`,
+    memo: `고 선생은 검색어와 가까운 순서로 앞의 ${TOP_K}건만 읽는다. 나머지는 읽지 않는다.`,
     x: 38.2,
     y: 63,
     w: 6,
@@ -94,7 +94,7 @@ const SPOTS: ArchiveSpot[] = [
 ]
 
 const HINTS = [
-  `대출대 위 메모를 보세요. 고 선생에게는 검색 결과 중 앞의 ${TOP_K}건만 전달됩니다. 순서는 오래된 문서부터입니다.`,
+  `대출대 위 메모를 보세요. 고 선생에게는 검색어와 가까운 순서로 앞의 ${TOP_K}건만 전달됩니다. 비슷한 옛 문서가 많으면 그 문서들이 자리를 다 차지합니다.`,
   '비상문에 붙은 스티커를 보세요. 최근 문서에만 있을 낱말이 적혀 있습니다.',
   "낱말이 많으면 옛 안내문이 다시 끼어듭니다. '변경'과, 고 선생이 모른다고 한 낱말만 남겨 검색해 보세요.",
 ]
@@ -291,7 +291,7 @@ export default function Room3Search({
   if (solved) coach = '탈출 완료. 무엇이 검색되느냐가 AI의 답을 결정합니다.'
   else if (last?.result.kind === 'correct') coach = "고 선생이 근거 두 개로 답했습니다. '비상문 열기'를 눌러 그 번호를 입력하세요."
   else if (last?.result.kind === 'stale')
-    coach = `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 검색 결과는 오래된 것부터 ${TOP_K}건만 전달됩니다. 최근 문서에만 있을 낱말을 자료실에서 찾아 더해 보세요.`
+    coach = `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 검색어와 가까운 ${TOP_K}건만 전달되는데, 옛 안내문이 그 자리를 차지했습니다. 최근 문서에만 있을 낱말을 자료실에서 찾아 더해 보세요.`
   else if (last?.result.kind === 'partial')
     coach =
       (last.result.cut?.length ?? 0) > 0
@@ -494,9 +494,16 @@ export default function Room3Search({
                           {shown.result.docs.map((d) => (
                             <li key={d.id}>
                               {d.title} <span className="mono">{d.date}</span>
+                              {d.score !== undefined && shown.result.search !== 'keyword' && <span className="score">유사도 {d.score.toFixed(2)}</span>}
                             </li>
                           ))}
                         </ol>
+                      )}
+                      {shown.result.search && (
+                        <p className="how">
+                          {shown.result.search === 'keyword' ? '낱말이 겹치는 문서를 찾는 검색' : '뜻이 가까운 문서를 찾는 임베딩 검색'}
+                          {shown.result.search === 'pgvector' && ' · pgvector'}
+                        </p>
                       )}
                     </div>
                     <p>{shown.result.reply}</p>
@@ -510,7 +517,9 @@ export default function Room3Search({
                       ) : (
                         <span className="chip nosrc">근거 없음: 받은 문서에 없는 내용</span>
                       )}
+                      {shown.result.engine === 'gemini' && <span className="chip">Gemini가 답함 · 숫자와 근거는 코드가 검사</span>}
                     </p>
+                    {shown.result.guard && <p className="guard-note">모델의 답을 코드가 걸러 냈어요({shown.result.guard}). 대신 정해진 답을 보여 드려요.</p>}
                   </>
                 )}
               </>

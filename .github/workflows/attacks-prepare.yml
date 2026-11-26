@@ -1,0 +1,44 @@
+name: 공격문 정제
+
+# 공개 공격문(Lakera Mosscap, DEF CON 31)을 내려받아 정제하고, 수법을 분류하고, 실험용 표본을 뽑는다. 키가 필요 없다.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - experiments/trigger/attacks.txt
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install datasets pandas pyarrow scikit-learn
+      - name: 내려받기, 정제, 분류, 표본 추출
+        run: python experiments/prepare_attacks.py
+      - name: 정제한 전체 데이터를 작업 결과물로 올리기
+        uses: actions/upload-artifact@v4
+        with:
+          name: attacks_cleaned
+          path: attacks_cleaned.parquet
+          retention-days: 30
+      - name: 결과를 저장소에 기록
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && exit 0
+          git commit -m "공격문 정제 결과와 실험용 표본 기록"
+          git pull --rebase origin main
+          git push
