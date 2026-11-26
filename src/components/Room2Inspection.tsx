@@ -1,12 +1,12 @@
 // 방 2 · 환각의 방 (검수대)
 // 도슨트의 설명을 한 건씩 통과시키거나 반려한다. 라운드마다 검수 규칙이 하나씩 늘어난다.
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { judgeInspection } from '../api'
 import type { RoomStats } from '../game/progress'
 import { ROUNDS } from '../mock/room2'
 import Artwork from './Artwork'
 import { Coach, Mission } from './Guide'
-import Portrait from './Portrait'
+import Portrait, { Figure } from './Portrait'
 import type { Face } from './Portrait'
 
 const MAX_WARNINGS = 3
@@ -41,6 +41,15 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
   const [foundCards, setFoundCards] = useState<string[]>(solvedBefore ? ROUNDS[ROUNDS.length - 1].cards.map((c) => c.label) : [])
   const [look, setLook] = useState<{ title: string; text: string; card?: { label: string; text: string }; fresh?: boolean } | null>(null)
   const [cur, setCur] = useState(0) // 지금 보고 있는 설명
+  // 제출 결과를 장면 위에 도장으로 잠깐 찍는다
+  const [burst, setBurst] = useState<{ text: string; bad: boolean } | null>(null)
+  const burstTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  useEffect(() => () => clearTimeout(burstTimer.current), [])
+  function stamp(text: string, bad: boolean) {
+    setBurst({ text, bad })
+    clearTimeout(burstTimer.current)
+    burstTimer.current = setTimeout(() => setBurst(null), 1800)
+  }
   const [calm, setCalm] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
 
   const current = ROUNDS[round]
@@ -83,10 +92,12 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
         if (round === ROUNDS.length - 1) {
           setSolved(true)
           setGood(true)
+          stamp('검수 완료!', false)
           setFeedback('전부 맞게 처리했습니다. 루미가 조용히 문을 엽니다.')
           onSolved({ tries: used, hints })
         } else {
           setGood(true)
+          stamp('통과!', false)
           setFeedback(`${round + 1}라운드 통과. 다음 작품이 올라옵니다. 규칙이 하나 늘었습니다.`)
           setRound(round + 1)
           setDecisions({})
@@ -99,6 +110,7 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
         const w = warnings + 1
         setWarnings(w)
         setGood(false)
+        stamp('경고장!', true)
         setFeedback(
           w >= MAX_WARNINGS
             ? "경고장이 세 장 쌓였습니다. 검수원 자격이 정지됐습니다. '처음부터 다시'를 눌러 주세요."
@@ -193,7 +205,15 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
           {/* 전시실: 그림 주변을 살펴 기록 카드를 찾는다 */}
           <div className={calm ? 'gallery calm' : 'gallery'}>
             <span className="gallery-tube" aria-hidden="true" />
-            <Artwork index={round} />
+            {/* 그림 옆에 루미가 서서 설명한다. 표정은 상황에 따라 바뀐다 */}
+            <div className="gallery-stage">
+              <Artwork index={round} />
+              <div className={burst ? 'gallery-lumi jolt' : 'gallery-lumi'}>
+                <Figure who="lumi" face={face} />
+              </div>
+            </div>
+            <p className="gallery-mood">{mood}</p>
+            {burst && <span className={burst.bad ? 'burst' : 'burst ok'}>{burst.text}</span>}
             <div className="gallery-objs" role="group" aria-label="전시실에서 살펴볼 곳">
               {current.cards.map((c, i) => {
                 const got = foundCards.includes(c.label)
