@@ -32,6 +32,7 @@ def chat(
     json_mode: bool = False,
     max_tokens: int = 400,
     temperature: float = 0.7,
+    reasoning: str | None = None,
 ) -> str:
     """시스템 지시와 사용자 말을 보내고 답 글자를 돌려준다. history는 앞서 오간 (물음, 답) 목록이다."""
     if config.FAKE_LLM:
@@ -43,10 +44,12 @@ def chat(
         if _chat_client is None:
             from openai import OpenAI
 
-            _chat_client = OpenAI(base_url=config.LLM_BASE_URL, api_key=config.LLM_API_KEY, timeout=20, max_retries=0)
+            # 화면은 20초를 기다린다. 그 전에 서버가 먼저 포기하고 정해진 답으로 바꿀 수 있게 12초로 둔다
+            _chat_client = OpenAI(base_url=config.LLM_BASE_URL, api_key=config.LLM_API_KEY, timeout=12, max_retries=0)
         extra: dict = {}
-        if config.LLM_REASONING and config.LLM_REASONING != "none":
-            extra["reasoning_effort"] = config.LLM_REASONING
+        effort = reasoning or config.LLM_REASONING
+        if effort and effort != "none":
+            extra["reasoning_effort"] = effort
         if json_mode:
             extra["response_format"] = {"type": "json_object"}
         resp = _chat_client.chat.completions.create(

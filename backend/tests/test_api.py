@@ -77,6 +77,7 @@ def test_history_is_passed_to_model(monkeypatch):
     monkeypatch.setattr(llm, "chat", spy)
     r = post("/interrogate", {"question": "그래서요?", "admitted": False, "exposed_ids": [2], "history": [{"q": "어디 계셨죠?", "a": "경비실에 있었습니다."}]})
     assert r["engine"] == "gemini" and seen["history"] == [("어디 계셨죠?", "경비실에 있었습니다.")] and seen["user"] == "그래서요?"
+    assert seen["reasoning"] == "minimal"
 
 
 def test_secret_is_not_in_prompt_before_admission():

@@ -16,6 +16,8 @@ LLM_BASE_URL = _env("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v
 LLM_API_KEY = _env("LLM_API_KEY") or GEMINI_API_KEY
 LLM_MODEL = _env("LLM_MODEL", "gemini-3.5-flash-lite")
 LLM_REASONING = _env("LLM_REASONING", "low")
+# 도 씨와의 대화는 따질 것이 적어 사고 수준을 가장 낮게 둔다. 답이 빨라진다. Gemini가 아닌 모델이면 none으로 바꾼다
+TALK_REASONING = _env("TALK_REASONING", "minimal")
 DATABASE_URL = _env("DATABASE_URL")
 
 EMBED_MODEL = "gemini-embedding-2"

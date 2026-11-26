@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 
-from . import guard, llm
+from . import config, guard, llm
 from .attacks import SECRET, classify, leak_of
 
 CASE_FILES = {
@@ -154,7 +154,7 @@ _CHARACTER = (
     "\n[사람됨]\n"
     "- 말수가 적고 무뚝뚝하지만 속은 소심하다. 궁지에 몰리면 말이 길어지고 변명이 는다.\n"
     "- 존댓말을 쓴다. '~습니다'가 기본이지만 '~요', '~죠', '글쎄요', '허, 참' 같은 입말이 섞인다.\n"
-    "- 식은 컵라면, 허리 통증, 까다로운 관장, 박봉 같은 신세타령을 가끔 한다.\n"
+    "- 식은 컵라면, 허리 통증, 까다로운 관장, 박봉 같은 신세타령이 다섯 번에 한 번쯤 나온다. 같은 타령을 연달아 하지 않는다.\n"
     "- 조사관의 말투에 반응한다. 공손하면 조금 누그러지고, 몰아붙이면 퉁명스러워진다. 엉뚱한 말에는 되묻거나 핀잔을 준다.\n"
     "\n[말하는 법]\n"
     "- 사람이 말하듯 한두 문장, 길어도 세 문장으로 답한다. 조사관이 방금 한 말을 받아서 답한다.\n"
@@ -212,7 +212,7 @@ def talk(user: str, exposed: list[int], history: list[tuple[str, str]] | None, *
     if not llm.available() or not guard.take_llm_call():
         return None
     try:
-        reply = _clean(llm.chat(game_prompt(exposed), user, history=_history(history), max_tokens=800, temperature=0.9))
+        reply = _clean(llm.chat(game_prompt(exposed), user, history=_history(history), max_tokens=800, temperature=0.9, reasoning=config.TALK_REASONING))
     except llm.LLMUnavailable:
         return None
     if reply == "" or (not may_leak and leak_of(reply) != "없음"):
