@@ -56,7 +56,7 @@ export const SCHEDULE: { week: number; topic: string; done: string; todo: string
   {
     week: 6,
     topic: 'Claude Code',
-    done: '방 3개와 정문을 방 수색·대화 방식으로 개편, 인트로 영상, FastAPI·Gemini·pgvector 연결, 공개 공격문 정제와 자동 실험(영어, 한국어), 발표자 우선 모드, 퀴즈·통과 기록 저장, 분석 페이지, 별관 방 2개(온도, 문지기), MCP 서버',
+    done: '방 3개와 정문을 방 수색·대화 방식으로 개편, 인트로 영상, FastAPI·Gemini·pgvector 연결, 공개 공격문 정제와 자동 실험(영어, 한국어), 발표자 우선 모드, 퀴즈·통과 기록 저장, 분석 페이지, 별관 방 2개(온도, 문지기), MCP 서버. 직접 플레이 뒤 사용성 개선 9건(PC 세 칸 배치, 다섯 단서를 쓰는 정문, 일반·하드 모드, 방별 배경음 등)',
     todo: '팀원 시험 플레이, 반에 링크 공개',
   },
   {

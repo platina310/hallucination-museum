@@ -4,7 +4,7 @@
 import { Pill } from '../components/Marks'
 import { DATASETS, IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SCREENS, SWAGGER_URL, TEAM } from '../content/shared'
 import { EXPERIMENT_EN, EXPERIMENT_KO, experimentDay, experimentRows } from '../content/experiment'
-import { ATTACK_TYPES, CHECKED_ON, CLEANING, EXPERIMENT_NOTES, TRIALS } from '../content/results'
+import { ATTACK_TYPES, CHECKED_ON, CLEANING, EXPERIMENT_NOTES, TRIALS, UX_FIXED_ON, UX_FIXES } from '../content/results'
 import { ROOMS } from '../game/rooms'
 
 const FLOW = ['수장고 지도', '입장 전 퀴즈', '방에서 AI와 겨루기', '배운 것과 같은 퀴즈', '정문 자물쇠', '탈출 결과와 별점', '분석 페이지']
@@ -503,12 +503,40 @@ export default function Idea() {
               </table>
             </div>
 
+            <h3 className="sub-h" id="ux-fixes">
+              사용성 개선 사례
+            </h3>
+            <p className="sub-note">
+              {UX_FIXED_ON}에 PC와 모바일로 끝까지 직접 플레이하며 불편했던 점과 고친 내용. 고친 뒤 PC(1366x768, 1280x720)와
+              모바일(390x844) 크기로 다시 확인
+            </p>
+            <div className="tablewrap">
+              <table className="stack fixes">
+                <thead>
+                  <tr>
+                    <th>대상</th>
+                    <th>불편했던 점</th>
+                    <th>고친 것</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {UX_FIXES.map((f) => (
+                    <tr key={f.target}>
+                      <td data-label="대상">{f.target}</td>
+                      <td data-label="불편했던 점">{f.problem}</td>
+                      <td data-label="고친 것">{f.fix}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
             <div className="cols gap-top">
               <div className="card">
                 <h3>사용하기 쉽게 설계한 점</h3>
                 <ul>
                   <li>처음 온 사람도 헤매지 않게 임무, 지금 단계, 다음 수, 힌트를 방마다 표시</li>
-                  <li>PC와 모바일에서 같은 기능 제공. 모바일에서는 그림 속 물건을 단추로도 선택</li>
+                  <li>PC와 모바일에서 같은 기능 제공. PC는 장면, 판정, 참고 자료를 한 화면에 배치. 모바일에서는 그림 속 물건을 단추로도 선택</li>
                   <li>서버가 답하지 못해도 멈추지 않고 정해진 대본으로 이어짐</li>
                   <li>새로고침해도 통과한 방과 퀴즈 기록 유지</li>
                 </ul>

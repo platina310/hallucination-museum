@@ -878,3 +878,6 @@ body{word-break:keep-all;overflow-wrap:anywhere}
 @media (min-width:1200px) and (max-height:740px){.art-frame svg{height:200px}}
 /* 정문 키패드: 단서 수첩이 오른쪽 칸에 바로 보이는 너비에서는 대화창 안의 수첩을 되풀이하지 않는다 */
 @media (min-width:821px){.final .dlg .notebook{display:none}}
+/* 소제목 아래의 한 줄 설명 */
+.sub-note{font-size:.92rem;color:var(--ink-soft);margin:-4px 0 10px;max-width:70ch}
+@media (min-width:641px){.fixes td:first-child{white-space:nowrap;font-weight:600}}
