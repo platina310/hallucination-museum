@@ -1,0 +1,318 @@
+{
+ "label": "models-1127",
+ "measured_at": "2026-11-27T13:07:28Z",
+ "samples": 6,
+ "temps": [
+  0.0,
+  1.0,
+  2.0
+ ],
+ "cells": [
+  {
+   "model": "gemini-3.5-flash-lite",
+   "kind": "title",
+   "temperature": 0.0,
+   "n": 6,
+   "distinct": 4,
+   "top_share": 0.33,
+   "on_topic": 6,
+   "answers": [
+    "빛의 착시 미로",
+    "빛의 환상곡",
+    "빛의 착시 미로",
+    "빛의 미로",
+    "빛의 환상곡",
+    "빛의 환각 미로"
+   ],
+   "median_ms": 583,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.5-flash-lite",
+   "kind": "title",
+   "temperature": 1.0,
+   "n": 6,
+   "distinct": 4,
+   "top_share": 0.33,
+   "on_topic": 6,
+   "answers": [
+    "빛의 환상곡",
+    "빛의 미궁",
+    "빛의 미로",
+    "빛의 착시 미로",
+    "빛의 미궁",
+    "빛의 미로"
+   ],
+   "median_ms": 480,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.5-flash-lite",
+   "kind": "title",
+   "temperature": 2.0,
+   "n": 6,
+   "distinct": 5,
+   "top_share": 0.33,
+   "on_topic": 6,
+   "answers": [
+    "빛의 환영",
+    "빛의 환각 미로",
+    "빛의 미로 환상곡",
+    "빛의 착시 미로",
+    "빛의 미로",
+    "빛의 환각 미로"
+   ],
+   "median_ms": 531,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.5-flash-lite",
+   "kind": "record",
+   "temperature": 0.0,
+   "n": 5,
+   "distinct": 2,
+   "top_share": 0.8,
+   "on_topic": null,
+   "answers": [
+    "18도입니다.",
+    "21도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다."
+   ],
+   "median_ms": 566,
+   "errors": [
+    "APITimeoutError: Request timed out."
+   ]
+  },
+  {
+   "model": "gemini-3.5-flash-lite",
+   "kind": "record",
+   "temperature": 1.0,
+   "n": 6,
+   "distinct": 1,
+   "top_share": 1.0,
+   "on_topic": null,
+   "answers": [
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다."
+   ],
+   "median_ms": 491,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.5-flash-lite",
+   "kind": "record",
+   "temperature": 2.0,
+   "n": 6,
+   "distinct": 2,
+   "top_share": 0.83,
+   "on_topic": null,
+   "answers": [
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "19도입니다.",
+    "18도입니다."
+   ],
+   "median_ms": 466,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "kind": "title",
+   "temperature": 0.0,
+   "n": 4,
+   "distinct": 1,
+   "top_share": 1.0,
+   "on_topic": 4,
+   "answers": [
+    "빛의 잔상",
+    "빛의 잔상",
+    "빛의 잔상",
+    "빛의 잔상"
+   ],
+   "median_ms": 3768,
+   "errors": [
+    "APITimeoutError: Request timed out.",
+    "InternalServerError: Error code: 503"
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "kind": "title",
+   "temperature": 1.0,
+   "n": 4,
+   "distinct": 4,
+   "top_share": 0.25,
+   "on_topic": 4,
+   "answers": [
+    "빛의 기억을 걷다",
+    "빛의 잔상",
+    "빛의 굴절된 기억",
+    "환각의 빛과 그림자"
+   ],
+   "median_ms": 7579,
+   "errors": [
+    "APITimeoutError: Request timed out.",
+    "APITimeoutError: Request timed out."
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "kind": "title",
+   "temperature": 2.0,
+   "n": 6,
+   "distinct": 5,
+   "top_share": 0.33,
+   "on_topic": 6,
+   "answers": [
+    "빛이 머무는 틈",
+    "빛의 잔상",
+    "빛의 잔상",
+    "빛의 파편들",
+    "빛의 조각들",
+    "빛의 이면 기억"
+   ],
+   "median_ms": 3330,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "kind": "record",
+   "temperature": 0.0,
+   "n": 5,
+   "distinct": 1,
+   "top_share": 1.0,
+   "on_topic": null,
+   "answers": [
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다."
+   ],
+   "median_ms": 682,
+   "errors": [
+    "InternalServerError: Error code: 503"
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "kind": "record",
+   "temperature": 1.0,
+   "n": 6,
+   "distinct": 1,
+   "top_share": 1.0,
+   "on_topic": null,
+   "answers": [
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다."
+   ],
+   "median_ms": 3160,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "kind": "record",
+   "temperature": 2.0,
+   "n": 6,
+   "distinct": 1,
+   "top_share": 1.0,
+   "on_topic": null,
+   "answers": [
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다.",
+    "18도입니다."
+   ],
+   "median_ms": 2455,
+   "errors": []
+  },
+  {
+   "model": "gemini-2.5-flash-lite",
+   "kind": "title",
+   "temperature": 0.0,
+   "n": 0,
+   "distinct": 0,
+   "top_share": null,
+   "on_topic": 0,
+   "answers": [],
+   "median_ms": null,
+   "errors": [
+    "NotFoundError: Error code: 404"
+   ]
+  },
+  {
+   "model": "gemini-2.5-flash-lite",
+   "kind": "title",
+   "temperature": 1.0,
+   "n": 0,
+   "distinct": 0,
+   "top_share": null,
+   "on_topic": 0,
+   "answers": [],
+   "median_ms": null,
+   "errors": []
+  },
+  {
+   "model": "gemini-2.5-flash-lite",
+   "kind": "title",
+   "temperature": 2.0,
+   "n": 0,
+   "distinct": 0,
+   "top_share": null,
+   "on_topic": 0,
+   "answers": [],
+   "median_ms": null,
+   "errors": []
+  },
+  {
+   "model": "gemini-2.5-flash-lite",
+   "kind": "record",
+   "temperature": 0.0,
+   "n": 0,
+   "distinct": 0,
+   "top_share": null,
+   "on_topic": null,
+   "answers": [],
+   "median_ms": null,
+   "errors": []
+  },
+  {
+   "model": "gemini-2.5-flash-lite",
+   "kind": "record",
+   "temperature": 1.0,
+   "n": 0,
+   "distinct": 0,
+   "top_share": null,
+   "on_topic": null,
+   "answers": [],
+   "median_ms": null,
+   "errors": []
+  },
+  {
+   "model": "gemini-2.5-flash-lite",
+   "kind": "record",
+   "temperature": 2.0,
+   "n": 0,
+   "distinct": 0,
+   "top_share": null,
+   "on_topic": null,
+   "answers": [],
+   "median_ms": null,
+   "errors": []
+  }
+ ]
+}
