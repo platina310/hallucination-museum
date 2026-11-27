@@ -1,0 +1,248 @@
+{
+ "label": "probe-1127",
+ "measured_at": "2026-11-27T13:37:49Z",
+ "rounds": [
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 1,
+   "wall_ms": 8906,
+   "each_ms": [
+    8905
+   ],
+   "ok": 1,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 1,
+   "wall_ms": 4774,
+   "each_ms": [
+    4773
+   ],
+   "ok": 0,
+   "errors": [
+    "InternalServerError: Error code: 503"
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 1,
+   "wall_ms": 8234,
+   "each_ms": [
+    8233
+   ],
+   "ok": 1,
+   "errors": []
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 3,
+   "wall_ms": 20053,
+   "each_ms": [
+    456,
+    20051,
+    19709
+   ],
+   "ok": 2,
+   "errors": [
+    "APITimeoutError: Request timed out."
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 3,
+   "wall_ms": 20036,
+   "each_ms": [
+    20035,
+    583,
+    636
+   ],
+   "ok": 2,
+   "errors": [
+    "APITimeoutError: Request timed out."
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 3,
+   "wall_ms": 487,
+   "each_ms": [
+    487,
+    445,
+    442
+   ],
+   "ok": 2,
+   "errors": [
+    "InternalServerError: Error code: 503"
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 4,
+   "wall_ms": 2728,
+   "each_ms": [
+    2133,
+    530,
+    2726,
+    677
+   ],
+   "ok": 2,
+   "errors": [
+    "InternalServerError: Error code: 503",
+    "InternalServerError: Error code: 503"
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 4,
+   "wall_ms": 2433,
+   "each_ms": [
+    581,
+    503,
+    578,
+    2429
+   ],
+   "ok": 3,
+   "errors": [
+    "InternalServerError: Error code: 503"
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "together": 4,
+   "wall_ms": 921,
+   "each_ms": [
+    920,
+    579,
+    725,
+    524
+   ],
+   "ok": 2,
+   "errors": [
+    "InternalServerError: Error code: 503",
+    "InternalServerError: Error code: 503"
+   ]
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 1,
+   "wall_ms": 765,
+   "each_ms": [
+    765
+   ],
+   "ok": 1,
+   "errors": []
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 1,
+   "wall_ms": 669,
+   "each_ms": [
+    669
+   ],
+   "ok": 1,
+   "errors": []
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 1,
+   "wall_ms": 769,
+   "each_ms": [
+    768
+   ],
+   "ok": 1,
+   "errors": []
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 3,
+   "wall_ms": 799,
+   "each_ms": [
+    743,
+    741,
+    796
+   ],
+   "ok": 3,
+   "errors": []
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 3,
+   "wall_ms": 692,
+   "each_ms": [
+    67,
+    690,
+    79
+   ],
+   "ok": 1,
+   "errors": [
+    "RateLimitError: Error code: 429",
+    "RateLimitError: Error code: 429"
+   ]
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 3,
+   "wall_ms": 86,
+   "each_ms": [
+    72,
+    70,
+    83
+   ],
+   "ok": 0,
+   "errors": [
+    "RateLimitError: Error code: 429",
+    "RateLimitError: Error code: 429",
+    "RateLimitError: Error code: 429"
+   ]
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 4,
+   "wall_ms": 106,
+   "each_ms": [
+    80,
+    74,
+    68,
+    102
+   ],
+   "ok": 0,
+   "errors": [
+    "RateLimitError: Error code: 429",
+    "RateLimitError: Error code: 429",
+    "RateLimitError: Error code: 429",
+    "RateLimitError: Error code: 429"
+   ]
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 4,
+   "wall_ms": 845,
+   "each_ms": [
+    739,
+    793,
+    842,
+    840
+   ],
+   "ok": 4,
+   "errors": []
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "together": 4,
+   "wall_ms": 717,
+   "each_ms": [
+    85,
+    108,
+    714,
+    83
+   ],
+   "ok": 1,
+   "errors": [
+    "RateLimitError: Error code: 429",
+    "RateLimitError: Error code: 429",
+    "RateLimitError: Error code: 429"
+   ]
+  }
+ ]
+}
