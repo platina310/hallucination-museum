@@ -30,9 +30,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           PYTHONUNBUFFERED: "1"
         run: |
-          # 첫 줄(주석이 아닌 줄)의 이름표로 한 번 실행한다. 허용한 글자만 통과시킨다
-          label=$(grep -v '^#' experiments/trigger/temperature.txt | grep -E '^[-A-Za-z0-9._]+$' | head -1)
-          python experiments/temperature_sweep.py "${label:-sweep}"
+          # 주석이 아닌 첫 줄로 한 번 실행한다. 줄은 "이름표 [모델,모델] [온도,온도] [횟수] [질문,질문]". 허용한 글자만 통과시킨다
+          line=$(grep -v '^#' experiments/trigger/temperature.txt | grep -E '^[-A-Za-z0-9._, ]+$' | head -1)
+          python experiments/temperature_sweep.py ${line:-sweep}
       - name: 결과를 저장소에 기록
         if: always()
         run: |

@@ -1,3 +1,3 @@
-# 이 파일을 고쳐 올리면 temperature_sweep.py를 한 번 실행한다. 주석이 아닌 첫 줄이 결과 파일의 이름표
-# 2026-11-27 밤: 온도의 방을 실제 모델로 돌렸더니 다이얼이 답을 바꾸지 않아, 모델별로 확인
-models-1127
+# 이 파일을 고쳐 올리면 temperature_sweep.py를 한 번 실행한다. 주석이 아닌 첫 줄: "이름표 [모델,모델] [온도,온도] [횟수] [질문,질문]"
+# 2026-11-27 밤: 3.1 Flash-Lite는 temperature를 받지만 느려서(세 번 묻는 데 9초 안팎), 더 빠른 모델이 있는지 확인
+candidates-1127 gemini-3.5-flash,gemini-3-flash-preview,gemini-3.1-flash-lite 0,1 4 title

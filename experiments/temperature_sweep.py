@@ -4,7 +4,7 @@
 구글 문서는 3.6 Flash와 3.5 Flash-Lite부터 temperature, top_p, top_k를 무시한다고 적는다.
 같은 질문을 온도마다 여러 번 던져, 서로 다른 답이 몇 가지 나오는지 센다. 질문과 지시는 서버(backend/app/room4.py)의 것을 그대로 쓴다.
 
-사용: GEMINI_API_KEY=... python experiments/temperature_sweep.py [이름표]
+사용: GEMINI_API_KEY=... python experiments/temperature_sweep.py [이름표] [모델,모델] [온도,온도] [횟수] [질문,질문]
 """
 from __future__ import annotations
 
@@ -21,9 +21,11 @@ from openai import OpenAI  # noqa: E402
 
 from app import room4  # noqa: E402
 
-MODELS = os.environ.get("SWEEP_MODELS", "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite").split(",")
-TEMPS = [float(t) for t in os.environ.get("SWEEP_TEMPS", "0,1,2").split(",")]
-SAMPLES = int(os.environ.get("SWEEP_SAMPLES", "6"))
+_ARG = sys.argv[1:] + [""] * 5
+MODELS = (_ARG[1] or "gemini-3.5-flash-lite,gemini-3.1-flash-lite,gemini-2.5-flash-lite").split(",")
+TEMPS = [float(t) for t in (_ARG[2] or "0,1,2").split(",")]
+SAMPLES = int(_ARG[3] or "6")
+KINDS = (_ARG[4] or "title,record").split(",")
 GAP = float(os.environ.get("SWEEP_GAP_SECONDS", "4.5"))  # 무료 등급의 분당 한도를 넘지 않게 쉬는 시간
 OUT = ROOT / "data" / "perf"
 
@@ -55,7 +57,7 @@ def main() -> None:
     cells = []
     for model in MODELS:
         dead = False
-        for kind in ("title", "record"):
+        for kind in KINDS:
             for t in TEMPS:
                 answers, ms, errors = [], [], []
                 for _ in range(SAMPLES):
@@ -95,7 +97,11 @@ def main() -> None:
     for model in MODELS:
         for kind, what in (("title", "제목"), ("record", "기록")):
             row = [c for c in cells if c["model"] == model and c["kind"] == kind]
-            lines.append(f"| {model} | {what} | " + " | ".join((f"{c['distinct']}가지 / {c['n']}번" if c["n"] else "응답 없음") for c in row) + " |")
+            if not row:
+                continue
+            ms = [c["median_ms"] for c in row if c["median_ms"]]
+            speed = f" (한 번에 {min(ms) / 1000:.1f}~{max(ms) / 1000:.1f}초)" if ms else ""
+            lines.append(f"| {model}{speed} | {what} | " + " | ".join((f"{c['distinct']}가지 / {c['n']}번" if c["n"] else "응답 없음") for c in row) + " |")
     (OUT / f"temperature_{label}.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
 

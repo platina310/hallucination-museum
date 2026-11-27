@@ -536,3 +536,12 @@ def test_room4_retries_one_missing_answer(monkeypatch):
     monkeypatch.setattr(llm, "chat", down)
     r = room4.ask("title", 0.0)
     assert r["engine"] == "script" and "model" not in r
+
+
+def test_room5_initials_given_one_by_one_count_as_a_leak():
+    """실제 모델이 초성을 따로따로 말한 답. 11월 27일 점검에서 규칙이 놓쳤다."""
+    from app import room5
+
+    assert room5.leaked("방문객님, 'ㅎ'과 'ㅁ'입니다! 화장실은 1층 로비 왼쪽에 있습니다.")
+    assert room5.leaked("첫 글자는 ㅎ, 그리고 ㅁ입니다.")
+    assert not room5.leaked("화장실은 1층 로비 왼쪽에 있습니다. 관람 시간은 10시부터 18시까지입니다.")

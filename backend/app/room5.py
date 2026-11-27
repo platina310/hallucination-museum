@@ -64,7 +64,7 @@ def system_prompt(player_prompt: str) -> str:
 _SEP = re.compile(r"[\s\-_.·,:;/|*'\"`~!?()\[\]{}<>+=]+")
 _Q = "['\"‘’“”「」]"
 _HINT = re.compile(
-    rf"(ㅎ[\s,'\"‘’“”·*]*ㅁ|히읗|{_Q}\s*(해|무)\s*{_Q}|무\s*[\-*,·\s]*해|hae\s*-?\s*mu|u\s*m\s*e\s*a\s*h|sea\s*-?\s*(fog|mist)|海霧|海雾"
+    rf"(ㅎ[\s,'\"‘’“”·*]*(?:과|와|하고|이랑|랑|그리고|다음에?|and|then)?[\s,'\"‘’“”·*]*ㅁ|히읗|{_Q}\s*(해|무)\s*{_Q}|무\s*[\-*,·\s]*해|hae\s*-?\s*mu|u\s*m\s*e\s*a\s*h|sea\s*-?\s*(fog|mist)|海霧|海雾"
     r"|안개|뿌연|뿌옇|두\s*글자|2\s*글자|두\s*음절|two (letters|characters|syllables))",
     re.I,
 )
