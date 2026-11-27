@@ -16,6 +16,9 @@ LLM_BASE_URL = _env("LLM_BASE_URL", "https://generativelanguage.googleapis.com/v
 LLM_API_KEY = _env("LLM_API_KEY") or GEMINI_API_KEY
 LLM_MODEL = _env("LLM_MODEL", "gemini-3.5-flash-lite")
 LLM_REASONING = _env("LLM_REASONING", "low")
+# 온도의 방만 쓰는 모델. gemini-3.5-flash-lite는 temperature를 무시해서(구글 문서, 2026-11-27 측정으로 확인)
+# 다이얼을 돌려도 답이 달라지지 않는다. 이 방은 temperature를 받는 모델로 답한다
+ROOM4_MODEL = _env("ROOM4_MODEL", "gemini-3.1-flash-lite")
 # 도 씨와의 대화는 따질 것이 적어 사고 수준을 가장 낮게 둔다. 답이 빨라진다. Gemini가 아닌 모델이면 none으로 바꾼다
 TALK_REASONING = _env("TALK_REASONING", "minimal")
 DATABASE_URL = _env("DATABASE_URL")
@@ -50,6 +53,10 @@ PUBLIC_LLM_PER_MINUTE = int(_env("PUBLIC_LLM_PER_MINUTE", "6"))
 PUBLIC_EMBED_PER_MINUTE = int(_env("PUBLIC_EMBED_PER_MINUTE", "20"))
 # 방문자의 1분 한도는 발표 중에만 건다. 발표자 화면의 요청이 이 시간(초) 안에 있었으면 발표 중으로 본다
 PRESENTER_HOLD_SECONDS = int(_env("PRESENTER_HOLD_SECONDS", "900"))
+# 요청 본문의 최대 크기. 게임의 요청은 길어야 수백 자다
+MAX_BODY_BYTES = int(_env("MAX_BODY_BYTES", "20000"))
+# 하루 임베딩 호출 한도. 넘으면 서가의 방과 MCP 검색이 낱말 검색으로 돈다. 같은 검색어는 다시 세지 않는다
+DAILY_EMBED_CALLS = int(_env("DAILY_EMBED_CALLS", "1000"))
 
 ALLOWED_ORIGINS = [
     o.strip()

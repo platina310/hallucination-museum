@@ -11,7 +11,7 @@ import { Coach, Mission } from './Guide'
 const HINTS = [
   '온도를 0에 두고 보존 온도를 물어보세요. 세 번 다 같은 답이 나옵니다. 그 답을 기록 자물쇠에 넣어 보세요.',
   '같은 답이 반복된다고 맞는 답은 아닙니다. 조절기는 점검표를 받은 적이 없습니다. 보존실 서랍을 열어 보세요.',
-  '창작 자물쇠는 서로 다른 제목 세 개를 원합니다. 온도 0에서는 같은 제목만 나옵니다. 1 안팎으로 올려 보세요. 너무 올리면 낱말 "빛"이 빠집니다.',
+  '창작 자물쇠는 서로 다른 제목 세 개를 원합니다. 온도 0에서는 같은 제목만 나옵니다. 1 안팎으로 올려 보세요. 한 번에 안 되면 다시 묻거나 조금 더 올리세요.',
 ]
 
 const SPOTS = [
@@ -37,6 +37,10 @@ const SPOTS = [
     icon: 'M11 18h18v16H11zM15 18v-5a5 5 0 0 1 10 0v5M20 24v5',
   },
 ]
+
+// 모델 이름을 화면에 적을 말로 바꾼다 (gemini-3.1-flash-lite → Gemini 3.1 Flash-Lite)
+const modelName = (id?: string) =>
+  id ? id.replace(/^gemini-/, 'Gemini ').replace(/-(\w)/g, (_, c: string) => ` ${c.toUpperCase()}`).replace('Flash Lite', 'Flash-Lite') : 'Gemini'
 
 type Mood = 'stiff' | 'easy' | 'dizzy'
 const moodOf = (t: number): Mood => (t <= 0.3 ? 'stiff' : t < 1.5 ? 'easy' : 'dizzy')
@@ -334,8 +338,13 @@ export default function Room4Temperature({ onSolved }: { onSolved: (s: RoomStats
                       {result.distinct === 1 ? '세 답이 모두 같음' : `서로 다른 답 ${result.distinct}개`}
                     </span>
                     <span className="chip">다이얼 {result.temperature.toFixed(1)}</span>
-                    <span className="chip">{result.engine === 'gemini' ? 'Gemini가 세 번 답함 · 같은지는 코드가 비교' : '대본으로 답함'}</span>
+                    <span className="chip">{result.engine === 'gemini' ? `${modelName(result.model)}가 세 번 답함 · 같은지는 코드가 비교` : '대본으로 답함'}</span>
                   </p>
+                  {result.engine === 'gemini' && (
+                    <p className="model-note muted">
+                      이 방만 다이얼(temperature)을 받는 모델이 답해요. 다른 방의 Gemini 3.5 Flash-Lite는 다이얼 값을 무시하거든요.
+                    </p>
+                  )}
                 </>
               ) : (
                 <p className="muted">아직 묻지 않았어요. 다이얼을 정하고 아래 단추를 누르세요.</p>

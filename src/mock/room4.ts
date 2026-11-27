@@ -7,6 +7,7 @@ export interface TempResult {
   temperature: number
   answers: string[]
   engine: 'gemini' | 'script'
+  model?: string // 답한 모델. 이 방은 temperature를 받는 모델을 따로 쓴다
   same: number // 가장 많이 겹친 답의 수
   distinct: number // 서로 다른 답의 수
   on_topic?: boolean // 제목 세 개가 모두 조건(낱말 '빛')을 지켰는지

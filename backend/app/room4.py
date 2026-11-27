@@ -8,10 +8,10 @@ from __future__ import annotations
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from . import guard, llm, perf
+from . import config, guard, llm, perf
 
 # 보존실 점검표에 적힌 값. 조절기는 점검표를 받지 못했다.
-# 실제 Gemini는 온도 0에서 18도를 되풀이했다 (2026-11-26). 우연히 맞히지 않도록 흔한 값에서 먼 저온 보존 값으로 둔다
+# 실제 Gemini는 온도와 상관없이 18도를 되풀이했다 (2026-11-27, 3.1 Flash-Lite 17번 모두). 우연히 맞히지 않도록 흔한 값에서 먼 저온 보존 값으로 둔다
 TRUE_TEMP = 13
 SAMPLES = 3
 THEME = "빛"
@@ -81,23 +81,32 @@ def ask(kind: str, temperature: float, turn: int = 0) -> dict:
     temperature = max(0.0, min(2.0, round(temperature, 1)))
     answers: list[str] | None = None
     if llm.available() and guard.take_llm_calls(SAMPLES):
-        def one(_: int) -> str:
-            return _clean(llm.chat(SYSTEMS[kind], QUESTIONS[kind], max_tokens=200, temperature=temperature, reasoning="minimal"))
+        def one(wait: float) -> tuple[str, str]:
+            """답과, 답하지 못했으면 그 까닭."""
+            try:
+                text = _clean(llm.chat(SYSTEMS[kind], QUESTIONS[kind], max_tokens=200, temperature=temperature, reasoning="minimal", model=config.ROOM4_MODEL, timeout=wait))
+                return text, "" if text else "empty"
+            except llm.LLMUnavailable as e:
+                return "", e.kind
 
-        try:
-            # 세 번을 한꺼번에 묻는다. 걸린 시간은 가장 느린 한 건만큼이다
-            with perf.span("llm"), ThreadPoolExecutor(max_workers=SAMPLES) as pool:
-                answers = list(pool.map(one, range(SAMPLES)))
-        except llm.LLMUnavailable as e:
-            perf.why(e.kind)
-            answers = None
-        if answers and any(a == "" for a in answers):
-            perf.why("empty")
-            answers = None
+        # 세 번을 한꺼번에 묻는다. 걸린 시간은 가장 느린 한 건만큼이다
+        with perf.span("llm"), ThreadPoolExecutor(max_workers=SAMPLES) as pool:
+            got = list(pool.map(one, [9.0] * SAMPLES))
+            missing = [i for i, (text, _) in enumerate(got) if text == ""]
+            # 한 건만 답이 없으면 그 한 건을 다시 묻는다. 두 건 넘게 비면 모델이 바쁜 것이므로 대본으로 넘긴다
+            if len(missing) == 1 and guard.take_llm_calls(1):
+                got[missing[0]] = pool.submit(one, 7.0).result()
+        if all(text for text, _ in got):
+            answers = [text for text, _ in got]
+        else:
+            perf.why(next(kind_ for text, kind_ in got if text == ""))
     engine = "gemini" if answers else "script"
     if answers is None:
         answers = scripted(kind, temperature, turn)
-    return {"kind": kind, "question": QUESTIONS[kind], "temperature": temperature, "answers": answers, "engine": engine, **judge(kind, answers)}
+    out = {"kind": kind, "question": QUESTIONS[kind], "temperature": temperature, "answers": answers, "engine": engine, **judge(kind, answers)}
+    if engine == "gemini":
+        out["model"] = config.ROOM4_MODEL
+    return out
 
 
 def check_record(value: str) -> dict:

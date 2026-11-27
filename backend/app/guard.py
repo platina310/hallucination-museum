@@ -18,6 +18,7 @@ presenter: ContextVar[bool] = ContextVar("presenter", default=False)
 _hits: dict[str, deque[float]] = defaultdict(deque)
 _day = ""
 _calls = 0  # 오늘 쓴 생성 호출 (전체)
+_embeds = 0  # 오늘 쓴 임베딩 호출
 _public_calls = 0  # 그 가운데 발표자가 아닌 방문자가 쓴 것
 _public_chat: deque[float] = deque()
 _public_embed: deque[float] = deque()
@@ -68,10 +69,10 @@ def is_presenter(key: str) -> bool:
 
 
 def _today() -> None:
-    global _day, _calls, _public_calls
+    global _day, _calls, _public_calls, _embeds
     today = time.strftime("%Y-%m-%d", time.gmtime())
     if today != _day:
-        _day, _calls, _public_calls = today, 0, 0
+        _day, _calls, _public_calls, _embeds = today, 0, 0, 0
 
 
 def take_llm_call() -> bool:
@@ -105,6 +106,11 @@ def take_llm_calls(n: int) -> bool:
 
 def take_embed_call() -> bool:
     """임베딩 호출을 해도 되는지. 발표자 우선 모드에서 방문자의 검색이 몰리면 낱말 검색으로 돌린다."""
+    global _embeds
+    _today()
+    if _embeds >= config.DAILY_EMBED_CALLS:
+        perf.why("daily_cap")
+        return False
     if presenting() and not presenter.get():
         now = time.time()
         _prune(_public_embed, now)
@@ -112,6 +118,7 @@ def take_embed_call() -> bool:
             perf.why("presenter_reserve")
             return False
         _public_embed.append(now)
+    _embeds += 1
     return True
 
 
@@ -125,8 +132,8 @@ def calls_left() -> int:
 
 
 def reset_for_tests() -> None:
-    global _day, _calls, _public_calls, _presenter_seen
-    _day, _calls, _public_calls, _presenter_seen = "", 0, 0, 0.0
+    global _day, _calls, _public_calls, _presenter_seen, _embeds
+    _day, _calls, _public_calls, _presenter_seen, _embeds = "", 0, 0, 0.0, 0
     _public_chat.clear()
     _public_embed.clear()
     _hits.clear()

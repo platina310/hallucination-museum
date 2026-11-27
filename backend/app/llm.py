@@ -84,6 +84,8 @@ def chat(
     max_tokens: int = 400,
     temperature: float = 0.7,
     reasoning: str | None = None,
+    model: str | None = None,
+    timeout: float | None = None,
 ) -> str:
     """시스템 지시와 사용자 말을 보내고 답 글자를 돌려준다. history는 앞서 오간 (물음, 답) 목록이다."""
     if config.FAKE_LLM:
@@ -98,9 +100,11 @@ def chat(
             extra["reasoning_effort"] = effort
         if json_mode:
             extra["response_format"] = {"type": "json_object"}
+        if timeout:
+            extra["timeout"] = timeout
         with perf.span("llm"):
             resp = client.chat.completions.create(
-                model=config.LLM_MODEL,
+                model=model or config.LLM_MODEL,
                 messages=[
                     {"role": "system", "content": system},
                     *[m for q, a in (history or []) for m in ({"role": "user", "content": q}, {"role": "assistant", "content": a})],

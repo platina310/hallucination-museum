@@ -37,7 +37,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="환각 미술관 API",
-    version="0.7.2",
+    version="0.7.3",
     description="AI 방탈출 '환각 미술관'의 방 규칙, 검색, 모델 호출, 판정",
     lifespan=lifespan,
 )
@@ -53,9 +53,16 @@ app.add_middleware(
 
 @app.middleware("http")
 async def limit(request: Request, call_next):
-    ip = (request.headers.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
-    if request.method == "POST" and not guard.allow_request(ip):
-        return JSONResponse({"detail": "요청이 몰렸습니다. 잠시 뒤 다시 시도해 주세요."}, status_code=429)
+    # 방문자 주소. 앞단(Cloudflare)이 직접 적어 주는 값을 먼저 믿는다. X-Forwarded-For의 첫 값은 보내는 쪽이 꾸밀 수 있다
+    h = request.headers
+    ip = (h.get("cf-connecting-ip") or h.get("true-client-ip") or h.get("x-forwarded-for") or (request.client.host if request.client else "")).split(",")[0].strip()
+    if request.method == "POST":
+        if not guard.allow_request(ip):
+            return JSONResponse({"detail": "요청이 몰렸습니다. 잠시 뒤 다시 시도해 주세요."}, status_code=429)
+        # 게임의 요청은 길어야 수백 자다. 큰 본문은 읽기 전에 돌려보낸다 (MCP 주소는 제외)
+        size = h.get("content-length", "")
+        if not request.url.path.startswith("/mcp") and size.isdigit() and int(size) > config.MAX_BODY_BYTES:
+            return JSONResponse({"detail": "요청이 너무 큽니다."}, status_code=413)
     # 발표자 암호를 보낸 요청인지 표시해 둔다. 모델 호출 한도를 정할 때 쓴다
     is_presenter = guard.is_presenter(request.headers.get("x-presenter-key", ""))
     guard.presenter.set(is_presenter)
@@ -66,6 +73,7 @@ async def limit(request: Request, call_next):
     response = await call_next(request)
     if request.method == "POST":
         response.headers["Server-Timing"] = perf.header(rec)
+    response.headers["X-Content-Type-Options"] = "nosniff"
     return response
 
 

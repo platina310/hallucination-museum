@@ -493,3 +493,46 @@ def test_drawer_code_is_checked_on_the_server():
     assert client.post("/rooms/1/drawer", json={"code": "0110"}).json() == {"correct": True}
     assert client.post("/rooms/1/drawer", json={"code": "01:10"}).json() == {"correct": True}
     assert client.post("/rooms/1/drawer", json={"code": "0125"}).json() == {"correct": False}
+
+
+def test_big_body_is_refused_before_parsing():
+    r = client.post("/interrogate", content=b"x" * 30000, headers={"Content-Type": "application/json"})
+    assert r.status_code == 413
+
+
+def test_daily_embed_cap_falls_back_to_keyword_search(monkeypatch):
+    """하루 임베딩 한도를 넘으면 낱말 검색으로 돈다."""
+    monkeypatch.setattr("app.config.DAILY_EMBED_CALLS", 1)
+    first = post("/rooms/3/ask", {"query": "한도 시험 하나"})
+    second = post("/rooms/3/ask", {"query": "한도 시험 둘"})
+    assert first["search"] != "keyword"
+    assert second["search"] == "keyword"
+
+
+def test_responses_carry_nosniff():
+    assert client.get("/health").headers["x-content-type-options"] == "nosniff"
+
+
+def test_room4_retries_one_missing_answer(monkeypatch):
+    """온도의 방: 세 번 가운데 한 번만 답이 없으면 그 한 번을 다시 묻고, 두 번 넘게 없으면 대본으로 답한다."""
+    from app import llm, room4
+
+    calls = {"n": 0}
+
+    def flaky(system, user, **kw):
+        calls["n"] += 1
+        assert kw["model"] == "gemini-3.1-flash-lite"
+        if calls["n"] == 2:
+            raise llm.LLMUnavailable("느림", "timeout")
+        return "빛의 정원"
+
+    monkeypatch.setattr(llm, "chat", flaky)
+    r = room4.ask("title", 0.0)
+    assert (r["engine"], r["model"], calls["n"]) == ("gemini", "gemini-3.1-flash-lite", 4)
+
+    def down(system, user, **kw):
+        raise llm.LLMUnavailable("한도", "rate_limit")
+
+    monkeypatch.setattr(llm, "chat", down)
+    r = room4.ask("title", 0.0)
+    assert r["engine"] == "script" and "model" not in r

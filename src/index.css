@@ -881,3 +881,10 @@ body{word-break:keep-all;overflow-wrap:anywhere}
 /* 소제목 아래의 한 줄 설명 */
 .sub-note{font-size:.92rem;color:var(--ink-soft);margin:-4px 0 10px;max-width:70ch}
 @media (min-width:641px){.fixes td:first-child{white-space:nowrap;font-weight:600}}
+
+/* 온도의 방: 이 방만 다른 모델이 답한다는 안내 */
+.model-note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
