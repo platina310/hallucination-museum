@@ -1,12 +1,12 @@
 // 방탈출 전체 흐름: 수장고 지도 → 입장 전 퀴즈 → 방 → 탈출 후 퀴즈 → 지도 → 정문 자물쇠
 import { useEffect, useRef, useState } from 'react'
-import { track, usingMock } from '../api'
+import { ensureClues, track, usingMock } from '../api'
 import { PROTOTYPE_URL } from '../content/shared'
 import { ANNEX_IDS, GATE_IDS, PLAYABLE_IDS, ROOMS } from '../game/rooms'
 import type { RoomInfo } from '../game/rooms'
 import { starsOf, starText, useProgress } from '../game/progress'
 import type { Progress, RoomStats } from '../game/progress'
-import { CLUES } from '../mock/final'
+import { useClues } from '../game/clues'
 import { Quiz } from './Guide'
 import FinalGate from './FinalGate'
 import Room1CrossExam from './Room1CrossExam'
@@ -225,6 +225,11 @@ function Lobby({
 
 export default function EscapeGame({ demoControls = false }: { demoControls?: boolean }) {
   const { progress, answerPre, answerPost, clearRoom, tryFinal, resetAll } = useProgress()
+  const clues = useClues()
+  // 예전에 통과해 수첩에 단서가 없는 방은 대본에서 채운다
+  useEffect(() => {
+    void ensureClues(progress.cleared)
+  }, [progress.cleared])
   const [roomId, setRoomId] = useState<number | null>(null)
   // 처음 온 사람에게만 인트로를 먼저 보여 준다. 수장고 지도에서 다시 볼 수 있다.
   const [showIntro, setShowIntro] = useState(() => {
@@ -358,7 +363,7 @@ export default function EscapeGame({ demoControls = false }: { demoControls?: bo
             <b>이 방에서 배운 것</b> {room.lesson}
           </p>
           <p className="cleared-clue">
-            <b>단서 수첩에 적음</b> {CLUES[room.id]} <span className="muted">정문 암호에 쓰입니다.</span>
+            <b>단서 수첩에 적음</b> {clues[room.id] ?? '…'} <span className="muted">정문 암호에 쓰입니다.</span>
           </p>
           {quiz && !postAnswered && <Quiz quiz={quiz} mode="post" onAnswer={(c) => {
                 answerPost(room.id, c)

@@ -40,6 +40,7 @@ export interface TalkContext {
 /** POST /evidence 응답 */
 export interface EvidenceResult {
   correct: boolean
+  clue?: string // 맞혔을 때만 오는, 단서 수첩에 적을 말
 }
 
 /** 지시의 방: 진술에 사건 파일을 들이밀었을 때의 응답 */

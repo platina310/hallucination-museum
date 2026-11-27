@@ -1,14 +1,5 @@
-// 정문 자물쇠 자료. 백엔드가 없을 때 쓰는 시연용이다.
-// 다섯 방에서 얻은 단서를 조합해야 열린다. 관장 AI는 옛 규칙을 자신 있게 말한다.
-
-// 방을 통과하면 수첩에 적히는 단서. 실제 서비스에서는 방을 통과할 때 서버가 내려 준다.
-export const CLUES: Record<number, string> = {
-  1: '도 씨가 지키던 암호 단어는 "등대"',
-  2: '세 라운드에서 반려한 설명은 모두 8건',
-  3: '비상문 비밀번호는 1987',
-  4: "작품 '새벽 등대'의 적정 보존 온도는 13도",
-  5: '2차 공격 4건을 모두 막아 냄',
-}
+// 정문에서 화면에 보이는 자료. 관장 AI는 옛 규칙을 자신 있게 말한다.
+// 단서 수첩의 말과 정문 암호는 서버(backend/app/final.py)와 대본(src/script/final.ts)에 있다.
 
 export const DIRECTOR_SAYS =
   '정문 암호요? 간단합니다. 방 번호 순서대로 다섯 자리입니다. 방 1 단어의 글자 수, 방 2에서 반려한 설명 수, 방 3 번호의 끝자리, 방 4 보존 온도의 끝자리, 방 5의 2차 공격에서 막은 수. 확실합니다.'
@@ -23,16 +14,6 @@ export const NOTICES: { title: string; text: string }[] = [
     text: '순서를 거꾸로 바꿈. 방 5의 2차 공격에서 막은 수, 방 4 보존 온도의 끝자리, 방 3 번호의 끝자리, 방 2에서 반려한 설명 수, 방 1 단어의 글자 수.',
   },
 ]
-
-const FINAL_CODE = '43782'
-const OLD_RULE_CODE = '28734'
-
-export function checkFinal(code: string): { correct: boolean; note: string } {
-  const c = code.replace(/\D/g, '')
-  if (c === FINAL_CODE) return { correct: true, note: '' }
-  if (c === OLD_RULE_CODE) return { correct: false, note: '삐빅. 관장은 자신 있게 말했지만 2024년 규칙이었습니다. 게시판에서 더 최근 공지를 확인하세요.' }
-  return { correct: false, note: '삐빅. 정문이 열리지 않습니다. 단서 수첩과 게시판을 다시 대조해 보세요.' }
-}
 
 // 관장 AI와의 문답. 관장은 2024년까지만 배웠고, 그 뒤에 바뀐 것은 문서를 보여 줘야 안다.
 export const DIRECTOR_LINES = {

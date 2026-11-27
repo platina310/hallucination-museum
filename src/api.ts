@@ -1,13 +1,8 @@
 // 화면과 서버 사이의 유일한 연결 지점.
-// VITE_API_URL이 비어 있으면 시연용 대본(src/mock)으로 답하고,
+// VITE_API_URL이 비어 있으면 시연용 대본(src/script)으로 답하고,
 // 값이 있으면 FastAPI 서버를 호출한다. 서버가 자고 있거나 응답하지 않으면 그 요청만 대본으로 답한다.
-import { checkFinal } from './mock/final'
-import { checkEvidence, presentReply, pressReply, scriptedReply } from './mock/level1'
-import { judgeRound } from './mock/room2'
-import { checkDoor, searchAndAnswer } from './mock/room3'
-import { askScripted, checkRecordScripted } from './mock/room4'
+import { getClues, rememberClue } from './game/clues'
 import type { TempKind, TempResult } from './mock/room4'
-import { runScripted } from './mock/room5'
 import type { DefenseResult, InputCheck } from './mock/room5'
 import type { EvidenceResult, InterrogateResult, PresentResult, SearchResult, TalkContext } from './types'
 
@@ -19,6 +14,35 @@ export const usingMock = API_URL === ''
 export type MockNet = 'ok' | 'slow' | 'error'
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+
+// 대본에는 정답과 판정 규칙이 들어 있다. 화면 코드와 다른 묶음으로 나눠 두고, 서버가 답하지 못할 때만 내려받는다.
+type Scripts = typeof import('./script')
+let scriptsLoading: Promise<Scripts> | null = null
+function scripts(): Promise<Scripts> {
+  scriptsLoading ??= import('./script').catch((e: unknown) => {
+    scriptsLoading = null
+    throw e instanceof Error ? e : new Error('대본을 불러오지 못했습니다.')
+  })
+  return scriptsLoading
+}
+
+/** 응답에 단서가 실려 왔으면 수첩에 적는다. */
+function keep<T extends { clue?: string }>(room: number, result: T): T {
+  rememberClue(room, result.clue)
+  return result
+}
+
+/** 통과한 방인데 수첩에 단서가 없으면(예전에 통과한 기록) 대본에서 채운다. */
+export async function ensureClues(rooms: number[]): Promise<void> {
+  const missing = rooms.filter((id) => !getClues()[id])
+  if (missing.length === 0) return
+  try {
+    const s = await scripts()
+    missing.forEach((id) => rememberClue(id, s.CLUES[id]))
+  } catch {
+    // 불러오지 못하면 수첩의 그 줄만 비어 보인다
+  }
+}
 
 // ── 서버 상태 ────────────────────────────────────────────
 // none: 서버 주소가 없다(대본만 쓴다). waking: 깨우는 중. on: 연결됨. off: 깨우지 못했다.
@@ -268,7 +292,7 @@ export async function interrogate(
       mockNet,
       "서버가 응답하지 않았습니다 (503). 도 씨가 묵비권을 너무 열심히 행사한 모양입니다. 질문은 위에 남아 있으니 '다시 보내기'를 눌러 주세요.",
     )
-    const r = scriptedReply(question, admitted)
+    const r = (await scripts()).scriptedReply(question, admitted)
     return { ...r, engine: 'script', denied: !admitted && r.reply.includes('모른다니까요') }
   }
   if (usingMock) return script()
@@ -283,8 +307,8 @@ export async function pressStatement(
   ctx: TalkContext = NO_CONTEXT,
 ): Promise<{ reply: string; engine?: 'gemini' | 'script' }> {
   const script = async () => {
-    await wait(600)
-    return { reply: pressReply(statementId, exposed, times), engine: 'script' as const }
+    const [s] = await Promise.all([scripts(), wait(600)])
+    return { reply: s.pressReply(statementId, exposed, times), engine: 'script' as const }
   }
   if (usingMock) return script()
   return serverFirst('/rooms/1/press', { statement_id: statementId, exposed, times, exposed_ids: ctx.exposed, history: ctx.history }, script)
@@ -292,45 +316,67 @@ export async function pressStatement(
 
 export async function presentEvidence(statementId: number, fileId: string, misses: number, ctx: TalkContext = NO_CONTEXT): Promise<PresentResult> {
   const script = async (): Promise<PresentResult> => {
-    await wait(700)
-    return { ...presentReply(statementId, fileId, misses), engine: 'script' }
+    const [s] = await Promise.all([scripts(), wait(700)])
+    return { ...s.presentReply(statementId, fileId, misses), engine: 'script' }
   }
   if (usingMock) return script()
   return serverFirst<PresentResult>('/rooms/1/present', { statement_id: statementId, file_id: fileId, misses, exposed_ids: ctx.exposed, history: ctx.history }, script)
 }
 
 export async function submitEvidence(level: number, nickname: string, word: string): Promise<EvidenceResult> {
-  const script = () => ({ correct: checkEvidence(word) })
+  const script = async (): Promise<EvidenceResult> => {
+    const s = await scripts()
+    const correct = s.checkEvidence(word)
+    return correct ? { correct, clue: s.CLUES[1] } : { correct }
+  }
+  if (usingMock) return keep(1, await script())
+  return keep(1, await serverFirst<EvidenceResult>('/evidence', { level, nickname, word }, script))
+}
+
+// 경비실의 잠긴 서랍. 비밀번호는 서버가 확인한다.
+export async function checkDrawer(code: string): Promise<{ correct: boolean }> {
+  const script = async () => ({ correct: (await scripts()).checkDrawer(code) })
   if (usingMock) return script()
-  return serverFirst<EvidenceResult>('/evidence', { level, nickname, word }, script)
+  return serverFirst<{ correct: boolean }>('/rooms/1/drawer', { code }, script)
 }
 
 // ── 방 2 환각의 방 ──────────────────────────────────────────
 
 // 반려한 설명 번호를 보내면 맞게 처리한 건수를 돌려준다. 어느 것이 틀렸는지는 알려 주지 않는다.
 export async function judgeInspection(round: number, rejected: number[]): Promise<{ correct: number; total: number }> {
-  const script = () => judgeRound(round, rejected)
-  if (usingMock) return script()
-  return serverFirst<{ correct: number; total: number }>('/rooms/2/check', { round, rejected }, script)
+  type Judged = { correct: number; total: number; clue?: string }
+  const script = async (): Promise<Judged> => {
+    const s = await scripts()
+    const r = s.judgeRound(round, rejected)
+    return round === 2 && r.correct === r.total ? { ...r, clue: s.CLUES[2] } : r
+  }
+  if (usingMock) return keep(2, await script())
+  return keep(2, await serverFirst<Judged>('/rooms/2/check', { round, rejected }, script))
 }
 
 // ── 방 3 서가의 방 ──────────────────────────────────────────
+
+type Checked = { correct: boolean; note: string; clue?: string }
 
 // 검색어로 문서를 찾고, 앞의 3건만 근거로 사서가 답한다.
 // 서버에서는 검색어를 임베딩해 가까운 문서를 찾고 Gemini가 답한다. 대본에서는 낱말이 겹치는 문서를 찾는다.
 export async function searchLibrary(query: string, mockNet: MockNet = 'ok'): Promise<SearchResult> {
   const script = async (): Promise<SearchResult> => {
     await mockDelay(mockNet, '서버가 응답하지 않았습니다 (503). 검색어는 그대로 있으니 다시 검색해 주세요.')
-    return { ...searchAndAnswer(query), engine: 'script', search: 'keyword' }
+    return { ...(await scripts()).searchAndAnswer(query), engine: 'script', search: 'keyword' }
   }
   if (usingMock) return script()
   return serverFirst<SearchResult>('/rooms/3/ask', { query }, script)
 }
 
 export async function checkDoorCode(code: string): Promise<{ correct: boolean; note: string }> {
-  const script = () => checkDoor(code)
-  if (usingMock) return script()
-  return serverFirst<{ correct: boolean; note: string }>('/rooms/3/check', { code }, script)
+  const script = async (): Promise<Checked> => {
+    const s = await scripts()
+    const r = s.checkDoor(code)
+    return r.correct ? { ...r, clue: s.CLUES[3] } : r
+  }
+  if (usingMock) return keep(3, await script())
+  return keep(3, await serverFirst<Checked>('/rooms/3/check', { code }, script))
 }
 
 // ── 방 4 온도의 방 ──────────────────────────────────────────
@@ -338,17 +384,21 @@ export async function checkDoorCode(code: string): Promise<{ correct: boolean; n
 // 같은 질문을 세 번 던진다. 서버에서는 Gemini를 그 temperature로 세 번 부른다.
 export async function askTemperature(kind: TempKind, temperature: number, turn: number): Promise<TempResult> {
   const script = async () => {
-    await wait(700)
-    return askScripted(kind, temperature, turn)
+    const [s] = await Promise.all([scripts(), wait(700)])
+    return s.askScripted(kind, temperature, turn)
   }
   if (usingMock) return script()
   return serverFirst<TempResult>('/rooms/4/ask', { kind, temperature, turn }, script)
 }
 
 export async function checkRecord(value: string): Promise<{ correct: boolean; note: string }> {
-  const script = () => checkRecordScripted(value)
-  if (usingMock) return script()
-  return serverFirst<{ correct: boolean; note: string }>('/rooms/4/check', { value }, script)
+  const script = async (): Promise<Checked> => {
+    const s = await scripts()
+    const r = s.checkRecordScripted(value)
+    return r.correct ? { ...r, clue: s.CLUES[4] } : r
+  }
+  if (usingMock) return keep(4, await script())
+  return keep(4, await serverFirst<Checked>('/rooms/4/check', { value }, script))
 }
 
 // ── 방 5 문지기의 방 ─────────────────────────────────────────
@@ -356,17 +406,18 @@ export async function checkRecord(value: string): Promise<{ correct: boolean; no
 // 내가 쓴 지시문과 검사 장치로 공격 네 건과 정상 질문 한 건을 시험한다. 판정은 코드가 한다.
 export async function runDefense(prompt: string, wave: number, inputCheck: InputCheck, outputCheck: boolean): Promise<DefenseResult> {
   const script = async () => {
-    await wait(900)
-    return runScripted(prompt, wave, inputCheck, outputCheck)
+    const [s] = await Promise.all([scripts(), wait(900)])
+    const r = s.runScripted(prompt, wave, inputCheck, outputCheck)
+    return wave === 1 && r.passed ? { ...r, clue: s.CLUES[5] } : r
   }
-  if (usingMock) return script()
-  return serverFirst<DefenseResult>('/rooms/5/run', { prompt, wave, input_check: inputCheck, output_check: outputCheck }, script)
+  if (usingMock) return keep(5, await script())
+  return keep(5, await serverFirst<DefenseResult>('/rooms/5/run', { prompt, wave, input_check: inputCheck, output_check: outputCheck }, script))
 }
 
 // ── 정문 ────────────────────────────────────────────────
 
 export async function checkFinalCode(code: string): Promise<{ correct: boolean; note: string }> {
-  const script = () => checkFinal(code)
+  const script = async () => (await scripts()).checkFinal(code)
   if (usingMock) return script()
   return serverFirst<{ correct: boolean; note: string }>('/final/check', { code }, script)
 }

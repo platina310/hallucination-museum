@@ -15,7 +15,7 @@ KAIST 디지털금융MBA 「금융빅데이터분석실습」 6조 팀 프로젝
 | MCP 서버 | https://hallucination-museum-api.onrender.com/mcp | 미술관 데이터를 읽는 도구 다섯 개 (Streamable HTTP) |
 
 - 모든 주소가 로그인 없이 열림
-- 환각의 방을 뺀 네 방은 서버의 Gemini가 답변. 서버가 쉬는 중이거나 한도를 넘으면 `src/mock/`의 정해진 대본으로 답변
+- 환각의 방을 뺀 네 방은 서버의 Gemini가 답변. 서버가 쉬는 중이거나 한도를 넘으면 `src/script/`의 정해진 대본으로 답변
 - 예전 주소(끝에 `#game`)는 `/prototype`으로 이동
 - 주소별 화면 연결은 `vercel.json`의 rewrites 담당. 지우면 `/prototype`이 열리지 않음
 
@@ -59,7 +59,8 @@ npm run build    # 타입 검사 후 dist/ 생성
 | `src/components/Guide.tsx` | 임무, 다음 수, 힌트, 퀴즈 공통 요소 |
 | `src/api.ts` | 화면과 서버 사이의 유일한 연결 지점 |
 | `src/content/results.ts` | 공격문 정제와 자동 실험 결과, 시행착오 기록 |
-| `src/mock/` | 서버가 답하지 못할 때 쓰는 대본과 정답 |
+| `src/mock/` | 화면에 보이는 자료 (진술서, 사건 파일, 공지). 정답은 두지 않음 |
+| `src/script/` | 서버가 답하지 못할 때만 내려받는 대본과 정답. 화면 코드와 다른 묶음 |
 | `src/index.css` | 전체 스타일. 색과 글꼴은 맨 위 `:root` 토큰 |
 
 ## FastAPI 서버 (6주차)

@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { checkFinalCode } from '../api'
 import { GATE_IDS } from '../game/rooms'
-import { CLUES, DIRECTOR_LINES, NOTICES } from '../mock/final'
+import { useClues } from '../game/clues'
+import { DIRECTOR_LINES, NOTICES } from '../mock/final'
 import { Coach } from './Guide'
 
 // 로비에서 살펴볼 곳. 자리는 그림 크기에 대한 백분율이다.
@@ -54,6 +55,7 @@ type Screen = 'idle' | 'sure' | 'glitch' | 'humble'
 type Line = { q?: string; a: string; chip: string; src: boolean }
 
 export default function FinalGate({ tries, onTry }: { tries: number; onTry: (correct: boolean) => void }) {
+  const clues = useClues()
   const [seen, setSeen] = useState<string[]>([])
   // 대화창에 띄울 것: 관장의 말, 방금 살펴본 곳, 정문 키패드
   const [panel, setPanel] = useState<'talk' | 'look' | 'door'>('talk')
@@ -368,7 +370,7 @@ export default function FinalGate({ tries, onTry }: { tries: number; onTry: (cor
                   <ul className="notebook gap-small">
                     {GATE_IDS.map((id) => (
                       <li key={id}>
-                        <span className="mono">방 {id}</span> {CLUES[id]}
+                        <span className="mono">방 {id}</span> {clues[id] ?? '…'}
                       </li>
                     ))}
                   </ul>
@@ -459,7 +461,7 @@ export default function FinalGate({ tries, onTry }: { tries: number; onTry: (cor
             <ul className="notebook gap-top">
               {GATE_IDS.map((id) => (
                 <li key={id}>
-                  <span className="mono">방 {id}</span> {CLUES[id]}
+                  <span className="mono">방 {id}</span> {clues[id] ?? '…'}
                 </li>
               ))}
             </ul>

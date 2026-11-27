@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { CaseFile } from '../types'
-import { DRAWER_CODE, DRAWER_FILE, ROOM_FILES } from '../mock/level1'
+import { checkDrawer } from '../api'
+import { DRAWER_FILE, ROOM_FILES } from '../mock/level1'
 import { Figure } from './Portrait'
 import type { Dread, Face } from './Portrait'
 
@@ -57,6 +58,7 @@ export default function GuardRoom({
   const [atDrawer, setAtDrawer] = useState(false)
   const [code, setCode] = useState('')
   const [wrong, setWrong] = useState('')
+  const [checking, setChecking] = useState(false)
   const [shade, setShade] = useState(false) // 창밖을 스치는 그림자
   const shadeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -87,10 +89,20 @@ export default function GuardRoom({
     setAtDrawer(true)
   }
 
-  function tryDrawer(e: FormEvent) {
+  async function tryDrawer(e: FormEvent) {
     e.preventDefault()
-    if (code.length < 4) return
-    if (code === DRAWER_CODE) {
+    if (code.length < 4 || checking) return
+    setChecking(true)
+    let correct = false
+    try {
+      correct = (await checkDrawer(code)).correct
+    } catch {
+      setChecking(false)
+      setWrong('서랍이 뻑뻑해요. 잠시 뒤 다시 눌러 보세요.')
+      return
+    }
+    setChecking(false)
+    if (correct) {
       onDrawerOpen()
       onFind(DRAWER_FILE)
       maybeShade(found.length + 1)
@@ -229,7 +241,7 @@ export default function GuardRoom({
       <div className="room-act">
         <div className="scene-look" role="status">
           {atDrawer ? (
-            <form className="drawer" onSubmit={tryDrawer}>
+            <form className="drawer" onSubmit={(e) => void tryDrawer(e)}>
               <p>
                 <b>잠긴 서랍</b> 노란 쪽지가 붙어 있어요. <mark>"비밀번호는 카메라가 꺼진 시각. 네 자리."</mark>
               </p>
@@ -247,7 +259,7 @@ export default function GuardRoom({
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                 />
-                <button className="btn" type="submit" disabled={code.length < 4}>
+                <button className="btn" type="submit" disabled={code.length < 4 || checking}>
                   열어 보기
                 </button>
               </div>

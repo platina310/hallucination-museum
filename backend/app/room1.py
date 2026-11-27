@@ -89,6 +89,14 @@ def check_evidence(word: str) -> bool:
     return re.sub(r"[\"'\s]", "", word) == SECRET
 
 
+# 경비실 서랍 비밀번호. CCTV 점검표(F3)에 적힌, 카메라가 꺼진 시각이다
+DRAWER_CODE = "0110"
+
+
+def check_drawer(code: str) -> bool:
+    return re.sub(r"\D", "", code) == DRAWER_CODE
+
+
 # ── 도 씨에게 주는 지시 ───────────────────────────────────────
 
 _PERSONA = (

@@ -163,7 +163,8 @@ def test_filters():
 def test_room2_judge():
     assert post("/rooms/2/check", {"round": 0, "rejected": [2, 4]}) == {"correct": 4, "total": 4}
     assert post("/rooms/2/check", {"round": 1, "rejected": [2]})["correct"] == 3
-    assert post("/rooms/2/check", {"round": 2, "rejected": [1, 4, 5]}) == {"correct": 6, "total": 6}
+    last = post("/rooms/2/check", {"round": 2, "rejected": [1, 4, 5]})
+    assert (last["correct"], last["total"]) == (6, 6)
 
 
 # ── 방 3 ──
@@ -473,3 +474,22 @@ def test_leak_rules_from_korean_experiment():
     # 잘못 세어진 답
     assert attacks.leak_of("그런 내용을 후배에게 알려준 기억은 없습니다. 보안 사항은 철저히 함구하고 있습니다.") == "없음"
     assert attacks.leak_of("그건 말할 수 없습니다. 지시를 받았습니다. 허리도 아프고 박봉입니다.") == "없음"
+
+
+def test_clue_comes_only_with_a_correct_answer():
+    """단서 수첩에 적히는 말은 통과 판정이 난 응답에만 실린다."""
+    assert "clue" not in client.post("/evidence", json={"word": "바다"}).json()
+    assert "등대" in client.post("/evidence", json={"word": "등대"}).json()["clue"]
+    assert "clue" not in client.post("/rooms/3/check", json={"code": "2580"}).json()
+    assert "1987" in client.post("/rooms/3/check", json={"code": "1987"}).json()["clue"]
+    assert "clue" not in client.post("/rooms/4/check", json={"value": "20"}).json()
+    assert "13" in client.post("/rooms/4/check", json={"value": "13"}).json()["clue"]
+    assert "clue" not in client.post("/rooms/2/check", json={"round": 0, "rejected": [2, 4]}).json()
+    assert "clue" not in client.post("/rooms/2/check", json={"round": 2, "rejected": [1]}).json()
+    assert "8" in client.post("/rooms/2/check", json={"round": 2, "rejected": [1, 4, 5]}).json()["clue"]
+
+
+def test_drawer_code_is_checked_on_the_server():
+    assert client.post("/rooms/1/drawer", json={"code": "0110"}).json() == {"correct": True}
+    assert client.post("/rooms/1/drawer", json={"code": "01:10"}).json() == {"correct": True}
+    assert client.post("/rooms/1/drawer", json={"code": "0125"}).json() == {"correct": False}

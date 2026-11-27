@@ -34,6 +34,43 @@ _chat_client = None
 _embed_client = None
 
 
+def _get_chat_client():
+    global _chat_client
+    if _chat_client is None:
+        from openai import OpenAI
+
+        # 화면은 20초를 기다린다. 그 전에 서버가 먼저 포기하고 정해진 답으로 바꿀 수 있게 12초로 둔다
+        _chat_client = OpenAI(base_url=config.LLM_BASE_URL, api_key=config.LLM_API_KEY, timeout=12, max_retries=0)
+    return _chat_client
+
+
+def _get_embed_client():
+    global _embed_client
+    if _embed_client is None:
+        from google import genai
+
+        _embed_client = genai.Client(api_key=config.GEMINI_API_KEY)
+    return _embed_client
+
+
+def warm_up() -> None:
+    """서버가 뜰 때 모델 라이브러리를 미리 읽고 연결 도구를 만들어 둔다.
+
+    처음 쓸 때 읽게 두었더니 서버가 깨어난 뒤 첫 질문이 5초, 첫 검색이 3초 넘게 늦었다 (2026-11-27 측정).
+    """
+    if config.FAKE_LLM:
+        return
+    try:
+        if config.LLM_API_KEY:
+            _get_chat_client()
+        if config.GEMINI_API_KEY:
+            from google.genai import types  # noqa: F401
+
+            _get_embed_client()
+    except Exception as e:  # 준비에 실패해도 서버는 뜬다. 첫 요청이 다시 시도한다
+        print(f"모델 준비 실패: {type(e).__name__}", flush=True)
+
+
 def available() -> bool:
     return config.FAKE_LLM or config.LLM_API_KEY != ""
 
@@ -53,13 +90,8 @@ def chat(
         return _fake_chat(system, user, json_mode)
     if config.LLM_API_KEY == "":
         raise LLMUnavailable("LLM_API_KEY가 없습니다")
-    global _chat_client
     try:
-        if _chat_client is None:
-            from openai import OpenAI
-
-            # 화면은 20초를 기다린다. 그 전에 서버가 먼저 포기하고 정해진 답으로 바꿀 수 있게 12초로 둔다
-            _chat_client = OpenAI(base_url=config.LLM_BASE_URL, api_key=config.LLM_API_KEY, timeout=12, max_retries=0)
+        client = _get_chat_client()
         extra: dict = {}
         effort = reasoning or config.LLM_REASONING
         if effort and effort != "none":
@@ -67,7 +99,7 @@ def chat(
         if json_mode:
             extra["response_format"] = {"type": "json_object"}
         with perf.span("llm"):
-            resp = _chat_client.chat.completions.create(
+            resp = client.chat.completions.create(
                 model=config.LLM_MODEL,
                 messages=[
                     {"role": "system", "content": system},
@@ -95,20 +127,17 @@ def embed(texts: list[str], kind: str) -> list[list[float]]:
         return [_fake_embed(t) for t in texts]
     if config.GEMINI_API_KEY == "":
         raise LLMUnavailable("GEMINI_API_KEY가 없습니다")
-    global _embed_client
     try:
-        from google import genai
         from google.genai import types
 
-        if _embed_client is None:
-            _embed_client = genai.Client(api_key=config.GEMINI_API_KEY)
+        client = _get_embed_client()
         if kind == "query":
             texts = [f"task: search result | query: {t}" for t in texts]
         else:
             texts = [f"title: none | text: {t}" for t in texts]
         # 문자열 목록을 그대로 넘기면 벡터 하나로 합쳐지므로 하나씩 Content로 감싼다
         with perf.span("embed"):
-            resp = _embed_client.models.embed_content(
+            resp = client.models.embed_content(
                 model=config.EMBED_MODEL,
                 contents=[types.Content(parts=[types.Part.from_text(text=t)]) for t in texts],
                 config=types.EmbedContentConfig(output_dimensionality=config.EMBED_DIM),

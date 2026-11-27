@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from contextlib import asynccontextmanager
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Request
@@ -25,6 +26,8 @@ _mcp, _mcp_http = mcp_server.build()
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     store.init_schema()  # DB가 있으면 테이블을 준비한다. 없어도 서버는 뜬다
+    # 모델 라이브러리를 미리 읽어 둔다. 서버가 뜨는 것을 막지 않게 따로 돌린다
+    threading.Thread(target=llm.warm_up, daemon=True).start()
     if _mcp is None:
         yield
         return
@@ -34,7 +37,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="환각 미술관 API",
-    version="0.7.1",
+    version="0.7.2",
     description="AI 방탈출 '환각 미술관'의 방 규칙, 검색, 모델 호출, 판정",
     lifespan=lifespan,
 )
@@ -131,6 +134,10 @@ class EvidenceIn(BaseModel):
     word: str = Field(max_length=40)
 
 
+class CodeIn(BaseModel):
+    code: str = Field(max_length=8)
+
+
 def _pairs(history: list[Turn]) -> list[tuple[str, str]]:
     return [(t.q, t.a) for t in history]
 
@@ -164,6 +171,13 @@ def interrogate(body: InterrogateIn, tasks: BackgroundTasks) -> dict:
 def evidence(body: EvidenceIn, tasks: BackgroundTasks) -> dict:
     ok = room1.check_evidence(body.word)
     _log(tasks, 1, "evidence", extra={"correct": ok})
+    return final.with_clue({"correct": ok}, 1, ok)
+
+
+@app.post("/rooms/1/drawer", summary="경비실 서랍 비밀번호 확인")
+def drawer(body: CodeIn, tasks: BackgroundTasks) -> dict:
+    ok = room1.check_drawer(body.code)
+    _log(tasks, 1, "drawer", extra={"correct": ok})
     return {"correct": ok}
 
 
@@ -179,7 +193,7 @@ class InspectIn(BaseModel):
 def inspect(body: InspectIn, tasks: BackgroundTasks) -> dict:
     r = room2.judge_round(body.round, body.rejected)
     _log(tasks, 2, "check", extra={"round": body.round, "rejected": body.rejected, **r})
-    return r
+    return final.with_clue(r, 2, body.round == 2 and r["correct"] == r["total"])
 
 
 # ── 방 3 서가의 방 ──────────────────────────────────────────
@@ -187,10 +201,6 @@ def inspect(body: InspectIn, tasks: BackgroundTasks) -> dict:
 
 class AskIn(BaseModel):
     query: str = Field(min_length=1, max_length=40)
-
-
-class CodeIn(BaseModel):
-    code: str = Field(max_length=8)
 
 
 @app.post("/rooms/3/ask", summary="임베딩 검색 뒤 상위 3건으로 답하기 (RAG)")
@@ -209,7 +219,7 @@ def ask(body: AskIn, tasks: BackgroundTasks) -> dict:
 def door(body: CodeIn, tasks: BackgroundTasks) -> dict:
     r = room3.check_door(body.code)
     _log(tasks, 3, "door", extra={"correct": r["correct"]})
-    return r
+    return final.with_clue(r, 3, r["correct"])
 
 
 # ── 방 4 온도의 방 ──────────────────────────────────────────
@@ -237,7 +247,7 @@ def temp_ask(body: TempIn, tasks: BackgroundTasks) -> dict:
 def temp_check(body: ValueIn, tasks: BackgroundTasks) -> dict:
     r = room4.check_record(body.value)
     _log(tasks, 4, "door", extra={"correct": r["correct"]})
-    return r
+    return final.with_clue(r, 4, r["correct"])
 
 
 # ── 방 5 문지기의 방 ─────────────────────────────────────────
@@ -256,7 +266,7 @@ def defense_run(body: DefenseIn, tasks: BackgroundTasks) -> dict:
     _log(tasks, 5, "run", input=body.prompt, engine=r["engine"],
                    extra={"wave": r["wave"], "held": r["held"], "total": r["total"], "visitor": r["visitor"]["ok"], "passed": r["passed"],
                           "input_check": body.input_check, "output_check": body.output_check, "leaked": [x["id"] for x in r["results"] if x["leaked"]]})
-    return r
+    return final.with_clue(r, 5, r["wave"] == 1 and r["passed"])
 
 
 # ── 정문 ────────────────────────────────────────────────
