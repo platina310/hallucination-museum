@@ -883,8 +883,8 @@ body{word-break:keep-all;overflow-wrap:anywhere}
 @media (min-width:641px){.fixes td:first-child{white-space:nowrap;font-weight:600}}
 
 /* 온도의 방: 이 방만 다른 모델이 답한다는 안내 */
-.model-note {
+.room .model-note {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: 0.82rem;
   line-height: 1.5;
 }
