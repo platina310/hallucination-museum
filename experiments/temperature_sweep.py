@@ -51,8 +51,31 @@ def ask(client: OpenAI, model: str, kind: str, t: float) -> tuple[str, int, str]
     return "", 0, "생각 단계 설정 없이도 실패"
 
 
+def probe(client: OpenAI, label: str) -> None:
+    """한꺼번에 몇 번을 물을 때 느려지거나 실패하는지 본다. 온도의 방은 세 답을 한꺼번에 받아야 한다."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    rounds = []
+    for model in MODELS:
+        for together in (1, 3, 4):
+            for _ in range(SAMPLES):
+                t0 = time.time()
+                with ThreadPoolExecutor(max_workers=together) as pool:
+                    got = list(pool.map(lambda _i: ask(client, model, "title", 1.0), range(together)))
+                row = {"model": model, "together": together, "wall_ms": int((time.time() - t0) * 1000),
+                       "each_ms": [ms for _, ms, _ in got], "ok": sum(1 for a, _, _ in got if a), "errors": [e[:300] for _, _, e in got if e]}
+                rounds.append(row)
+                print(f"{model:24s} 한꺼번에 {together}번 | 성공 {row['ok']} | 전체 {row['wall_ms']}ms | 각각 {row['each_ms']} | {row['errors'][:1]}", flush=True)
+                time.sleep(GAP * together)
+    OUT.mkdir(parents=True, exist_ok=True)
+    (OUT / f"temperature_{label}.json").write_text(json.dumps({"label": label, "measured_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "rounds": rounds}, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
 def main() -> None:
     label = sys.argv[1] if len(sys.argv) > 1 else "sweep"
+    if label.startswith("probe"):
+        probe(OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/", api_key=os.environ["GEMINI_API_KEY"], timeout=20, max_retries=0), label)
+        return
     client = OpenAI(base_url="https://generativelanguage.googleapis.com/v1beta/openai/", api_key=os.environ["GEMINI_API_KEY"], timeout=20, max_retries=0)
     cells = []
     for model in MODELS:
