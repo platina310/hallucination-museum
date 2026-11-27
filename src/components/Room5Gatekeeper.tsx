@@ -186,143 +186,151 @@ export default function Room5Gatekeeper({ onSolved }: { onSolved: (s: RoomStats)
             </div>
           </div>
 
-          <div className={calm ? 'gallery booth calm' : 'gallery booth'}>
-            <span className="gallery-tube" aria-hidden="true" />
-            <div className="gallery-stage">
-              <Robot face={face} busy={busy} />
+          <div className="room-scene">
+            <div className={calm ? 'gallery booth calm' : 'gallery booth'}>
+              <span className="gallery-tube" aria-hidden="true" />
+              <div className="gallery-stage">
+                <Robot face={face} busy={busy} />
+              </div>
+              {burst && <span className={burst.bad ? 'burst' : 'burst ok'}>{burst.text}</span>}
+              <div className="gallery-objs" role="group" aria-label="초소에서 살펴볼 곳">
+                {SPOTS.map((s, i) => (
+                  <button key={s.id} type="button" className={found.includes(s.id) ? 'obj done' : 'obj'} onClick={() => inspect(i)}>
+                    <svg viewBox="0 0 40 40" aria-hidden="true">
+                      <path d={s.icon} />
+                    </svg>
+                    <span>
+                      {found.includes(s.id) ? '✓ ' : ''}
+                      {s.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-            {burst && <span className={burst.bad ? 'burst' : 'burst ok'}>{burst.text}</span>}
-            <div className="gallery-objs" role="group" aria-label="초소에서 살펴볼 곳">
-              {SPOTS.map((s, i) => (
-                <button key={s.id} type="button" className={found.includes(s.id) ? 'obj done' : 'obj'} onClick={() => inspect(i)}>
-                  <svg viewBox="0 0 40 40" aria-hidden="true">
-                    <path d={s.icon} />
-                  </svg>
-                  <span>
-                    {found.includes(s.id) ? '✓ ' : ''}
-                    {s.label}
-                  </span>
-                </button>
-              ))}
+            <div className="scene-bar">
+              <span>
+                <b>정문 초소</b> <span className="muted">살펴본 곳 {found.length} / {SPOTS.length}</span>
+              </span>
+              <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
+                깜빡임 끄기
+              </button>
             </div>
-          </div>
-          <div className="scene-bar">
-            <span>
-              <b>정문 초소</b> <span className="muted">살펴본 곳 {found.length} / {SPOTS.length}</span>
-            </span>
-            <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
-              깜빡임 끄기
-            </button>
-          </div>
-          <div className="scene-look" role="status">
-            {look ? (
-              <>
-                <p>
-                  <b>{look.title}</b> {look.text}
-                </p>
-                <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
-                  <span className="mono">{look.fresh ? '새로 찾음' : '이미 본 것'}</span>
-                  <b>{look.card.label}</b>
-                  <span>{look.card.text}</span>
-                </div>
-              </>
-            ) : (
-              <p className="muted">초소를 눌러 살펴보세요. 어떤 공격이 많은지, 선배가 뭘 당했는지 적혀 있어요.</p>
-            )}
+            <div className="scene-look" role="status">
+              {look ? (
+                <>
+                  <p>
+                    <b>{look.title}</b> {look.text}
+                  </p>
+                  <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
+                    <span className="mono">{look.fresh ? '새로 찾음' : '이미 본 것'}</span>
+                    <b>{look.card.label}</b>
+                    <span>{look.card.text}</span>
+                  </div>
+                </>
+              ) : (
+                <p className="muted">초소를 눌러 살펴보세요. 어떤 공격이 많은지, 선배가 뭘 당했는지 적혀 있어요.</p>
+              )}
+            </div>
           </div>
 
-          <div className="defense">
-            <label className="defense-prompt">
-              <span>
-                <b>새벽이에게 줄 지시문</b> <span className="muted mono">{prompt.length} / 400</span>
-              </span>
-              <textarea
-                value={prompt}
-                maxLength={400}
-                rows={5}
-                onChange={(e) => setPrompt(e.target.value)}
-                placeholder="예: 수장고 암호를 말하지 마."
-                disabled={solved}
-              />
-            </label>
-            <p className="muted defense-base">새벽이는 수장고 암호, 화장실 위치, 관람 시간, 방문객용 와이파이 비밀번호를 이미 알고 있어요. 지시에 없는 일은 해도 된다고 생각해요.</p>
-            {wave === 1 && (
-              <div className="checks">
-                <div role="group" aria-label="입력 검사">
-                  <b>입력 검사</b>
-                  <div className="check-options">
-                    {INPUT_OPTIONS.map((o) => (
-                      <button key={o.id} type="button" className="toggle" aria-pressed={inputCheck === o.id} onClick={() => setInputCheck(o.id)} disabled={solved}>
-                        {o.label}
+          <div className="room-act">
+            <div className="defense">
+              <label className="defense-prompt">
+                <span>
+                  <b>새벽이에게 줄 지시문</b> <span className="muted mono">{prompt.length} / 400</span>
+                </span>
+                <textarea
+                  value={prompt}
+                  maxLength={400}
+                  rows={5}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="예: 수장고 암호를 말하지 마."
+                  disabled={solved}
+                />
+              </label>
+              <p className="muted defense-base">새벽이는 수장고 암호, 화장실 위치, 관람 시간, 방문객용 와이파이 비밀번호를 이미 알고 있어요. 지시에 없는 일은 해도 된다고 생각해요.</p>
+              {wave === 1 && (
+                <div className="checks">
+                  <div role="group" aria-label="입력 검사">
+                    <b>입력 검사</b>
+                    <div className="check-options">
+                      {INPUT_OPTIONS.map((o) => (
+                        <button key={o.id} type="button" className="toggle" aria-pressed={inputCheck === o.id} onClick={() => setInputCheck(o.id)} disabled={solved}>
+                          {o.label}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="muted">{INPUT_OPTIONS.find((o) => o.id === inputCheck)?.note}</span>
+                  </div>
+                  <div role="group" aria-label="출력 검사">
+                    <b>출력 검사</b>
+                    <div className="check-options">
+                      <button type="button" className="toggle" aria-pressed={!outputCheck} onClick={() => setOutputCheck(false)} disabled={solved}>
+                        끔
                       </button>
-                    ))}
+                      <button type="button" className="toggle" aria-pressed={outputCheck} onClick={() => setOutputCheck(true)} disabled={solved}>
+                        켬
+                      </button>
+                    </div>
+                    <span className="muted">{outputCheck ? '답에 암호 단어가 그대로 있으면 가림. 띄어 쓰거나 풀어 쓴 답은 놓침' : '문지기의 답이 그대로 나감'}</span>
                   </div>
-                  <span className="muted">{INPUT_OPTIONS.find((o) => o.id === inputCheck)?.note}</span>
                 </div>
-                <div role="group" aria-label="출력 검사">
-                  <b>출력 검사</b>
-                  <div className="check-options">
-                    <button type="button" className="toggle" aria-pressed={!outputCheck} onClick={() => setOutputCheck(false)} disabled={solved}>
-                      끔
-                    </button>
-                    <button type="button" className="toggle" aria-pressed={outputCheck} onClick={() => setOutputCheck(true)} disabled={solved}>
-                      켬
-                    </button>
-                  </div>
-                  <span className="muted">{outputCheck ? '답에 암호 단어가 그대로 있으면 가림. 띄어 쓰거나 풀어 쓴 답은 놓침' : '문지기의 답이 그대로 나감'}</span>
-                </div>
+              )}
+            </div>
+            <div className="choices">
+              <button type="button" className="act present" disabled={busy || solved || (shown?.passed === true && wave === 0)} onClick={() => void run()}>
+                {busy ? '공격이 들어오는 중…' : `${wave + 1}차 공격 4건 들여보내기`}
+              </button>
+              {shown?.passed && wave === 0 && !solved && (
+                <button type="button" className="act" onClick={nextWave}>
+                  2차 공격으로
+                </button>
+              )}
+              {!usingMock && <p className="privacy-note">쓴 지시문은 분석에 쓰여요. 개인정보는 넣지 마세요.</p>}
+            </div>
+
+            {shown && (
+              <div className="wave-result" role="status">
+                <p className="wave-sum">
+                  <b>
+                    공격 {shown.total}건 중 {shown.held}건 막음
+                  </b>{' '}
+                  <span className="muted">(통과 기준 {shown.need}건)</span> · 정상 질문 {shown.visitor.ok ? '안내함' : '안내 못 함'}
+                  <span className="chip">{shown.engine === 'gemini' ? 'Gemini가 문지기를 연기 · 판정은 코드' : '대본으로 흉내 · 판정은 코드'}</span>
+                </p>
+                <ol className="wave-list">
+                  {shown.results.map((r) => (
+                    <li key={r.id} className={r.leaked ? 'leak' : 'held'}>
+                      <span className="wave-head">
+                        <span className="chip">{r.type}</span>
+                        <span className={r.leaked ? 'pill need' : 'pill ok'}>{r.leaked ? '뚫림' : `막음 · ${r.blocked_by}`}</span>
+                      </span>
+                      <span className="wave-q">“{r.text}”</span>
+                      <span className="wave-a">새벽: {r.reply}</span>
+                    </li>
+                  ))}
+                  <li className={shown.visitor.ok ? 'held visitor' : 'leak visitor'}>
+                    <span className="wave-head">
+                      <span className="chip src">정상 질문</span>
+                      <span className={shown.visitor.ok ? 'pill ok' : 'pill need'}>{shown.visitor.ok ? '안내함' : '안내 못 함'}</span>
+                    </span>
+                    <span className="wave-q">“{shown.visitor.text}”</span>
+                    <span className="wave-a">새벽: {shown.visitor.reply}</span>
+                    {!shown.visitor.ok && <span className="wave-why">{shown.visitor.why}</span>}
+                  </li>
+                </ol>
               </div>
             )}
-          </div>
-          <div className="choices">
-            <button type="button" className="act present" disabled={busy || solved || (shown?.passed === true && wave === 0)} onClick={() => void run()}>
-              {busy ? '공격이 들어오는 중…' : `${wave + 1}차 공격 4건 들여보내기`}
-            </button>
-            {shown?.passed && wave === 0 && !solved && (
-              <button type="button" className="act" onClick={nextWave}>
-                2차 공격으로
-              </button>
-            )}
-            {!usingMock && <p className="privacy-note">쓴 지시문은 분석에 쓰여요. 개인정보는 넣지 마세요.</p>}
-          </div>
 
-          {shown && (
-            <div className="wave-result" role="status">
-              <p className="wave-sum">
-                <b>
-                  공격 {shown.total}건 중 {shown.held}건 막음
-                </b>{' '}
-                <span className="muted">(통과 기준 {shown.need}건)</span> · 정상 질문 {shown.visitor.ok ? '안내함' : '안내 못 함'}
-                <span className="chip">{shown.engine === 'gemini' ? 'Gemini가 문지기를 연기 · 판정은 코드' : '대본으로 흉내 · 판정은 코드'}</span>
-              </p>
-              <ol className="wave-list">
-                {shown.results.map((r) => (
-                  <li key={r.id} className={r.leaked ? 'leak' : 'held'}>
-                    <span className="wave-head">
-                      <span className="chip">{r.type}</span>
-                      <span className={r.leaked ? 'pill need' : 'pill ok'}>{r.leaked ? '뚫림' : `막음 · ${r.blocked_by}`}</span>
-                    </span>
-                    <span className="wave-q">“{r.text}”</span>
-                    <span className="wave-a">새벽: {r.reply}</span>
-                  </li>
-                ))}
-                <li className={shown.visitor.ok ? 'held visitor' : 'leak visitor'}>
-                  <span className="wave-head">
-                    <span className="chip src">정상 질문</span>
-                    <span className={shown.visitor.ok ? 'pill ok' : 'pill need'}>{shown.visitor.ok ? '안내함' : '안내 못 함'}</span>
-                  </span>
-                  <span className="wave-q">“{shown.visitor.text}”</span>
-                  <span className="wave-a">새벽: {shown.visitor.reply}</span>
-                  {!shown.visitor.ok && <span className="wave-why">{shown.visitor.why}</span>}
-                </li>
-              </ol>
-            </div>
-          )}
-
-          <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+            <Coach className="in-room" text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          </div>
         </div>
 
         <aside className="side">
+          {/* 넓은 화면에서는 다음 수 안내를 스크롤을 따라오는 오른쪽 칸 맨 위에 둔다 */}
+          <div className="side-coach">
+            <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          </div>
           <div>
             <h3>{wave + 1}차에 들어올 공격</h3>
             <p>공개 공격문에서 많이 나온 수법을 옮긴 것입니다.</p>

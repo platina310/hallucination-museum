@@ -202,136 +202,144 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
             </div>
           </div>
 
-          {/* 전시실: 그림 주변을 살펴 기록 카드를 찾는다 */}
-          <div className={calm ? 'gallery calm' : 'gallery'}>
-            <span className="gallery-tube" aria-hidden="true" />
-            {/* 그림 옆에 루미가 서서 설명한다. 표정은 상황에 따라 바뀐다 */}
-            <div className="gallery-stage">
-              <Artwork index={round} />
-              <div className={burst ? 'gallery-lumi jolt' : 'gallery-lumi'}>
-                <Figure who="lumi" face={face} />
+          <div className="room-scene">
+            {/* 전시실: 그림 주변을 살펴 기록 카드를 찾는다 */}
+            <div className={calm ? 'gallery calm' : 'gallery'}>
+              <span className="gallery-tube" aria-hidden="true" />
+              {/* 그림 옆에 루미가 서서 설명한다. 표정은 상황에 따라 바뀐다 */}
+              <div className="gallery-stage">
+                <Artwork index={round} />
+                <div className={burst ? 'gallery-lumi jolt' : 'gallery-lumi'}>
+                  <Figure who="lumi" face={face} />
+                </div>
+              </div>
+              <p className="gallery-mood">{mood}</p>
+              {burst && <span className={burst.bad ? 'burst' : 'burst ok'}>{burst.text}</span>}
+              <div className="gallery-objs" role="group" aria-label="전시실에서 살펴볼 곳">
+                {current.cards.map((c, i) => {
+                  const got = foundCards.includes(c.label)
+                  return (
+                    <button key={`${round}-${i}`} type="button" className={got ? 'obj done' : 'obj'} onClick={() => inspect(i)}>
+                      <svg viewBox="0 0 40 40" aria-hidden="true">
+                        <path d={SPOTS[i].icon} />
+                      </svg>
+                      <span>
+                        {got ? '✓ ' : ''}
+                        {SPOTS[i].label}
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
-            <p className="gallery-mood">{mood}</p>
-            {burst && <span className={burst.bad ? 'burst' : 'burst ok'}>{burst.text}</span>}
-            <div className="gallery-objs" role="group" aria-label="전시실에서 살펴볼 곳">
-              {current.cards.map((c, i) => {
-                const got = foundCards.includes(c.label)
-                return (
-                  <button key={`${round}-${i}`} type="button" className={got ? 'obj done' : 'obj'} onClick={() => inspect(i)}>
-                    <svg viewBox="0 0 40 40" aria-hidden="true">
-                      <path d={SPOTS[i].icon} />
-                    </svg>
-                    <span>
-                      {got ? '✓ ' : ''}
-                      {SPOTS[i].label}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-          <div className="scene-bar">
-            <span>
-              <b>전시실</b> <span className="muted">기록 카드 {current.cards.filter((c) => foundCards.includes(c.label)).length} / {current.cards.length}</span>
-            </span>
-            <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
-              깜빡임 끄기
-            </button>
-          </div>
-          <div className="scene-look" role="status">
-            {look ? (
-              <>
-                <p>
-                  <b>{look.title}</b> {look.text}
-                </p>
-                {look.card && (
-                  <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
-                    <span className="mono">{look.fresh ? '기록 카드 획득' : '이미 챙긴 카드'}</span>
-                    <b>{look.card.label}</b>
-                    <span>{look.card.text}</span>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="muted">그림 주변을 눌러 살펴보세요. 이 작품의 기록 카드가 흩어져 있어요.</p>
-            )}
-          </div>
-
-          <div className="rules">
-            <p className="shelf-label">검수 규칙</p>
-            <ol>
-              {rules.map((r, i) => (
-                <li key={r}>
-                  {r}
-                  {i === round && round > 0 && !solved && <span className="todo">새 규칙</span>}
-                </li>
-              ))}
-            </ol>
-          </div>
-
-
-          {/* 검수: 루미의 설명을 한 건씩 넘겨 보며 통과시키거나 반려한다 */}
-          <div className="dlg" role="status">
-            <span className="dlg-name">
-              도슨트 루미 · 설명 {cur + 1}/{current.claims.length}
-            </span>
-            <p className="stmt">{claim.text}</p>
-            <p className="dlg-cite">
-              <span className="chip src">루미가 댄 출처: {claim.cite}</span>
-              {decisions[claim.id] && <span className={decisions[claim.id] === 'reject' ? 'pill need' : 'pill ok'}>{decisions[claim.id] === 'reject' ? '반려함' : '통과시킴'}</span>}
-            </p>
-          </div>
-          <div className="choices" role="group" aria-label="이 설명 처리">
-            <div className="stmt-nav">
-              <button type="button" className="toggle" onClick={() => setCur((c) => (c + current.claims.length - 1) % current.claims.length)}>
-                ◀ 앞 설명
-              </button>
-              <span className="mono">
-                처리 {Object.keys(decisions).length}/{current.claims.length}
+            <div className="scene-bar">
+              <span>
+                <b>전시실</b> <span className="muted">기록 카드 {current.cards.filter((c) => foundCards.includes(c.label)).length} / {current.cards.length}</span>
               </span>
-              <button type="button" className="toggle" onClick={() => setCur((c) => (c + 1) % current.claims.length)}>
-                다음 설명 ▶
+              <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
+                깜빡임 끄기
               </button>
             </div>
-            <div className="act-row">
-              <button type="button" className="act" disabled={locked || !allFound} onClick={() => decide(claim.id, 'pass')}>
-                통과
-              </button>
-              <button type="button" className="act present" disabled={locked || !allFound} onClick={() => decide(claim.id, 'reject')}>
-                반려
-              </button>
+            <div className="scene-look" role="status">
+              {look ? (
+                <>
+                  <p>
+                    <b>{look.title}</b> {look.text}
+                  </p>
+                  {look.card && (
+                    <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
+                      <span className="mono">{look.fresh ? '기록 카드 획득' : '이미 챙긴 카드'}</span>
+                      <b>{look.card.label}</b>
+                      <span>{look.card.text}</span>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="muted">그림 주변을 눌러 살펴보세요. 이 작품의 기록 카드가 흩어져 있어요.</p>
+              )}
             </div>
-            {!allFound && !locked && <p className="choices-q">기록 카드를 다 찾아야 검수할 수 있어요.</p>}
-            <ol className="claim-list">
-              {current.claims.map((c, i) => (
-                <li key={`${round}-${c.id}`}>
-                  <button type="button" className={i === cur ? 'now' : undefined} onClick={() => setCur(i)}>
-                    <span className="mono">{i + 1}</span>
-                    <span className="t">{c.text}</span>
-                    <span className="d">{decisions[c.id] === 'reject' ? '반려' : decisions[c.id] === 'pass' ? '통과' : '미처리'}</span>
-                  </button>
-                </li>
-              ))}
-            </ol>
           </div>
 
-          <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          <div className="room-act">
+            <div className="rules">
+              <p className="shelf-label">검수 규칙</p>
+              <ol>
+                {rules.map((r, i) => (
+                  <li key={r}>
+                    {r}
+                    {i === round && round > 0 && !solved && <span className="todo">새 규칙</span>}
+                  </li>
+                ))}
+              </ol>
+            </div>
 
-          <div className="submit-row">
-            <button className="btn" type="button" disabled={locked || busy || !allDecided} onClick={() => void submit()}>
-              {allDecided ? '검수 결과 제출' : `전부 처리해야 제출됩니다 (${Object.keys(decisions).length}/${current.claims.length})`}
-            </button>
-            <button className="btn ghost small" type="button" onClick={reset}>
-              처음부터 다시
-            </button>
-            <div className={good ? 'verdict good' : 'verdict bad'} role="status">
-              {feedback}
+
+            {/* 검수: 루미의 설명을 한 건씩 넘겨 보며 통과시키거나 반려한다 */}
+            <div className="dlg" role="status">
+              <span className="dlg-name">
+                도슨트 루미 · 설명 {cur + 1}/{current.claims.length}
+              </span>
+              <p className="stmt">{claim.text}</p>
+              <p className="dlg-cite">
+                <span className="chip src">루미가 댄 출처: {claim.cite}</span>
+                {decisions[claim.id] && <span className={decisions[claim.id] === 'reject' ? 'pill need' : 'pill ok'}>{decisions[claim.id] === 'reject' ? '반려함' : '통과시킴'}</span>}
+              </p>
+            </div>
+            <div className="choices" role="group" aria-label="이 설명 처리">
+              <div className="stmt-nav">
+                <button type="button" className="toggle" onClick={() => setCur((c) => (c + current.claims.length - 1) % current.claims.length)}>
+                  ◀ 앞 설명
+                </button>
+                <span className="mono">
+                  처리 {Object.keys(decisions).length}/{current.claims.length}
+                </span>
+                <button type="button" className="toggle" onClick={() => setCur((c) => (c + 1) % current.claims.length)}>
+                  다음 설명 ▶
+                </button>
+              </div>
+              <div className="act-row">
+                <button type="button" className="act" disabled={locked || !allFound} onClick={() => decide(claim.id, 'pass')}>
+                  통과
+                </button>
+                <button type="button" className="act present" disabled={locked || !allFound} onClick={() => decide(claim.id, 'reject')}>
+                  반려
+                </button>
+              </div>
+              {!allFound && !locked && <p className="choices-q">기록 카드를 다 찾아야 검수할 수 있어요.</p>}
+              <ol className="claim-list">
+                {current.claims.map((c, i) => (
+                  <li key={`${round}-${c.id}`}>
+                    <button type="button" className={i === cur ? 'now' : undefined} onClick={() => setCur(i)}>
+                      <span className="mono">{i + 1}</span>
+                      <span className="t">{c.text}</span>
+                      <span className="d">{decisions[c.id] === 'reject' ? '반려' : decisions[c.id] === 'pass' ? '통과' : '미처리'}</span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <Coach className="in-room" text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+
+            <div className="submit-row">
+              <button className="btn" type="button" disabled={locked || busy || !allDecided} onClick={() => void submit()}>
+                {allDecided ? '검수 결과 제출' : `전부 처리해야 제출됩니다 (${Object.keys(decisions).length}/${current.claims.length})`}
+              </button>
+              <button className="btn ghost small" type="button" onClick={reset}>
+                처음부터 다시
+              </button>
+              <div className={good ? 'verdict good' : 'verdict bad'} role="status">
+                {feedback}
+              </div>
             </div>
           </div>
         </div>
 
         <aside className="side">
+          {/* 넓은 화면에서는 다음 수 안내를 스크롤을 따라오는 오른쪽 칸 맨 위에 둔다 */}
+          <div className="side-coach">
+            <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          </div>
           <div>
             <h3>기록 카드 · {current.artwork}</h3>
             <p>전시실에서 찾은 원본 기록입니다. 눌러서 펼칩니다.{!allFound && ` 아직 못 찾은 카드가 ${current.cards.length - current.cards.filter((c) => foundCards.includes(c.label)).length}장 있습니다.`}</p>

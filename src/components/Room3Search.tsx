@@ -352,253 +352,261 @@ export default function Room3Search({
             </div>
           </div>
 
-          {/* 자료실: 방을 눌러 낱말과 단서를 찾는다. 서가는 검색 결과에 따라 바뀐다 */}
-          <Archive
-            spots={SPOTS}
-            seen={seen}
-            count={DOC_COUNT}
-            given={busy ? [] : (shown?.result.docs.map((d) => d.id) ?? [])}
-            cut={busy ? [] : (shown?.result.cut ?? [])}
-            busy={busy}
-            face={face}
-            mood={mood}
-            calm={calm}
-            showSpots={showSpots}
-            shade={shade}
-            doorOpen={solved}
-            burst={burst}
-            onInspect={inspect}
-            onDoor={() => setPanel('door')}
-            onTalk={talk}
-          />
-          <div className="scene-bar">
-            <span>
-              <b>자료실</b> <span className="muted">눈에 띄는 곳을 눌러 살펴보세요</span>
-            </span>
-            <span className="scene-ctl">
-              <button type="button" className="toggle" aria-pressed={showSpots} onClick={() => setShowSpots((v) => !v)}>
-                살펴볼 곳 표시
-              </button>
-              <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
-                깜빡임 끄기
-              </button>
-            </span>
-          </div>
-          {shown && !busy && (
-            <p className="bookcase-legend shelf-legend" aria-hidden="true">
-              <span className="key given" /> 고 선생이 받은 책
-              {(shown.result.cut?.length ?? 0) > 0 && (
-                <>
-                  <span className="key cut" /> 검색됐지만 잘린 책
-                </>
-              )}
-            </p>
-          )}
-
-          {/* 화면이 작으면 그림 속 물건을 누르기 어렵다. 같은 곳을 단추로도 고를 수 있게 한다 */}
-          <div className={showSpots ? 'spot-list on' : 'spot-list'} role="group" aria-label="살펴볼 곳 목록">
-            {SPOTS.map((s) => (
-              <button key={s.id} type="button" className="toggle" onClick={() => inspect(s)}>
-                {seen.includes(s.id) ? '✓ ' : ''}
-                {s.label}
-              </button>
-            ))}
-            <button type="button" className="toggle" onClick={() => setPanel('door')}>
-              {solved ? '✓ ' : ''}비상문 키패드
-            </button>
-          </div>
-
-          {/* 대화창: 살펴본 곳, 비상문 키패드, 고 선생의 답이 같은 자리에 뜬다 */}
-          <div className="dlg" aria-live="polite">
-            {panel === 'look' && look ? (
-              <>
-                <span className="dlg-name me">나 · {look.spot.label}</span>
-                <p>{look.spot.note}</p>
-                {look.spot.word && (
-                  <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
-                    <span className="mono">{look.fresh ? '낱말 쪽지 획득' : '이미 챙긴 낱말'}</span>
-                    <b>{look.spot.word}</b>
-                    <span>아래 검색어에 넣을 수 있어요.</span>
-                  </div>
-                )}
-                {look.spot.memo && (
-                  <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
-                    <span className="mono">{look.fresh ? '수첩에 적음' : '수첩에 적어 둔 것'}</span>
-                    <span>{look.spot.memo}</span>
-                  </div>
-                )}
-              </>
-            ) : panel === 'door' ? (
-              <>
-                <span className="dlg-name me">비상문 키패드</span>
-                <p>비밀번호 네 자리를 누르면 문이 열려요. 기회는 {MAX_DOOR}번이에요.</p>
-                <form className="drawer-row" onSubmit={(e) => void tryDoor(e)}>
-                  <label htmlFor="door-input" className="sr-only">
-                    비밀번호 4자리
-                  </label>
-                  <input
-                    id="door-input"
-                    className="code-input"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    maxLength={4}
-                    placeholder="0000"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
-                  />
-                  <button className="btn" type="submit" disabled={doorLocked}>
-                    문 열기
-                  </button>
-                </form>
-                <div className={solved ? 'verdict good' : 'verdict bad'} role="status">
-                  {doorNote}
-                </div>
-              </>
-            ) : busy ? (
-              <>
-                <span className="dlg-name">고 선생</span>
-                <p className="flipping">
-                  <BookFlip />
-                  서가를 뒤져 책장을 넘기는 중입니다
-                </p>
-              </>
-            ) : error ? (
-              <>
-                <span className="dlg-name">자료실</span>
-                <p role="alert">{error}</p>
-                <button className="btn ghost small gap-top" type="button" onClick={() => void search()}>
-                  다시 검색하기
+          <div className="room-scene">
+            {/* 자료실: 방을 눌러 낱말과 단서를 찾는다. 서가는 검색 결과에 따라 바뀐다 */}
+            <Archive
+              spots={SPOTS}
+              seen={seen}
+              count={DOC_COUNT}
+              given={busy ? [] : (shown?.result.docs.map((d) => d.id) ?? [])}
+              cut={busy ? [] : (shown?.result.cut ?? [])}
+              busy={busy}
+              face={face}
+              mood={mood}
+              calm={calm}
+              showSpots={showSpots}
+              shade={shade}
+              doorOpen={solved}
+              burst={burst}
+              onInspect={inspect}
+              onDoor={() => setPanel('door')}
+              onTalk={talk}
+            />
+            <div className="scene-bar">
+              <span>
+                <b>자료실</b> <span className="muted">눈에 띄는 곳을 눌러 살펴보세요</span>
+              </span>
+              <span className="scene-ctl">
+                <button type="button" className="toggle" aria-pressed={showSpots} onClick={() => setShowSpots((v) => !v)}>
+                  살펴볼 곳 표시
                 </button>
-              </>
-            ) : shown ? (
-              <>
-                <span className="dlg-name">
-                  고 선생 · {Math.min(cur, turns.length - 1) + 1}번째 답{pressed ? ' · 캐물음' : ''}
-                </span>
-                {pressed && press ? (
+                <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
+                  깜빡임 끄기
+                </button>
+              </span>
+            </div>
+            {shown && !busy && (
+              <p className="bookcase-legend shelf-legend" aria-hidden="true">
+                <span className="key given" /> 고 선생이 받은 책
+                {(shown.result.cut?.length ?? 0) > 0 && (
                   <>
-                    <p className="dlg-q">나: {press.ask}</p>
-                    <p>{press.reply}</p>
-                  </>
-                ) : (
-                  <>
-                    <div className="retrieved">
-                      <p>
-                        <b>"{shown.query}"</b> 검색 결과 {shown.result.found}건
-                        {shown.result.found > shown.result.docs.length && (
-                          <>
-                            {' '}
-                            중 앞의 {shown.result.docs.length}건만 전달됨. <span className="cut">나머지 {shown.result.found - shown.result.docs.length}건은 잘림</span>
-                          </>
-                        )}
-                      </p>
-                      {shown.result.docs.length > 0 && (
-                        <ol>
-                          {shown.result.docs.map((d) => (
-                            <li key={d.id}>
-                              {d.title} <span className="mono">{d.date}</span>
-                              {d.score !== undefined && shown.result.search !== 'keyword' && <span className="score">유사도 {d.score.toFixed(2)}</span>}
-                            </li>
-                          ))}
-                        </ol>
-                      )}
-                      {shown.result.search && shown.result.search !== 'none' && (
-                        <p className="how">
-                          {shown.result.search === 'keyword' ? '낱말이 겹치는 문서를 찾는 검색' : '뜻이 가까운 문서를 찾는 임베딩 검색'}
-                          {shown.result.search === 'pgvector' && ' · pgvector'}
-                        </p>
-                      )}
-                    </div>
-                    <p>{shown.result.reply}</p>
-                    <p className="dlg-cite">
-                      {shown.result.sources.length > 0 ? (
-                        shown.result.sources.map((s) => (
-                          <span className="chip src" key={s.id}>
-                            근거: {s.label}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="chip nosrc">근거 없음: 받은 문서에 없는 내용</span>
-                      )}
-                      {shown.result.engine === 'gemini' && <span className="chip">Gemini가 답함 · 숫자와 근거는 코드가 검사</span>}
-                    </p>
-                    {shown.result.guard && <p className="guard-note">모델의 답을 코드가 걸러 냈어요({shown.result.guard}). 대신 정해진 답을 보여 드려요.</p>}
+                    <span className="key cut" /> 검색됐지만 잘린 책
                   </>
                 )}
-              </>
-            ) : (
-              <>
-                <span className="dlg-name">고 선생</span>
-                <p>찾으실 낱말을 말씀해 주십시오. 저는 찾아온 문서만 읽고 답합니다. 안경은 방금 닦았습니다.</p>
-              </>
+              </p>
             )}
-          </div>
 
-          <div className="choices">
-            {turns.length > 1 && panel === 'answer' && !busy && (
-              <div className="stmt-nav">
-                <button type="button" className="toggle" onClick={() => { setCur((c) => (Math.min(c, turns.length - 1) + turns.length - 1) % turns.length); setPressed(false) }}>
-                  ◀ 앞 답
+            {/* 화면이 작으면 그림 속 물건을 누르기 어렵다. 같은 곳을 단추로도 고를 수 있게 한다 */}
+            <div className={showSpots ? 'spot-list on' : 'spot-list'} role="group" aria-label="살펴볼 곳 목록">
+              {SPOTS.map((s) => (
+                <button key={s.id} type="button" className="toggle" onClick={() => inspect(s)}>
+                  {seen.includes(s.id) ? '✓ ' : ''}
+                  {s.label}
                 </button>
-                <span className="mono">
-                  답 {Math.min(cur, turns.length - 1) + 1}/{turns.length}
-                </span>
-                <button type="button" className="toggle" onClick={() => { setCur((c) => (Math.min(c, turns.length - 1) + 1) % turns.length); setPressed(false) }}>
-                  다음 답 ▶
-                </button>
-              </div>
-            )}
-            <form className="ask-words" onSubmit={(e) => void search(e)}>
-              <label htmlFor="search-input" className="choices-q">
-                고 선생에게 찾아 달라고 할 낱말. 쪽지를 눌러 넣고 뺄 수 있어요
-              </label>
-              <div className="word-chips" role="group" aria-label="낱말 쪽지">
-                {words.map((w) => (
-                  <button key={w} type="button" className="toggle" aria-pressed={inQuery.includes(w)} onClick={() => toggleWord(w)}>
-                    {w}
-                  </button>
-                ))}
-              </div>
-              <div className="search-row">
-                <input
-                  ref={inputRef}
-                  id="search-input"
-                  type="search"
-                  autoComplete="off"
-                  enterKeyHint="search"
-                  maxLength={MAX_QUERY}
-                  placeholder="찾을 낱말"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                />
-                <button className="btn" type="submit" disabled={busy || query.trim() === ''}>
-                  {busy ? '찾는 중' : '찾아 주세요'}
-                </button>
-              </div>
-              {!usingMock && <p className="privacy-note">입력한 말은 분석에 쓰여요. 개인정보는 넣지 마세요.</p>}
-            </form>
-            <div className="act-row">
-              <button
-                type="button"
-                className="act"
-                disabled={!shown || busy}
-                onClick={() => {
-                  setPanel('answer')
-                  setPressed((v) => panel !== 'answer' || !v)
-                }}
-              >
-                {pressed && panel === 'answer' ? '답 다시 보기' : '더 캐묻기'}
-              </button>
-              <button type="button" className="act present" onClick={() => setPanel('door')}>
-                비상문 열기
+              ))}
+              <button type="button" className="toggle" onClick={() => setPanel('door')}>
+                {solved ? '✓ ' : ''}비상문 키패드
               </button>
             </div>
           </div>
 
-          <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          <div className="room-act">
+            {/* 대화창: 살펴본 곳, 비상문 키패드, 고 선생의 답이 같은 자리에 뜬다 */}
+            <div className="dlg" aria-live="polite">
+              {panel === 'look' && look ? (
+                <>
+                  <span className="dlg-name me">나 · {look.spot.label}</span>
+                  <p>{look.spot.note}</p>
+                  {look.spot.word && (
+                    <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
+                      <span className="mono">{look.fresh ? '낱말 쪽지 획득' : '이미 챙긴 낱말'}</span>
+                      <b>{look.spot.word}</b>
+                      <span>아래 검색어에 넣을 수 있어요.</span>
+                    </div>
+                  )}
+                  {look.spot.memo && (
+                    <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
+                      <span className="mono">{look.fresh ? '수첩에 적음' : '수첩에 적어 둔 것'}</span>
+                      <span>{look.spot.memo}</span>
+                    </div>
+                  )}
+                </>
+              ) : panel === 'door' ? (
+                <>
+                  <span className="dlg-name me">비상문 키패드</span>
+                  <p>비밀번호 네 자리를 누르면 문이 열려요. 기회는 {MAX_DOOR}번이에요.</p>
+                  <form className="drawer-row" onSubmit={(e) => void tryDoor(e)}>
+                    <label htmlFor="door-input" className="sr-only">
+                      비밀번호 4자리
+                    </label>
+                    <input
+                      id="door-input"
+                      className="code-input"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      maxLength={4}
+                      placeholder="0000"
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
+                    />
+                    <button className="btn" type="submit" disabled={doorLocked}>
+                      문 열기
+                    </button>
+                  </form>
+                  <div className={solved ? 'verdict good' : 'verdict bad'} role="status">
+                    {doorNote}
+                  </div>
+                </>
+              ) : busy ? (
+                <>
+                  <span className="dlg-name">고 선생</span>
+                  <p className="flipping">
+                    <BookFlip />
+                    서가를 뒤져 책장을 넘기는 중입니다
+                  </p>
+                </>
+              ) : error ? (
+                <>
+                  <span className="dlg-name">자료실</span>
+                  <p role="alert">{error}</p>
+                  <button className="btn ghost small gap-top" type="button" onClick={() => void search()}>
+                    다시 검색하기
+                  </button>
+                </>
+              ) : shown ? (
+                <>
+                  <span className="dlg-name">
+                    고 선생 · {Math.min(cur, turns.length - 1) + 1}번째 답{pressed ? ' · 캐물음' : ''}
+                  </span>
+                  {pressed && press ? (
+                    <>
+                      <p className="dlg-q">나: {press.ask}</p>
+                      <p>{press.reply}</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="retrieved">
+                        <p>
+                          <b>"{shown.query}"</b> 검색 결과 {shown.result.found}건
+                          {shown.result.found > shown.result.docs.length && (
+                            <>
+                              {' '}
+                              중 앞의 {shown.result.docs.length}건만 전달됨. <span className="cut">나머지 {shown.result.found - shown.result.docs.length}건은 잘림</span>
+                            </>
+                          )}
+                        </p>
+                        {shown.result.docs.length > 0 && (
+                          <ol>
+                            {shown.result.docs.map((d) => (
+                              <li key={d.id}>
+                                {d.title} <span className="mono">{d.date}</span>
+                                {d.score !== undefined && shown.result.search !== 'keyword' && <span className="score">유사도 {d.score.toFixed(2)}</span>}
+                              </li>
+                            ))}
+                          </ol>
+                        )}
+                        {shown.result.search && shown.result.search !== 'none' && (
+                          <p className="how">
+                            {shown.result.search === 'keyword' ? '낱말이 겹치는 문서를 찾는 검색' : '뜻이 가까운 문서를 찾는 임베딩 검색'}
+                            {shown.result.search === 'pgvector' && ' · pgvector'}
+                          </p>
+                        )}
+                      </div>
+                      <p>{shown.result.reply}</p>
+                      <p className="dlg-cite">
+                        {shown.result.sources.length > 0 ? (
+                          shown.result.sources.map((s) => (
+                            <span className="chip src" key={s.id}>
+                              근거: {s.label}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="chip nosrc">근거 없음: 받은 문서에 없는 내용</span>
+                        )}
+                        {shown.result.engine === 'gemini' && <span className="chip">Gemini가 답함 · 숫자와 근거는 코드가 검사</span>}
+                      </p>
+                      {shown.result.guard && <p className="guard-note">모델의 답을 코드가 걸러 냈어요({shown.result.guard}). 대신 정해진 답을 보여 드려요.</p>}
+                    </>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="dlg-name">고 선생</span>
+                  <p>찾으실 낱말을 말씀해 주십시오. 저는 찾아온 문서만 읽고 답합니다. 안경은 방금 닦았습니다.</p>
+                </>
+              )}
+            </div>
+
+            <div className="choices">
+              {turns.length > 1 && panel === 'answer' && !busy && (
+                <div className="stmt-nav">
+                  <button type="button" className="toggle" onClick={() => { setCur((c) => (Math.min(c, turns.length - 1) + turns.length - 1) % turns.length); setPressed(false) }}>
+                    ◀ 앞 답
+                  </button>
+                  <span className="mono">
+                    답 {Math.min(cur, turns.length - 1) + 1}/{turns.length}
+                  </span>
+                  <button type="button" className="toggle" onClick={() => { setCur((c) => (Math.min(c, turns.length - 1) + 1) % turns.length); setPressed(false) }}>
+                    다음 답 ▶
+                  </button>
+                </div>
+              )}
+              <form className="ask-words" onSubmit={(e) => void search(e)}>
+                <label htmlFor="search-input" className="choices-q">
+                  고 선생에게 찾아 달라고 할 낱말. 쪽지를 눌러 넣고 뺄 수 있어요
+                </label>
+                <div className="word-chips" role="group" aria-label="낱말 쪽지">
+                  {words.map((w) => (
+                    <button key={w} type="button" className="toggle" aria-pressed={inQuery.includes(w)} onClick={() => toggleWord(w)}>
+                      {w}
+                    </button>
+                  ))}
+                </div>
+                <div className="search-row">
+                  <input
+                    ref={inputRef}
+                    id="search-input"
+                    type="search"
+                    autoComplete="off"
+                    enterKeyHint="search"
+                    maxLength={MAX_QUERY}
+                    placeholder="찾을 낱말"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                  />
+                  <button className="btn" type="submit" disabled={busy || query.trim() === ''}>
+                    {busy ? '찾는 중' : '찾아 주세요'}
+                  </button>
+                </div>
+                {!usingMock && <p className="privacy-note">입력한 말은 분석에 쓰여요. 개인정보는 넣지 마세요.</p>}
+              </form>
+              <div className="act-row">
+                <button
+                  type="button"
+                  className="act"
+                  disabled={!shown || busy}
+                  onClick={() => {
+                    setPanel('answer')
+                    setPressed((v) => panel !== 'answer' || !v)
+                  }}
+                >
+                  {pressed && panel === 'answer' ? '답 다시 보기' : '더 캐묻기'}
+                </button>
+                <button type="button" className="act present" onClick={() => setPanel('door')}>
+                  비상문 열기
+                </button>
+              </div>
+            </div>
+
+            <Coach className="in-room" text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          </div>
         </div>
 
         <aside className="side">
+          {/* 넓은 화면에서는 다음 수 안내를 스크롤을 따라오는 오른쪽 칸 맨 위에 둔다 */}
+          <div className="side-coach">
+            <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          </div>
           <div>
             <h3>
               수첩 <span className="mono muted">낱말 {words.length}개</span>

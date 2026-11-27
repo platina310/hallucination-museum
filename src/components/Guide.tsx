@@ -27,15 +27,17 @@ export function Coach({
   opened,
   onOpen,
   done,
+  className,
 }: {
   text: string
   hints: string[]
   opened: number
   onOpen: () => void
   done: boolean
+  className?: string // 방 안에 두는 것(in-room)과 오른쪽 칸에 두는 것을 화면 너비에 따라 하나만 보여 준다
 }) {
   return (
-    <div className="coach">
+    <div className={className ? `coach ${className}` : 'coach'}>
       <p role="status">
         <b>다음 수</b> {text}
       </p>

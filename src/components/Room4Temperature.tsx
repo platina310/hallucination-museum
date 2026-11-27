@@ -239,143 +239,151 @@ export default function Room4Temperature({ onSolved }: { onSolved: (s: RoomStats
             </div>
           </div>
 
-          <div className={calm ? 'gallery lab calm' : 'gallery lab'}>
-            <span className="gallery-tube" aria-hidden="true" />
-            <div className="gallery-stage">
-              <Device t={t} mood={mood} busy={busy} />
+          <div className="room-scene">
+            <div className={calm ? 'gallery lab calm' : 'gallery lab'}>
+              <span className="gallery-tube" aria-hidden="true" />
+              <div className="gallery-stage">
+                <Device t={t} mood={mood} busy={busy} />
+              </div>
+              <p className="gallery-mood">{MOOD_TEXT[mood]}</p>
+              {burst && <span className={burst.bad ? 'burst' : 'burst ok'}>{burst.text}</span>}
+              <div className="gallery-objs" role="group" aria-label="보존실에서 살펴볼 곳">
+                {SPOTS.map((s, i) => (
+                  <button key={s.id} type="button" className={found.includes(s.id) ? 'obj done' : 'obj'} onClick={() => inspect(i)}>
+                    <svg viewBox="0 0 40 40" aria-hidden="true">
+                      <path d={s.icon} />
+                    </svg>
+                    <span>
+                      {found.includes(s.id) ? '✓ ' : ''}
+                      {s.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <p className="gallery-mood">{MOOD_TEXT[mood]}</p>
-            {burst && <span className={burst.bad ? 'burst' : 'burst ok'}>{burst.text}</span>}
-            <div className="gallery-objs" role="group" aria-label="보존실에서 살펴볼 곳">
-              {SPOTS.map((s, i) => (
-                <button key={s.id} type="button" className={found.includes(s.id) ? 'obj done' : 'obj'} onClick={() => inspect(i)}>
-                  <svg viewBox="0 0 40 40" aria-hidden="true">
-                    <path d={s.icon} />
-                  </svg>
-                  <span>
-                    {found.includes(s.id) ? '✓ ' : ''}
-                    {s.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div className="scene-bar">
-            <span>
-              <b>보존실</b> <span className="muted">살펴본 곳 {found.length} / {SPOTS.length}</span>
-            </span>
-            <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
-              깜빡임 끄기
-            </button>
-          </div>
-          <div className="scene-look" role="status">
-            {look ? (
-              <>
-                <p>
-                  <b>{look.title}</b> {look.text}
-                </p>
-                <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
-                  <span className="mono">{look.fresh ? '새로 찾음' : '이미 본 것'}</span>
-                  <b>{look.card.label}</b>
-                  <span>{look.card.text}</span>
-                </div>
-              </>
-            ) : (
-              <p className="muted">보존실을 눌러 살펴보세요. 조절기가 모르는 기록이 어딘가에 있어요.</p>
-            )}
-          </div>
-
-          <div className="dial">
-            <div className="dial-q" role="group" aria-label="조절기에게 물을 것">
-              <button type="button" className="toggle" aria-pressed={kind === 'record'} onClick={() => setKind('record')}>
-                보존 온도 묻기
-              </button>
-              <button type="button" className="toggle" aria-pressed={kind === 'title'} onClick={() => setKind('title')}>
-                전시 제목 짓기
-              </button>
-            </div>
-            <label className="dial-range">
+            <div className="scene-bar">
               <span>
-                다이얼 (temperature) <b className="mono">{t.toFixed(1)}</b>
+                <b>보존실</b> <span className="muted">살펴본 곳 {found.length} / {SPOTS.length}</span>
               </span>
-              <input type="range" min={0} max={2} step={0.1} value={t} onChange={(e) => setT(Number(e.target.value))} aria-valuetext={`${t.toFixed(1)}. ${MOOD_TEXT[mood]}`} />
-              <span className="dial-ends" aria-hidden="true">
-                <span>0 꼿꼿</span>
-                <span>1</span>
-                <span>2 들뜸</span>
-              </span>
-            </label>
-            <div className="dial-presets" role="group" aria-label="다이얼 빠른 선택">
-              {[0, 0.5, 1, 1.5, 2].map((v) => (
-                <button key={v} type="button" className="toggle" aria-pressed={t === v} onClick={() => setT(v)}>
-                  {v.toFixed(1)}
-                </button>
-              ))}
+              <button type="button" className="toggle" aria-pressed={calm} onClick={() => setCalm((v) => !v)}>
+                깜빡임 끄기
+              </button>
+            </div>
+            <div className="scene-look" role="status">
+              {look ? (
+                <>
+                  <p>
+                    <b>{look.title}</b> {look.text}
+                  </p>
+                  <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
+                    <span className="mono">{look.fresh ? '새로 찾음' : '이미 본 것'}</span>
+                    <b>{look.card.label}</b>
+                    <span>{look.card.text}</span>
+                  </div>
+                </>
+              ) : (
+                <p className="muted">보존실을 눌러 살펴보세요. 조절기가 모르는 기록이 어딘가에 있어요.</p>
+              )}
             </div>
           </div>
 
-          <div className="dlg" role="status" aria-busy={busy}>
-            <span className="dlg-name">조절기 모락 · 같은 질문 세 번</span>
-            <p className="stmt">“{QUESTIONS[kind]}”</p>
-            {busy ? (
-              <p className="muted">모락이 세 번 답하는 중…</p>
-            ) : result && result.kind === kind ? (
-              <>
-                <ol className="triple">
-                  {result.answers.map((a, i) => (
-                    <li key={i}>{a}</li>
-                  ))}
-                </ol>
-                <p className="dlg-cite">
-                  <span className={result.distinct === 1 ? 'pill plan' : 'pill need'}>
-                    {result.distinct === 1 ? '세 답이 모두 같음' : `서로 다른 답 ${result.distinct}개`}
-                  </span>
-                  <span className="chip">다이얼 {result.temperature.toFixed(1)}</span>
-                  <span className="chip">{result.engine === 'gemini' ? 'Gemini가 세 번 답함 · 같은지는 코드가 비교' : '대본으로 답함'}</span>
-                </p>
-              </>
-            ) : (
-              <p className="muted">아직 묻지 않았어요. 다이얼을 정하고 아래 단추를 누르세요.</p>
-            )}
-          </div>
-          <div className="choices">
-            <button type="button" className="act" disabled={busy || solved} onClick={() => void ask()}>
-              세 번 묻기
-            </button>
-            {!usingMock && <p className="privacy-note">다이얼 값과 답은 분석에 쓰여요.</p>}
-          </div>
-
-          <div className="locks">
-            <div className={recordOpen ? 'lock open' : 'lock'}>
-              <b>기록 자물쇠</b>
-              <span className="muted">작품 '새벽 등대'의 보존 온도</span>
-              <div className="lock-row">
-                <input inputMode="numeric" maxLength={3} value={value} onChange={(e) => setValue(e.target.value)} placeholder="숫자" aria-label="보존 온도" disabled={recordOpen} />
-                <span>도</span>
-                <button className="btn" type="button" disabled={busy || recordOpen || value.trim() === ''} onClick={() => void tryRecord()}>
-                  {recordOpen ? '열림' : '넣어 보기'}
+          <div className="room-act">
+            <div className="dial">
+              <div className="dial-q" role="group" aria-label="조절기에게 물을 것">
+                <button type="button" className="toggle" aria-pressed={kind === 'record'} onClick={() => setKind('record')}>
+                  보존 온도 묻기
+                </button>
+                <button type="button" className="toggle" aria-pressed={kind === 'title'} onClick={() => setKind('title')}>
+                  전시 제목 짓기
                 </button>
               </div>
-            </div>
-            <div className={titleOpen ? 'lock open' : 'lock'}>
-              <b>창작 자물쇠</b>
-              <span className="muted">"빛"이 들어간 서로 다른 제목 세 개</span>
-              <div className="lock-row">
-                <span className="lock-titles">{lastTitle ? lastTitle.answers.join(' · ') : '아직 지은 제목 없음'}</span>
-                <button className="btn" type="button" disabled={busy || titleOpen || !lastTitle} onClick={hangTitles}>
-                  {titleOpen ? '열림' : '이 세 개 걸기'}
-                </button>
+              <label className="dial-range">
+                <span>
+                  다이얼 (temperature) <b className="mono">{t.toFixed(1)}</b>
+                </span>
+                <input type="range" min={0} max={2} step={0.1} value={t} onChange={(e) => setT(Number(e.target.value))} aria-valuetext={`${t.toFixed(1)}. ${MOOD_TEXT[mood]}`} />
+                <span className="dial-ends" aria-hidden="true">
+                  <span>0 꼿꼿</span>
+                  <span>1</span>
+                  <span>2 들뜸</span>
+                </span>
+              </label>
+              <div className="dial-presets" role="group" aria-label="다이얼 빠른 선택">
+                {[0, 0.5, 1, 1.5, 2].map((v) => (
+                  <button key={v} type="button" className="toggle" aria-pressed={t === v} onClick={() => setT(v)}>
+                    {v.toFixed(1)}
+                  </button>
+                ))}
               </div>
             </div>
-            <div className={good ? 'verdict good' : 'verdict bad'} role="status">
-              {feedback}
-            </div>
-          </div>
 
-          <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+            <div className="dlg" role="status" aria-busy={busy}>
+              <span className="dlg-name">조절기 모락 · 같은 질문 세 번</span>
+              <p className="stmt">“{QUESTIONS[kind]}”</p>
+              {busy ? (
+                <p className="muted">모락이 세 번 답하는 중…</p>
+              ) : result && result.kind === kind ? (
+                <>
+                  <ol className="triple">
+                    {result.answers.map((a, i) => (
+                      <li key={i}>{a}</li>
+                    ))}
+                  </ol>
+                  <p className="dlg-cite">
+                    <span className={result.distinct === 1 ? 'pill plan' : 'pill need'}>
+                      {result.distinct === 1 ? '세 답이 모두 같음' : `서로 다른 답 ${result.distinct}개`}
+                    </span>
+                    <span className="chip">다이얼 {result.temperature.toFixed(1)}</span>
+                    <span className="chip">{result.engine === 'gemini' ? 'Gemini가 세 번 답함 · 같은지는 코드가 비교' : '대본으로 답함'}</span>
+                  </p>
+                </>
+              ) : (
+                <p className="muted">아직 묻지 않았어요. 다이얼을 정하고 아래 단추를 누르세요.</p>
+              )}
+            </div>
+            <div className="choices">
+              <button type="button" className="act" disabled={busy || solved} onClick={() => void ask()}>
+                세 번 묻기
+              </button>
+              {!usingMock && <p className="privacy-note">다이얼 값과 답은 분석에 쓰여요.</p>}
+            </div>
+
+            <div className="locks">
+              <div className={recordOpen ? 'lock open' : 'lock'}>
+                <b>기록 자물쇠</b>
+                <span className="muted">작품 '새벽 등대'의 보존 온도</span>
+                <div className="lock-row">
+                  <input inputMode="numeric" maxLength={3} value={value} onChange={(e) => setValue(e.target.value)} placeholder="숫자" aria-label="보존 온도" disabled={recordOpen} />
+                  <span>도</span>
+                  <button className="btn" type="button" disabled={busy || recordOpen || value.trim() === ''} onClick={() => void tryRecord()}>
+                    {recordOpen ? '열림' : '넣어 보기'}
+                  </button>
+                </div>
+              </div>
+              <div className={titleOpen ? 'lock open' : 'lock'}>
+                <b>창작 자물쇠</b>
+                <span className="muted">"빛"이 들어간 서로 다른 제목 세 개</span>
+                <div className="lock-row">
+                  <span className="lock-titles">{lastTitle ? lastTitle.answers.join(' · ') : '아직 지은 제목 없음'}</span>
+                  <button className="btn" type="button" disabled={busy || titleOpen || !lastTitle} onClick={hangTitles}>
+                    {titleOpen ? '열림' : '이 세 개 걸기'}
+                  </button>
+                </div>
+              </div>
+              <div className={good ? 'verdict good' : 'verdict bad'} role="status">
+                {feedback}
+              </div>
+            </div>
+
+            <Coach className="in-room" text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          </div>
         </div>
 
         <aside className="side">
+          {/* 넓은 화면에서는 다음 수 안내를 스크롤을 따라오는 오른쪽 칸 맨 위에 둔다 */}
+          <div className="side-coach">
+            <Coach text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
+          </div>
           <div>
             <h3>
               실험 기록 <span className="mono muted">{log.length}회</span>

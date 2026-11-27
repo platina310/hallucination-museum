@@ -41,9 +41,16 @@ const STAGES: { id: Stage; label: string }[] = [
 ]
 
 function FlowBar({ stage }: { stage: Stage }) {
+  const bar = useRef<HTMLOListElement>(null)
+  // 좁은 화면에서는 표시줄이 한 줄이라 옆으로 넘친다. 지금 단계가 가운데 오도록 표시줄만 옆으로 민다
+  useEffect(() => {
+    const ol = bar.current
+    const now = ol?.querySelector<HTMLElement>('li.now')
+    if (ol && now && ol.scrollWidth > ol.clientWidth) ol.scrollLeft = now.offsetLeft - (ol.clientWidth - now.offsetWidth) / 2
+  }, [stage])
   return (
     <div className="flow-row">
-      <ol className="flowbar" aria-label="이용 흐름">
+      <ol className="flowbar" aria-label="이용 흐름" ref={bar}>
         {STAGES.map((s) => (
           <li key={s.id} className={s.id === stage ? 'now' : undefined} aria-current={s.id === stage ? 'step' : undefined}>
             {s.label}
