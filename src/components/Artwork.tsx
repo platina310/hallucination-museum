@@ -1,6 +1,6 @@
 // 환각의 방에 걸리는 작품 세 점. 팀이 지어낸 가상의 그림이고 직접 그렸다.
 // 그림 속 내용은 기록 카드와 어긋나지 않게 맞춘다. 서명 옆 숫자는 제작 연도다.
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 interface Piece {
   title: string
@@ -191,15 +191,39 @@ const PIECES: Piece[] = [
 
 export const ARTWORK_COUNT = PIECES.length
 
-export default function Artwork({ index }: { index: number }) {
+// 하드 모드에서 검수를 끝내면 그림 위쪽에서 피가 흘러내린다.
+// 줄기마다 자리(x, %), 굵기(w, px), 길이(h, %), 흐르기 시작하는 때(d, 초), 다 흐르는 데 걸리는 시간(t, 초)이 다르다.
+const BLEEDS = [
+  { x: 5, w: 4, h: 34, d: 1.5, t: 4.2 },
+  { x: 16, w: 6, h: 71, d: 0.9, t: 6.4 },
+  { x: 27, w: 3, h: 22, d: 2.6, t: 3.4 },
+  { x: 39, w: 5, h: 52, d: 1.2, t: 5.6 },
+  { x: 52, w: 3, h: 16, d: 3.1, t: 3 },
+  { x: 61, w: 7, h: 86, d: 0.7, t: 7.6 },
+  { x: 74, w: 4, h: 41, d: 2, t: 4.8 },
+  { x: 85, w: 5, h: 63, d: 1.4, t: 6 },
+  { x: 94, w: 3, h: 27, d: 2.9, t: 3.6 },
+]
+// 가장 긴 줄기 끝에서 방울이 떨어진다
+const LONGEST = BLEEDS.reduce((a, b) => (b.h > a.h ? b : a))
+
+export default function Artwork({ index, bleed = false }: { index: number; bleed?: boolean }) {
   const p = PIECES[index] ?? PIECES[0]
   return (
     <figure className="art-wall">
       {/* 작품이 바뀔 때마다 새로 걸리는 움직임을 준다 */}
-      <div key={index} className={`art-frame ${p.medium}`}>
-        <svg viewBox={p.view} role="img" aria-label={p.alt} preserveAspectRatio="xMidYMid slice">
+      <div key={index} className={`art-frame ${p.medium}${bleed ? ' bleeding' : ''}`}>
+        <svg viewBox={p.view} role="img" aria-label={bleed ? `${p.alt} 그림 위쪽에서 피가 여러 줄기로 흘러내리고 있다.` : p.alt} preserveAspectRatio="xMidYMid slice">
           {p.art}
         </svg>
+        {bleed && (
+          <span className="art-blood" aria-hidden="true">
+            {BLEEDS.map((b) => (
+              <i key={b.x} style={{ '--x': `${b.x}%`, '--w': `${b.w}px`, '--h': `${b.h}%`, '--d': `${b.d}s`, '--t': `${b.t}s` } as CSSProperties} />
+            ))}
+            <b style={{ '--x': `${LONGEST.x}%`, '--w': `${LONGEST.w}px`, '--h': `${LONGEST.h}%`, '--d': `${LONGEST.d + LONGEST.t}s` } as CSSProperties} />
+          </span>
+        )}
       </div>
       <figcaption className="art-label">
         <b>「{p.title}」</b>

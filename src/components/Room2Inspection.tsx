@@ -2,12 +2,13 @@
 // 도슨트의 설명을 한 건씩 통과시키거나 반려한다. 라운드마다 검수 규칙이 하나씩 늘어난다.
 import { useEffect, useRef, useState } from 'react'
 import { judgeInspection } from '../api'
+import { useHardMode } from '../game/mode'
 import type { RoomStats } from '../game/progress'
 import { ROUNDS } from '../mock/room2'
 import Artwork from './Artwork'
 import { Coach, Mission } from './Guide'
 import Portrait, { Figure } from './Portrait'
-import type { Face } from './Portrait'
+import type { Dread, Face } from './Portrait'
 
 const MAX_WARNINGS = 3
 
@@ -38,6 +39,7 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
   const [good, setGood] = useState(false)
   const [hints, setHints] = useState(0)
   const [busy, setBusy] = useState(false)
+  const hard = useHardMode() // 하드 모드에서만 루미와 그림이 변한다
   const [foundCards, setFoundCards] = useState<string[]>(solvedBefore ? ROUNDS[ROUNDS.length - 1].cards.map((c) => c.label) : [])
   const [look, setLook] = useState<{ title: string; text: string; card?: { label: string; text: string }; fresh?: boolean } | null>(null)
   const [cur, setCur] = useState(0) // 지금 보고 있는 설명
@@ -160,6 +162,13 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
     mood = '출처를 대는 목소리가 떨립니다'
   }
 
+  // 하드 모드: 라운드를 통과할 때마다 루미가 한 단계씩 변하고, 검수를 끝내면 그림에서 피가 흘러내린다
+  const dread: Dread = !hard ? 0 : solved ? 3 : (Math.min(round, 2) as Dread)
+  const bleed = hard && solved
+  if (bleed) mood = '말수가 줄었습니다. 등 뒤 그림에서 피가 흘러내리는데 돌아보지 않습니다'
+  else if (dread === 2) mood = `${mood}. 눈가가 유난히 어둡습니다`
+  else if (dread === 1) mood = `${mood}. 낯빛이 조금 창백해졌습니다`
+
   let coach = '설명마다 루미가 댄 출처를 보고, 기록 카드를 펼쳐 대조하세요. 규칙에 걸리면 반려, 아니면 통과입니다.'
   if (!allFound && !solved && !failed) coach = '전시실을 살펴 이 작품의 기록 카드를 먼저 다 찾으세요. 카드 없이는 루미의 말을 확인할 수 없습니다.'
   if (solved) coach = '검수 완료. 출처는 이름이 아니라 내용으로, 그리고 최근 기록으로 확인합니다.'
@@ -185,7 +194,7 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
       <div className="proto-body cards-first">
         <div className="room">
           <div className="suspect-bar">
-            <Portrait who="lumi" face={face} />
+            <Portrait who="lumi" face={face} dread={dread} />
             <div className="suspect-now">
               <b>루미</b> <span className="muted">AI 도슨트 · 지금 작품 {current.artwork}</span>
               <div className="mood" role="status">
@@ -204,13 +213,13 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
 
           <div className="room-scene">
             {/* 전시실: 그림 주변을 살펴 기록 카드를 찾는다 */}
-            <div className={calm ? 'gallery calm' : 'gallery'}>
+            <div className={`gallery${calm ? ' calm' : ''}${dread ? ` dread-${dread}` : ''}`}>
               <span className="gallery-tube" aria-hidden="true" />
               {/* 그림 옆에 루미가 서서 설명한다. 표정은 상황에 따라 바뀐다 */}
               <div className="gallery-stage">
-                <Artwork index={round} />
+                <Artwork index={round} bleed={bleed} />
                 <div className={burst ? 'gallery-lumi jolt' : 'gallery-lumi'}>
-                  <Figure who="lumi" face={face} />
+                  <Figure who="lumi" face={face} dread={dread} />
                 </div>
               </div>
               <p className="gallery-mood">{mood}</p>
@@ -322,7 +331,7 @@ export default function Room2Inspection({ solvedBefore, onSolved }: { solvedBefo
             <Coach className="in-room" text={coach} hints={HINTS} opened={hints} onOpen={() => setHints((h) => Math.min(h + 1, HINTS.length))} done={solved} />
 
             <div className="submit-row">
-              <button className="btn" type="button" disabled={locked || busy || !allDecided} onClick={() => void submit()}>
+              <button className="btn submit" type="button" disabled={locked || busy || !allDecided} onClick={() => void submit()}>
                 {allDecided ? '검수 결과 제출' : `전부 처리해야 제출됩니다 (${Object.keys(decisions).length}/${current.claims.length})`}
               </button>
               <button className="btn ghost small" type="button" onClick={reset}>
