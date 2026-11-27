@@ -31,6 +31,7 @@ const FACE_LABEL: Record<Face, string> = {
 }
 
 // 하드 모드에서 문지기가 사람 같지 않게 변한 정도. 플레이어가 맞힐 때마다 한 단계씩 오른다. 0은 평소 모습
+// 도 씨는 좀비처럼 썩어 가고, 루미는 달걀귀신처럼 얼굴이 지워진다
 export type Dread = 0 | 1 | 2 | 3
 const DREAD_LABEL = ['', ', 어딘가 창백해진 모습', ', 눈가가 검게 꺼진 모습', ', 사람 같지 않게 변한 모습']
 
@@ -184,6 +185,46 @@ function dreadOver(d: Dread): ReactNode {
   )
 }
 
+// 루미는 도 씨와 달리 달걀귀신으로 변한다. 단계가 오를수록 얼굴이 지워진다: 눈썹 → 한쪽 눈 → 입만 남음
+const EGG_LABEL = ['', ', 눈썹이 지워진 모습', ', 한쪽 눈이 지워진 모습', ', 입만 남고 얼굴이 지워진 모습']
+const rub = { stroke: '#8d8a84', strokeWidth: 1.1, strokeLinecap: 'round' as const, fill: 'none', opacity: 0.26 }
+
+/** 표정 위에 살색을 덧칠해 지운다. 지운 자리에는 문지른 자국이 옅게 남는다. 머리카락은 이 위에 그려진다. */
+function eggOver(d: Dread): ReactNode {
+  if (d === 0) return null
+  if (d === 3)
+    return (
+      <g className="egg-over">
+        <ellipse cx="48" cy="51.2" rx="17" ry="18.8" fill="var(--sheet)" />
+        <ellipse cx="41" cy="43" rx="5" ry="8" fill="#fff" opacity=".55" transform="rotate(-18 41 43)" />
+        <path d="M36 43.500l8-1M52.500 42.500l7.500 1.200M36.500 50.500l6.500 .600M53 51l6.500-.500" {...rub} />
+        <path d="M38 60.500q10 7.500 20 0" {...line} strokeWidth={1.9} />
+      </g>
+    )
+  return (
+    <g className="egg-over">
+      <ellipse cx="40" cy="42.3" rx="6.8" ry="4" fill="var(--sheet)" />
+      <ellipse cx="56" cy="42.3" rx="6.8" ry="4" fill="var(--sheet)" />
+      <path d="M35.500 43.500l9-1.200M52 42.200l8 1.300" {...rub} />
+      {d === 2 && (
+        <>
+          <ellipse cx="40" cy="50.6" rx="6.2" ry="5.2" fill="var(--sheet)" />
+          <ellipse cx="56" cy="50.6" rx="6.2" ry="5.2" fill="var(--sheet)" opacity=".62" />
+          <path d="M36 50l8 1M36.500 52.500l6.500 .500" {...rub} />
+        </>
+      )}
+    </g>
+  )
+}
+
+/** 변한 모습을 가리키는 클래스와 읽어 주는 말. 루미만 달걀귀신 쪽을 쓴다. */
+function dreadClass(who: Who, d: Dread): string {
+  return d ? `${who === 'lumi' ? ' egg' : ''} dread-${d}` : ''
+}
+function dreadLabel(who: Who, d: Dread): string {
+  return who === 'lumi' ? EGG_LABEL[d] : DREAD_LABEL[d]
+}
+
 /** 몸과 머리 뒤쪽. 얼굴보다 먼저 그린다. */
 function back(who: Who): ReactNode {
   if (who === 'do')
@@ -248,7 +289,7 @@ export default function Portrait({ who, face, size, dread = 0 }: { who: Who; fac
   const clip = useId()
   const droop = face === 'confess'
   return (
-    <svg className={`portrait ${face}${size ? ` ${size}` : ''}${dread ? ` dread-${dread}` : ''}`} viewBox="0 0 96 96" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}${DREAD_LABEL[dread]}`}>
+    <svg className={`portrait ${face}${size ? ` ${size}` : ''}${dreadClass(who, dread)}`} viewBox="0 0 96 96" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}${dreadLabel(who, dread)}`}>
       <clipPath id={clip}>
         <circle cx="48" cy="48" r="46" />
       </clipPath>
@@ -261,9 +302,9 @@ export default function Portrait({ who, face, size, dread = 0 }: { who: Who; fac
           <circle cx="29.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
           <circle cx="66.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
           <ellipse cx="48" cy="51" rx="18.5" ry="20.5" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="2" />
-          {dreadUnder(dread)}
+          {who !== 'lumi' && dreadUnder(dread)}
           {features(face)}
-          {dreadOver(dread)}
+          {who === 'lumi' ? eggOver(dread) : dreadOver(dread)}
           {front(who, face)}
         </g>
       </g>
@@ -311,7 +352,7 @@ function body(who: Who): ReactNode {
 /** 상반신 그림. 동그란 초상 대신 장면 안에 사람으로 세울 때 쓴다. 표정은 초상과 같다. */
 export function Figure({ who, face, dread = 0 }: { who: Who; face: Face; dread?: Dread }) {
   return (
-    <svg className={`figure ${face}${dread ? ` dread-${dread}` : ''}`} viewBox="0 0 200 238" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}${DREAD_LABEL[dread]}`}>
+    <svg className={`figure ${face}${dreadClass(who, dread)}`} viewBox="0 0 200 238" role="img" aria-label={`${NAME[who]}, ${FACE_LABEL[face]}${dreadLabel(who, dread)}`}>
       {/* 어깨를 올려 목이 짧고 굵게 보이게 한다 */}
       <g transform="translate(0 -12)">{body(who)}</g>
       <g transform="translate(23.2 6) scale(1.6)">
@@ -323,9 +364,9 @@ export function Figure({ who, face, dread = 0 }: { who: Who; face: Face; dread?:
             <circle cx="29.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
             <circle cx="66.5" cy="53" r="3.6" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="1.8" />
             <ellipse cx="48" cy="51" rx="18.5" ry="20.5" fill="var(--sheet)" stroke="var(--ink)" strokeWidth="2" />
-            {dreadUnder(dread)}
+            {who !== 'lumi' && dreadUnder(dread)}
             {features(face)}
-            {dreadOver(dread)}
+            {who === 'lumi' ? eggOver(dread) : dreadOver(dread)}
             {front(who, face)}
           </g>
         </g>

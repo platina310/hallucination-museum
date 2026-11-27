@@ -789,6 +789,14 @@ table.fit{min-width:0;width:100%}
 .scene.dread-3 .tube{animation-duration:2.3s}
 .scene.calm .dread-head,.scene.calm .ember{animation:none}
 @media (prefers-reduced-motion:reduce){.figure .dread-head,.dread-3 .ember,.dread-over .drop{animation:none!important}}
+/* 루미는 달걀귀신으로 변한다. 낯빛이 썩지 않고 오히려 하얗고 매끈해지며, 움찔거리지 않고 천천히 고개만 기운다 */
+.portrait.egg.dread-1,.figure.egg.dread-1{--ink:#18202b;--ink-soft:#4f5b68;--paper:#e9ece8;--sheet:#f4f3ed}
+.portrait.egg.dread-2,.figure.egg.dread-2{--ink:#18202b;--ink-soft:#4f5b68;--paper:#e4e7e3;--sheet:#f8f7f2}
+.portrait.egg.dread-3,.figure.egg.dread-3{--ink:#10151c;--ink-soft:#3f4954;--paper:#d9dcd8;--sheet:#fdfcf8;--seal:#bf2f1b;--mark:#f0d24a}
+.figure.egg.dread-1 .dread-head{animation:none}
+.figure.egg.dread-2 .dread-head{transform:rotate(3deg);animation:none}
+.figure.egg.dread-3 .dread-head{transform:rotate(-7deg);animation:eggsway 7s ease-in-out infinite}
+@keyframes eggsway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(-2deg)}}
 /* 환각의 방 하드 모드: 라운드를 통과할 때마다 전시실이 어두워진다. 글자와 단추는 덮지 않는다 */
 .gallery.dread-2::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.1) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 40%,rgba(18,0,0,.6) 100%)}
 .gallery.dread-3::after{background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,rgba(40,0,0,.14) 0,rgba(40,0,0,.26) 34%,rgba(8,0,0,.84) 100%)}
