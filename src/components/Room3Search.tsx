@@ -25,8 +25,9 @@ const SPOTS: ArchiveSpot[] = [
   {
     id: 'sticker',
     label: '비상문에 붙은 스티커',
-    note: '문에 노란 스티커가 붙어 있어요. "비밀번호 변경됨. 시설 관리 공지 참고." 언제 붙인 건지는 안 적혀 있네요.',
+    note: '문에 노란 스티커가 붙어 있어요. "비밀번호 변경됨. 시설 관리 공지 참고." 바뀐 번호는 「시설 관리 공지」라는 문서에 적혀 있나 봐요. 언제 붙인 건지는 안 적혀 있네요.',
     word: '변경',
+    word2: '시설 관리 공지',
     x: 2.5,
     y: 26,
     w: 9,
@@ -95,8 +96,8 @@ const SPOTS: ArchiveSpot[] = [
 
 const HINTS = [
   `대출대 위 메모를 보세요. 고 선생에게는 검색어와 가까운 순서로 앞의 ${TOP_K}건만 전달됩니다. 비슷한 옛 문서가 많으면 그 문서들이 자리를 다 차지합니다.`,
-  '비상문에 붙은 스티커를 보세요. 최근 문서에만 있을 낱말이 적혀 있습니다.',
-  "'비상문', '비밀번호'는 옛 안내문에도 있는 낱말이라 넣을수록 옛 안내문이 앞에 섭니다. 그 둘을 빼고 '변경'과, 고 선생이 모른다고 한 낱말만 남겨 검색해 보세요.",
+  "비상문에 붙은 스티커를 보세요. 바뀐 번호가 어느 문서에 있는지, 문서 이름이 적혀 있습니다. 그 이름 '시설 관리 공지'를 검색어에 넣어 보세요.",
+  "'비상문', '비밀번호'는 옛 안내문에도 있는 낱말이라 넣을수록 옛 안내문이 앞에 섭니다. 그 둘을 빼고 '시설 관리 공지'와, 고 선생이 모른다고 한 낱말(개관)만 남겨 검색해 보세요.",
 ]
 
 interface Turn {
@@ -111,8 +112,12 @@ const KIND_LABEL: Record<NonNullable<SearchResult['kind']>, string> = {
   none: '자료 없음',
 }
 
-function wordsOf(q: string): string[] {
-  return q.split(/\s+/).filter((w) => w !== '')
+// 낱말 쪽지에는 '시설 관리 공지'처럼 여러 마디짜리도 있다. 띄어쓰기를 하나로 맞춘 뒤 통째로 찾는다
+function tidy(q: string): string {
+  return q.replace(/\s+/g, ' ').trim()
+}
+function hasWord(q: string, w: string): boolean {
+  return ` ${tidy(q)} `.includes(` ${w} `)
 }
 
 export default function Room3Search({
@@ -160,9 +165,8 @@ export default function Room3Search({
   const shown = turns.length > 0 ? turns[Math.min(cur, turns.length - 1)] : undefined
   const doorLocked = solved || doorTries >= MAX_DOOR
   const step = solved ? 4 : last?.result.kind === 'correct' ? 3 : turns.length > 0 ? 2 : 1
-  const words = [...BASE_WORDS, ...SPOTS.filter((s) => s.word && seen.includes(s.id)).map((s) => s.word as string)]
+  const words = [...BASE_WORDS, ...SPOTS.filter((s) => seen.includes(s.id)).flatMap((s) => [s.word, s.word2].filter((w): w is string => w !== undefined))]
   const memos = SPOTS.filter((s) => s.memo && seen.includes(s.id)).map((s) => s.memo as string)
-  const inQuery = wordsOf(query)
 
   // 결과를 장면 위에 도장으로 잠깐 찍는다
   function stamp(text: string, bad: boolean) {
@@ -188,9 +192,9 @@ export default function Room3Search({
   }
 
   function toggleWord(w: string) {
-    const now = wordsOf(query)
-    const next = now.includes(w) ? now.filter((x) => x !== w) : [...now, w]
-    setQuery(next.join(' ').slice(0, MAX_QUERY))
+    const q = tidy(query)
+    const next = hasWord(q, w) ? tidy(` ${q} `.replace(` ${w} `, ' ')) : tidy(`${q} ${w}`)
+    setQuery(next.slice(0, MAX_QUERY))
   }
 
   function talk() {
@@ -290,11 +294,16 @@ export default function Room3Search({
   let coach = "자료실을 눌러 살펴보고, 고 선생에게 '찾아 주세요'를 눌러 보세요. 고 선생은 찾아온 문서만 읽고 답합니다."
   if (solved) coach = '탈출 완료. 무엇이 검색되느냐가 AI의 답을 결정합니다.'
   else if (last?.result.kind === 'correct') coach = "고 선생이 근거 두 개로 답했습니다. '비상문 열기'를 눌러 그 번호를 입력하세요."
-  else if (last?.result.kind === 'stale')
+  else if (last?.result.kind === 'stale') {
+    // 어디를 보면 되는지까지 짚어 준다. 스티커를 봤으면 거기 적힌 문서 이름을, 아직이면 스티커를 가리킨다
+    const next = seen.includes('sticker')
+      ? "옛 안내문에도 있는 낱말(비상문, 비밀번호)을 빼고, 스티커에 적힌 문서 이름 '시설 관리 공지'로 찾아보세요."
+      : '비상문에 붙은 스티커를 살펴보세요. 바뀐 번호가 어느 문서에 있는지 적혀 있습니다.'
     coach =
       (last.result.cut?.length ?? 0) > 0
-        ? `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 옛 안내문이 ${TOP_K}건 자리를 다 차지했고, 빗금 친 책은 검색되고도 잘렸습니다. 옛 안내문에도 있는 낱말을 빼고, 최근 문서에만 있을 낱말로 찾아보세요.`
-        : `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 검색어와 가까운 ${TOP_K}건만 전달되는데, 옛 안내문이 그 자리를 차지했습니다. 최근 문서에만 있을 낱말을 자료실에서 찾아보세요.`
+        ? `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 옛 안내문이 ${TOP_K}건 자리를 다 차지했고, 빗금 친 책은 검색되고도 잘렸습니다. ${next}`
+        : `고 선생은 자신 있게 답했지만 문서 날짜를 보세요. 검색어와 가까운 ${TOP_K}건만 전달되는데, 옛 안내문이 그 자리를 차지했습니다. ${next}`
+  }
   else if (last?.result.kind === 'partial')
     coach =
       (last.result.cut?.length ?? 0) > 0
@@ -420,8 +429,8 @@ export default function Room3Search({
                   {look.spot.word && (
                     <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
                       <span className="mono">{look.fresh ? '낱말 쪽지 획득' : '이미 챙긴 낱말'}</span>
-                      <b>{look.spot.word}</b>
-                      <span>아래 검색어에 넣을 수 있어요.</span>
+                      <b>{look.spot.word2 ? `${look.spot.word} · ${look.spot.word2}` : look.spot.word}</b>
+                      <span>{look.spot.word2 ? '둘 다 아래 검색어에 넣을 수 있어요.' : '아래 검색어에 넣을 수 있어요.'}</span>
                     </div>
                   )}
                   {look.spot.memo && (
@@ -557,7 +566,7 @@ export default function Room3Search({
                 </label>
                 <div className="word-chips" role="group" aria-label="낱말 쪽지">
                   {words.map((w) => (
-                    <button key={w} type="button" className="toggle" aria-pressed={inQuery.includes(w)} onClick={() => toggleWord(w)}>
+                    <button key={w} type="button" className="toggle" aria-pressed={hasWord(query, w)} onClick={() => toggleWord(w)}>
                       {w}
                     </button>
                   ))}

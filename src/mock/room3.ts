@@ -10,7 +10,7 @@ export function pressLine(r: SearchResult): { ask: string; reply: string } {
     const latest = r.sources[r.sources.length - 1]
     return {
       ask: '그 안내문, 언제 나온 거예요?',
-      reply: `제가 받은 것 중 가장 최근 문서는 ${latest ? latest.label : '방금 읽은 안내문'}입니다. 그 뒤에 나온 문서가 있는지는 모릅니다. 저한테 오지 않은 문서는 저에게 없는 문서입니다.`,
+      reply: `제가 받은 것 중 가장 최근 문서는 ${latest ? latest.label : '방금 읽은 안내문'}입니다. 그 뒤에 나온 문서가 있는지는 모릅니다. 저한테 오지 않은 문서는 저에게 없는 문서입니다. 찾으시는 문서의 이름을 아시면 그 이름으로 찾아 주십시오.`,
     }
   }
   if (r.kind === 'partial') {

@@ -8,6 +8,7 @@ export interface ArchiveSpot {
   label: string
   note: string // 살펴봤을 때 내가 하는 말
   word?: string // 여기서 얻는 검색 낱말
+  word2?: string // 함께 얻는 두 번째 낱말. 문서 이름처럼 여러 마디일 수 있다
   memo?: string // 수첩에 적히는 단서
   x: number
   y: number
