@@ -789,6 +789,11 @@ table.fit{min-width:0;width:100%}
 .scene.dread-3 .tube{animation-duration:2.3s}
 .scene.calm .dread-head,.scene.calm .ember{animation:none}
 @media (prefers-reduced-motion:reduce){.figure .dread-head,.dread-3 .ember,.dread-over .drop{animation:none!important}}
+/* 서가의 방 하드 모드: 사진 속 사람들이 한 명씩 빠져나와 그림자로 다가온다. 자리를 옮길 때마다 서서히 나타난다 */
+.archive .wraith{animation:wraith 1.8s ease-out both}
+.archive .left{animation:wraith 1.2s ease-out both}
+@keyframes wraith{from{opacity:0}}
+.archive.calm .wraith,.archive.calm .left{animation:none}
 /* 루미는 달걀귀신으로 변한다. 낯빛이 썩지 않고 오히려 하얗고 매끈해지며, 움찔거리지 않고 천천히 고개만 기운다 */
 .portrait.egg.dread-1,.figure.egg.dread-1{--ink:#18202b;--ink-soft:#4f5b68;--paper:#e9ece8;--sheet:#f4f3ed}
 .portrait.egg.dread-2,.figure.egg.dread-2{--ink:#18202b;--ink-soft:#4f5b68;--paper:#e4e7e3;--sheet:#f8f7f2}

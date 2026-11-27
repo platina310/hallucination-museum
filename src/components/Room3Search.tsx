@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { checkDoorCode, searchLibrary, usingMock } from '../api'
 import type { MockNet } from '../api'
+import { useHardMode } from '../game/mode'
 import type { RoomStats } from '../game/progress'
 import { DOC_COUNT, TOP_K, pressLine } from '../mock/room3'
 import type { SearchResult } from '../types'
@@ -13,7 +14,7 @@ import type { ArchiveSpot } from './Archive'
 import { BookFlip } from './Bookshelf'
 import { Coach, Mission } from './Guide'
 import Portrait from './Portrait'
-import type { Face } from './Portrait'
+import type { Dread, Face } from './Portrait'
 
 const MAX_DOOR = 5
 const MAX_QUERY = 40
@@ -94,6 +95,10 @@ const SPOTS: ArchiveSpot[] = [
   },
 ]
 
+// 하드 모드에서 사진을 다시 살펴보면 덧붙는 말. 단계마다 사진 속 사람이 한 명씩 줄어 있다
+const PHOTO_NOW = ['', ' …아까는 셋이었는데, 지금은 둘이에요.', ' …이제 한 사람만 남았어요. 그 사람도 이쪽을 보고 있어요.', ' …사진에 아무도 없어요.']
+const AISLE_NOW = ['', ' …통로 안쪽에 누가 서 있어요.', ' …하나가 통로 밖으로 나와 있어요. 안쪽에 하나 더 있고요.', ' …통로는 비었어요. 다들 어디로 갔죠.']
+
 const HINTS = [
   `대출대 위 메모를 보세요. 고 선생에게는 검색어와 가까운 순서로 앞의 ${TOP_K}건만 전달됩니다. 비슷한 옛 문서가 많으면 그 문서들이 자리를 다 차지합니다.`,
   "비상문에 붙은 스티커를 보세요. 바뀐 번호가 어느 문서에 있는지, 문서 이름이 적혀 있습니다. 그 이름 '시설 관리 공지'를 검색어에 넣어 보세요.",
@@ -148,6 +153,7 @@ export default function Room3Search({
   const [pressed, setPressed] = useState(false)
   const [showSpots, setShowSpots] = useState(false)
   const [calm, setCalm] = useState(() => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+  const hard = useHardMode() // 하드 모드에서만 방이 변한다
   const [shade, setShade] = useState(false)
   const [burst, setBurst] = useState<{ text: string; bad: boolean } | null>(null)
   const burstTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -167,6 +173,12 @@ export default function Room3Search({
   const step = solved ? 4 : last?.result.kind === 'correct' ? 3 : turns.length > 0 ? 2 : 1
   const words = [...BASE_WORDS, ...SPOTS.filter((s) => seen.includes(s.id)).flatMap((s) => [s.word, s.word2].filter((w): w is string => w !== undefined))]
   const memos = SPOTS.filter((s) => s.memo && seen.includes(s.id)).map((s) => s.memo as string)
+
+  // 하드 모드: 공지를 찾았을 때, 근거 둘로 정답을 받았을 때, 비상문을 열었을 때 한 단계씩 방이 변한다.
+  // 사진 속 사람이 한 명씩 사라지고 그만큼 그림자가 다가온다. 고 선생은 그대로다.
+  const gotNotice = turns.some((t) => t.result.kind === 'partial' || t.result.kind === 'correct')
+  const gotBoth = turns.some((t) => t.result.kind === 'correct')
+  const dread: Dread = !hard ? 0 : solved ? 3 : gotBoth ? 2 : gotNotice ? 1 : 0
 
   // 결과를 장면 위에 도장으로 잠깐 찍는다
   function stamp(text: string, bad: boolean) {
@@ -291,6 +303,10 @@ export default function Room3Search({
     mood = '빈손입니다. 지어내지는 않습니다'
   }
 
+  if (!busy && dread === 3) mood = '퇴근 준비를 합니다. 뒤에 선 셋은 못 본 모양입니다'
+  else if (!busy && dread === 2) mood = `${mood}. 벽 사진 속에 한 사람만 남았습니다`
+  else if (!busy && dread === 1) mood = `${mood}. 벽 사진 속 사람이 둘뿐입니다`
+
   let coach = "자료실을 눌러 살펴보고, 고 선생에게 '찾아 주세요'를 눌러 보세요. 고 선생은 찾아온 문서만 읽고 답합니다."
   if (solved) coach = '탈출 완료. 무엇이 검색되느냐가 AI의 답을 결정합니다.'
   else if (last?.result.kind === 'correct') coach = "고 선생이 근거 두 개로 답했습니다. '비상문 열기'를 눌러 그 번호를 입력하세요."
@@ -375,6 +391,7 @@ export default function Room3Search({
               calm={calm}
               showSpots={showSpots}
               shade={shade}
+              dread={dread}
               doorOpen={solved}
               burst={burst}
               onInspect={inspect}
@@ -425,7 +442,11 @@ export default function Room3Search({
               {panel === 'look' && look ? (
                 <>
                   <span className="dlg-name me">나 · {look.spot.label}</span>
-                  <p>{look.spot.note}</p>
+                  <p>
+                    {look.spot.note}
+                    {look.spot.id === 'photo' && PHOTO_NOW[dread]}
+                    {look.spot.id === 'aisle' && AISLE_NOW[dread]}
+                  </p>
                   {look.spot.word && (
                     <div className={look.fresh ? 'found-card fresh' : 'found-card'}>
                       <span className="mono">{look.fresh ? '낱말 쪽지 획득' : '이미 챙긴 낱말'}</span>

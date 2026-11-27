@@ -1,7 +1,7 @@
 // 서가의 방의 자료실. 방을 눌러 뒤져 검색에 쓸 낱말과 단서를 찾는다. 지시의 방 경비실과 같은 방식이다.
 // 오른쪽 서가는 검색 결과를 눈으로 보여 준다. 튀어나온 책은 사서가 받은 문서, 빗금 친 책은 검색됐지만 잘린 문서다.
 import { Figure } from './Portrait'
-import type { Face } from './Portrait'
+import type { Dread, Face } from './Portrait'
 
 export interface ArchiveSpot {
   id: string
@@ -29,8 +29,49 @@ function slot(id: string): number {
   return Number(id.replace(/\D/g, '')) - 1
 }
 
-function describe(count: number, given: number[], cut: number[]): string {
-  const room = '형광등이 켜진 누런 자료실. 왼쪽에 비상문과 키패드, 가운데에 고 선생이 선 대출대, 오른쪽에 서가가 있다.'
+// 하드 모드: 개관 기념 사진 속 세 사람이 한 명씩 사진에서 사라지고, 사라진 만큼 검은 그림자가 통로에서 나와 다가온다.
+// 고 선생은 변하지 않는다. 변하는 것은 방이다.
+const PEOPLE = [
+  { cx: 218, cy: 88, r: 6, body: 'M209 109q9-16 18 0z' },
+  { cx: 242, cy: 85, r: 6.5, body: 'M232 109q10-18 20 0z' },
+  { cx: 266, cy: 88, r: 6, body: 'M257 109q9-16 18 0z' },
+]
+const LEAVE = [2, 0, 1] // 사라지는 순서: 오른쪽, 왼쪽, 가운데
+// 단계별로 그림자가 서 있는 자리. s가 클수록 가까이 온 것이다
+const WRAITHS: Record<Dread, { x: number; y: number; s: number; where: 'aisle' | 'desk' }[]> = {
+  0: [],
+  1: [{ x: 780, y: 196, s: 0.8, where: 'aisle' }],
+  2: [
+    { x: 771, y: 286, s: 1.3, where: 'aisle' },
+    { x: 786, y: 172, s: 0.7, where: 'aisle' },
+  ],
+  3: [
+    { x: 170, y: 236, s: 1.45, where: 'desk' },
+    { x: 241, y: 222, s: 1.6, where: 'desk' },
+    { x: 313, y: 232, s: 1.45, where: 'desk' },
+  ],
+}
+const DREAD_SCENE = [
+  '',
+  ' 벽 사진 속 사람이 둘로 줄었고, 통로 안쪽에 검은 사람 그림자가 하나 서 있다.',
+  ' 벽 사진 속에 한 사람만 남았다. 그림자 하나는 통로 밖으로 나와 있고, 통로 안쪽에 하나가 더 서 있다.',
+  ' 벽 사진은 비어 있고, 검은 그림자 셋이 고 선생 바로 뒤에 서 있다.',
+]
+
+/** 검은 사람 그림자. 발밑이 아니라 어깨가 (x, y)다. 눈만 희미하게 보인다. */
+function Wraith({ x, y, s }: { x: number; y: number; s: number }) {
+  return (
+    <g className="wraith" transform={`translate(${x} ${y}) scale(${s})`}>
+      <ellipse cx="0" cy="-17" rx="9" ry="12" fill="#050608" stroke="#3a4757" strokeWidth="1.2" />
+      <path d="M-14 0q14-9 28 0l5 96h-38z" fill="#050608" stroke="#3a4757" strokeWidth="1.2" />
+      <circle cx="-3.4" cy="-18" r="1.500" fill="#f4efdf" />
+      <circle cx="3.4" cy="-18" r="1.500" fill="#f4efdf" />
+    </g>
+  )
+}
+
+function describe(count: number, given: number[], cut: number[], dread: Dread): string {
+  const room = `형광등이 켜진 누런 자료실. 왼쪽에 비상문과 키패드, 가운데에 고 선생이 선 대출대, 오른쪽에 서가가 있다.${DREAD_SCENE[dread]}`
   if (given.length === 0 && cut.length === 0) return `${room} 서가에는 문서 ${count}권이 오래된 순서로 꽂혀 있다.`
   const pos = (xs: number[]) => xs.map((x) => `${x + 1}번째`).join(', ')
   return `${room} 고 선생이 받은 책: ${pos(given)}.${cut.length > 0 ? ` 검색됐지만 잘린 책: ${pos(cut)}.` : ''}`
@@ -48,6 +89,7 @@ export default function Archive({
   calm,
   showSpots,
   shade,
+  dread = 0,
   doorOpen,
   burst,
   onInspect,
@@ -65,6 +107,7 @@ export default function Archive({
   calm: boolean
   showSpots: boolean
   shade: boolean // 통로를 스치는 그림자
+  dread?: Dread // 하드 모드에서 방이 변한 정도. 사진 속 사람이 이만큼 사라지고 그림자가 다가온다
   doorOpen: boolean
   burst: { text: string; bad: boolean } | null
   onInspect: (s: ArchiveSpot) => void
@@ -73,10 +116,12 @@ export default function Archive({
 }) {
   const givenAt = given.map(slot)
   const cutAt = cut.map(slot)
+  const gone = LEAVE.slice(0, dread)
+  const wraiths = WRAITHS[dread]
 
   return (
-    <div className={`scene archive${calm ? ' calm' : ''}${showSpots ? ' show-spots' : ''}`}>
-      <svg viewBox="0 0 800 450" role="img" aria-label={describe(count, givenAt, cutAt)}>
+    <div className={`scene archive${calm ? ' calm' : ''}${showSpots ? ' show-spots' : ''}${dread ? ` dread-${dread}` : ''}`}>
+      <svg viewBox="0 0 800 450" role="img" aria-label={describe(count, givenAt, cutAt, dread)}>
         <defs>
           <pattern id="doc-cut" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
             <rect width="8" height="8" fill="#f8f9f6" />
@@ -113,16 +158,20 @@ export default function Archive({
         <rect x="190" y="60" width="104" height="74" fill="#5c452d" />
         <rect x="197" y="67" width="90" height="60" fill="#e9e2c8" />
         <rect x="197" y="67" width="90" height="42" fill="#8f8a78" />
-        <g fill="#2a2f36">
-          <circle cx="218" cy="88" r="6" />
-          <path d="M209 109q9-16 18 0z" />
-          <circle cx="242" cy="85" r="6.500" />
-          <path d="M232 109q10-18 20 0z" />
-          <circle cx="266" cy="88" r="6" />
-          <path d="M257 109q9-16 18 0z" />
-        </g>
+        {/* 사라진 사람 자리는 사람 모양으로 바랜 자국만 남는다 */}
+        {PEOPLE.map((p, i) => (
+          <g key={`${i}-${gone.includes(i)}`} className={gone.includes(i) ? 'left' : undefined} fill={gone.includes(i) ? '#a5a08d' : '#2a2f36'}>
+            <circle cx={p.cx} cy={p.cy} r={p.r} />
+            <path d={p.body} />
+          </g>
+        ))}
         <path d="M204 118h40" stroke="#4f5b68" strokeWidth="3" />
         <rect x="252" y="113" width="28" height="10" fill="#f4efdf" />
+
+        {/* 그림자 셋이 고 선생 뒤에 선다. 대출대가 아랫몸을 가린다 */}
+        {wraiths.filter((w) => w.where === 'desk').map((w, i) => (
+          <Wraith key={`${dread}-${i}`} {...w} />
+        ))}
 
         {/* 대출대, 머그잔, 메모 */}
         <rect x="134" y="314" width="216" height="14" fill="#6d5236" />
@@ -184,6 +233,10 @@ export default function Archive({
           <ellipse cx="780" cy="150" rx="9" ry="13" />
           <path d="M766 170q14-8 28 0l4 60h-36z" />
         </g>
+
+        {wraiths.filter((w) => w.where === 'aisle').map((w, i) => (
+          <Wraith key={`${dread}-${i}`} {...w} />
+        ))}
 
         {/* 반납 수레 */}
         <path d="M596 362h124v46H596z" fill="#75593c" stroke="#3a2c20" strokeWidth="2" />
