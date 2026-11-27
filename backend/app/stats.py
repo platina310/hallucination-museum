@@ -71,7 +71,6 @@ def summarize(events: list[dict], plays: list[dict]) -> dict:
         row["n"] += 1
         row["leak"] += t["leak"] in ("전체", "부분")
     asks = [p for p in plays if p["room"] == 3 and p["event"] == "ask"]
-    answered = [p for p in plays if p["event"] in ("interrogate", "ask", "press", "present")]
     ms = [int(p["extra"]["ms"]) for p in talks + asks if isinstance(p["extra"].get("ms"), (int, float))]
     # 모델을 부르는 주소별 응답 시간. Gemini가 답한 것만 센다. 대본으로 넘어간 것은 까닭별로 따로 센다
     latency_by = []
@@ -96,7 +95,8 @@ def summarize(events: list[dict], plays: list[dict]) -> dict:
             "kinds": _count(a["extra"].get("kind", "") for a in asks),
             "methods": _count(a["extra"].get("search", "") for a in asks),
         },
-        "engine": _count(p["engine"] for p in answered if p["engine"]),
+        # 모델을 부르는 요청(MODEL_CALLS) 전체에서 누가 답했는지. 아래 fallback과 같은 모집단이다
+        "engine": _count(p["engine"] for p in model_rows),
         "latency_ms": {"n": len(ms), "median": int(statistics.median(ms)) if ms else None, "p90": int(sorted(ms)[int(len(ms) * 0.9) - 1]) if len(ms) >= 10 else None},
         # 구간별 시간을 기록하기 시작한 11월 27일 이후의 요청만. 그 전 기록에는 자동 실험과 키를 나눠 쓰던 때가 섞여 있다
         "latency_recent": _dist([int(p["extra"]["ms"]) for p in plays if p["engine"] == "gemini" and isinstance(p["extra"].get("ms"), (int, float)) and "llm_ms" in p["extra"]]),

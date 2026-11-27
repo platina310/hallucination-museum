@@ -37,7 +37,7 @@ async def lifespan(_: FastAPI):
 
 app = FastAPI(
     title="환각 미술관 API",
-    version="0.7.6",
+    version="0.7.7",
     description="AI 방탈출 '환각 미술관'의 방 규칙, 검색, 모델 호출, 판정",
     lifespan=lifespan,
 )
