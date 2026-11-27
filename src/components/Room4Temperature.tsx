@@ -340,10 +340,12 @@ export default function Room4Temperature({ onSolved }: { onSolved: (s: RoomStats
                     <span className="chip">다이얼 {result.temperature.toFixed(1)}</span>
                     <span className="chip">{result.engine === 'gemini' ? `${modelName(result.model)}가 세 번 답함 · 같은지는 코드가 비교` : '대본으로 답함'}</span>
                   </p>
-                  {result.engine === 'gemini' && (
+                  {result.engine === 'gemini' ? (
                     <p className="model-note muted">
                       이 방만 다이얼(temperature)을 받는 모델이 답해요. 다른 방의 Gemini 3.5 Flash-Lite는 다이얼 값을 무시하거든요.
                     </p>
+                  ) : (
+                    !usingMock && <p className="model-note muted">지금은 실제 모델이 붐벼서 미리 적어 둔 대본이 답했어요. 조금 뒤에 물으면 실제 모델이 답할 수 있어요.</p>
                   )}
                 </>
               ) : (

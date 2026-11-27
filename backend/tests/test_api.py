@@ -22,6 +22,7 @@ client = TestClient(app)
 def fresh_guard():
     guard.reset_for_tests()
     room3._query_vectors.clear()
+    room4._busy_until = 0.0
     yield
 
 
@@ -541,6 +542,12 @@ def test_room4_uses_first_three_answers(monkeypatch):
     monkeypatch.setattr(llm, "chat", down)
     r = room4.ask("title", 0.0)
     assert r["engine"] == "script" and "model" not in r
+
+    # 방금 답하지 못했으면 한동안은 모델을 부르지 않고 바로 대본으로 답한다
+    monkeypatch.setattr(llm, "chat", lambda system, user, **kw: "빛의 정원")
+    assert room4.ask("title", 0.0)["engine"] == "script"
+    monkeypatch.setattr(room4, "_busy_until", 0.0)
+    assert room4.ask("title", 0.0)["engine"] == "gemini"
 
 
 def test_room4_gives_up_after_the_wait(monkeypatch):

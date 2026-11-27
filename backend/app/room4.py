@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import re
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from concurrent.futures import TimeoutError as FuturesTimeout
 
@@ -16,6 +17,7 @@ from . import config, guard, llm, perf
 # 보존실 점검표에 적힌 값. 조절기는 점검표를 받지 못했다.
 # 실제 Gemini는 온도와 상관없이 18도를 되풀이했다 (2026-11-27, 3.1 Flash-Lite 17번 모두). 우연히 맞히지 않도록 흔한 값에서 먼 저온 보존 값으로 둔다
 TRUE_TEMP = 13
+_busy_until = 0.0  # 이때까지는 모델을 부르지 않는다 (방금 답하지 못해서)
 SAMPLES = 3
 THEME = "빛"
 
@@ -83,7 +85,10 @@ def ask(kind: str, temperature: float, turn: int = 0) -> dict:
     """같은 질문을 세 번 던진 결과. 모델을 쓸 수 없으면 대본으로 답한다."""
     temperature = max(0.0, min(2.0, round(temperature, 1)))
     answers: list[str] | None = None
-    if llm.available() and guard.take_room4_calls(config.ROOM4_ASKS):
+    global _busy_until
+    if llm.available() and time.time() < _busy_until:
+        perf.why("model_busy")  # 방금 모델이 답하지 못했다. 잠시 대본으로 답한다
+    elif llm.available() and guard.take_room4_calls(config.ROOM4_ASKS):
         def one(_: int) -> tuple[str, str]:
             """답과, 답하지 못했으면 그 까닭."""
             try:
@@ -116,6 +121,7 @@ def ask(kind: str, temperature: float, turn: int = 0) -> dict:
             answers = got
         else:
             perf.why(fails[0] if fails else "timeout")
+            _busy_until = time.time() + config.ROOM4_REST_SECONDS
     engine = "gemini" if answers else "script"
     if answers is None:
         answers = scripted(kind, temperature, turn)

@@ -19,10 +19,12 @@ LLM_REASONING = _env("LLM_REASONING", "low")
 # 온도의 방만 쓰는 모델. gemini-3.5-flash-lite는 temperature를 무시해서(구글 문서, 2026-11-27 측정으로 확인)
 # 다이얼을 돌려도 답이 달라지지 않는다. 이 방은 temperature를 받는 모델로 답한다
 ROOM4_MODEL = _env("ROOM4_MODEL", "gemini-3.1-flash-lite")
-# 이 모델은 무료 등급에서 답이 늦거나 503으로 실패하는 일이 잦다 (2026-11-27 측정, 한 번에 0.6~7.6초, 실패 5번에 1번꼴).
-# 그래서 ROOM4_ASKS번을 한꺼번에 묻고 먼저 온 세 답을 쓴다. ROOM4_WAIT_SECONDS 안에 세 답이 모이지 않으면 대본으로 답한다
+# 이 모델은 무료 등급에서 붐빌 때 답이 늦거나 503으로 실패한다 (2026-11-27 밤 측정: 한 번에 0.5~9초, 20초 넘게 멈춘 것도 있음. 실패는 5번에 1~2번).
+# 그래서 ROOM4_ASKS번을 한꺼번에 묻고 먼저 온 세 답을 쓴다. ROOM4_WAIT_SECONDS 안에 세 답이 모이지 않으면 대본으로 답하고,
+# 그 뒤 ROOM4_REST_SECONDS 동안은 모델을 부르지 않고 바로 대본으로 답한다 (붐비는 동안 플레이어를 매번 기다리게 하지 않으려고)
 ROOM4_ASKS = int(_env("ROOM4_ASKS", "4"))
-ROOM4_WAIT_SECONDS = float(_env("ROOM4_WAIT_SECONDS", "7"))
+ROOM4_WAIT_SECONDS = float(_env("ROOM4_WAIT_SECONDS", "4"))
+ROOM4_REST_SECONDS = float(_env("ROOM4_REST_SECONDS", "60"))
 # 온도의 방이 하루에 쓰는 호출 한도. 다른 방과 모델이 달라 몫을 따로 센다
 ROOM4_DAILY_CALLS = int(_env("ROOM4_DAILY_CALLS", "600"))
 # 도 씨와의 대화는 따질 것이 적어 사고 수준을 가장 낮게 둔다. 답이 빨라진다. Gemini가 아닌 모델이면 none으로 바꾼다
