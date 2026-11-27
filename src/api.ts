@@ -445,6 +445,8 @@ export interface LiveStats {
   search?: { n: number; kinds: Record<string, number>; methods: Record<string, number> }
   engine?: Record<string, number>
   latency_ms?: { n: number; median: number | null; p90: number | null }
+  latency_recent?: { n: number; median: number | null; p90: number | null } // 구간별 시간을 기록한 11월 27일 이후의 요청만
+  fallback?: { answered: number; script: number; why: Record<string, number> }
 }
 
 /** 서버의 집계를 가져온다. 서버가 잠들어 있으면 깨어날 때까지 기다린다. 끝내 실패하면 null. */

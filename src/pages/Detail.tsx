@@ -3,13 +3,14 @@
 // 표의 내용은 아래 배열만 고치면 된다. 여러 화면이 같이 쓰는 내용은 src/content/shared.ts에 있다.
 import { Pill, Todo } from '../components/Marks'
 import { API_URL, IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SWAGGER_URL, TEAM } from '../content/shared'
+import { PERF_ROWS, QA_CHECKED_ON, SECURITY_CHECKS } from '../content/results'
 import type { Status } from '../content/shared'
 
 // 강의계획서와 「퀴즈 및 팀 프로젝트 안내」의 조건. 진행 상황이 바뀌면 status와 statusText를 고친다.
 const CONDITIONS: { condition: string; plan: string; status: Status; statusText: string }[] = [
   { condition: 'React 화면 (필수)', plan: '팀 페이지, 수장고 지도, 방 5개, 정문, 분석 페이지를 React로 구현', status: 'ok', statusText: '방 5개와 정문' },
   { condition: '프런트엔드에 입력·로딩·오류·응답·출처 표시', plan: '지시의 방과 서가의 방에 다섯 상태 구현. 빈 결과는 "근거 없음", 답한 쪽(Gemini 또는 대본)도 표시', status: 'ok', statusText: '구현' },
-  { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 3.5 Flash-Lite 호출. 도 씨의 대화, 고 선생의 답, 조절기의 세 번 답, 신입 문지기의 응대를 생성. 실패하면 그 요청만 정해진 대본으로 답변', status: 'ok', statusText: '11월 26일 연결' },
+  { condition: 'LLM 연동 (필수). 서버에서 LLM API 호출', plan: 'FastAPI에서 Gemini 3.5 Flash-Lite 호출. 도 씨의 대화, 고 선생의 답, 조절기의 세 번 답(이 방만 3.1 Flash-Lite), 신입 문지기의 응대를 생성. 실패하면 그 요청만 정해진 대본으로 답변', status: 'ok', statusText: '11월 26일 연결' },
   { condition: '클라우드 배포 (필수). Vercel, Render, Supabase', plan: '화면은 Vercel, 서버는 Render, DB는 Supabase에 배포', status: 'ok', statusText: '세 곳 배포' },
   { condition: 'PostgreSQL. RAG를 쓰면 pgvector', plan: '서가 문서 12건의 임베딩을 pgvector에 저장. 플레이 로그, 실험 로그, 퀴즈 응답·방 통과 기록 테이블', status: 'ok', statusText: 'pgvector 사용' },
   { condition: 'GitHub 저장소. 소스, 실행 방법, 모델·프롬프트·검증 기록', plan: '실행 방법과 서버 구조를 README에 기록. 지시문은 backend/app, 실험 결과와 검색 점검은 data 폴더', status: 'ok', statusText: '기록 중' },
@@ -28,7 +29,7 @@ const GRADING: { item: string; weight: string; show: string }[] = [
   { item: 'Needs 파악·문제 정의', weight: '20%', show: 'AI 기초 교육 수요, Gandalf와의 비교, 입장 전후 퀴즈로 잰 학습 효과' },
   { item: 'UI/UX·사용성', weight: '20%', show: '임무와 다음 수 안내, PC·모바일 대응, 로딩·오류·빈 결과 처리, 고친 사례' },
   { item: '데이터·API 활용', weight: '10%', show: '공개 공격문 278,945건의 정제와 수법 분류, 지시문 네 조건의 유출률 실험, 판정 규칙을 고친 과정, 플레이 로그' },
-  { item: '성능·보안 등 비기능', weight: '10%', show: '응답 속도 실측(1.3~2.1초), 무료 한도와 발표자 우선 모드, 키와 개인정보 보호, 남은 한계' },
+  { item: '성능·보안 등 비기능', weight: '10%', show: '응답 속도를 구간별로 실측(질문 하나에 1초 안팎), 무료 한도와 발표자 우선 모드, 보안 점검 10항목과 남은 한계' },
   { item: '팀 페이지·배포·발표·시연', weight: '10%', show: '배포 주소 3가지, 방 하나를 실시간으로 탈출, RAG 3건' },
 ]
 
@@ -132,6 +133,7 @@ export default function Detail() {
             <a href="#benchmark">벤치마킹</a>
             <a href="#ux">사용성</a>
             <a href="#architecture">구조</a>
+            <a href="#quality">성능·보안</a>
             <a href="#media">비주얼·음성</a>
             <a href="#checklist">강의 조건</a>
             <a href="#plan">일정</a>
@@ -300,15 +302,19 @@ export default function Detail() {
                 <h3>속도·비용·보안</h3>
                 <ul>
                   <li>API 키는 Render 환경변수와 GitHub Secrets에만 보관. Git에 올리지 않음</li>
-                  <li>응답 1.3~2.1초 (11월 26일 5회 실측). 서버가 잠들었다 깨어난 직후의 첫 요청은 10초 안팎</li>
-                  <li>질문 300자, 대화 이력 여섯 쌍, 서버의 하루 생성 호출 250회 제한</li>
-                  <li>무료 등급으로 운영. 시연 때는 발표자 우선 모드로 방문자의 호출을 제한</li>
+                  <li>
+                    질문 하나에 1초 안팎, 서가 검색 1.4초 (11월 27일, 배포 서버 실측. <a href="#quality">아래 표</a>). 서버가 새로 뜬 뒤의 첫 요청도 1.4초 (고치기 전
+                    6.8초). 잠든 서버가 깨어나는 데 걸리는 1분 안팎은 Render 무료 등급의 한계로, 그동안은 대본으로 답변
+                  </li>
+                  <li>온도의 방만 temperature를 받는 Gemini 3.1 Flash-Lite 사용. 다른 방의 3.5 Flash-Lite는 temperature를 무시하기 때문</li>
+                  <li>질문 300자, 대화 이력 여섯 쌍, 서버의 하루 생성 호출 250회(온도의 방은 따로 600회), 임베딩 1,000회 제한</li>
+                  <li>무료 등급으로 운영. 발표자 화면이 접속해 있는 동안만 방문자의 호출을 1분 6회로 제한</li>
                   <li>
                     유료로 바꿀 경우 질문 5,000회에 약 $5.6 추정 <Todo>실측 후 갱신</Todo>
                   </li>
                   <li>
-                    알려진 한계: 서버가 답하지 못할 때 쓰는 대본에 정답이 들어 있어 브라우저 코드에서 볼 수 있음. 시연이 끊기지 않게 하려고
-                    받아들인 것으로, 점수나 보상이 걸린 서비스라면 대본을 빼야 함
+                    대본에 든 정답: 화면 코드와 다른 묶음으로 나눠 서버가 답하지 못할 때만 내려받음. 주소를 알면 내려받을 수 있다는 한계는 남음. 시연이
+                    끊기지 않게 하려고 받아들인 것으로, 점수나 보상이 걸린 서비스라면 대본을 빼야 함
                   </li>
                 </ul>
               </div>
@@ -327,6 +333,82 @@ export default function Detail() {
             <p className="more">
               실제 모델에 붙이며 겪은 시행착오는 <a href="/#trials">팀 페이지</a>에 정리
             </p>
+          </div>
+        </section>
+
+        <section id="quality">
+          <div className="wrap">
+            <div className="sec-head">
+              <div className="eyebrow">성능·보안</div>
+              <h2>응답 속도 실측과 보안 점검</h2>
+              <p>
+                {QA_CHECKED_ON}에 배포한 서버를 실제로 불러 잰 값과 점검 결과. 측정 스크립트와 원자료는 저장소의 experiments/와 data/perf/에 보관
+              </p>
+            </div>
+
+            <h3 className="sub-h">응답 속도</h3>
+            <p className="sub-note">
+              GitHub Actions 러너에서 배포 서버(Render 싱가포르)로 요청. 화면이 기다린 시간의 중앙값(최소~최대)과, 그중 모델이 쓴 시간. 서버가
+              요청마다 모델·임베딩·DB 시간을 나눠 기록 (Server-Timing 헤더). 측정 요청은 플레이 기록에서 제외
+            </p>
+            <div className="tablewrap">
+              <table className="stack fixes">
+                <thead>
+                  <tr>
+                    <th>요청</th>
+                    <th>기다린 시간</th>
+                    <th>모델</th>
+                    <th>비고</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PERF_ROWS.map((r) => (
+                    <tr key={r.what}>
+                      <td data-label="요청">{r.what}</td>
+                      <td data-label="기다린 시간">{r.wait}</td>
+                      <td data-label="모델">{r.model}</td>
+                      <td data-label="비고">{r.note}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="card gap-top">
+              <h3>측정에서 알게 된 것</h3>
+              <ul>
+              <li>고치기 전: 새로 뜬 서버의 첫 질문 6.8초(모델 1.3초), 첫 검색 5.0초. 모델 라이브러리를 처음 쓸 때 읽던 것이 원인. 서버가 뜰 때 읽게 고친 뒤 1.4초와 1.2초</li>
+              <li>DB는 요청마다 새로 연결해도 0.04초. 느린 원인이 아니어서 그대로 둠</li>
+              <li>
+                온도의 방: temperature가 답을 바꾸는지 모델별로 여섯 번씩 물어 서로 다른 제목 수 비교. 3.5 Flash-Lite는 온도 0에서 4가지, 2에서 5가지(무시).
+                3.1 Flash-Lite는 온도 0에서 1가지, 1에서 4가지(반영). 3.1 Flash-Lite는 밤 시간에 한 번에 0.5~9초, 5번에 1~2번 실패. 3 Flash 미리보기는
+                0.7초로 빠르지만 1분 5회 한도, 2.5 Flash-Lite는 종료
+              </li>
+              <li>온도의 방은 네 번 물어 먼저 온 세 답을 사용. 대본은 온도가 높을 때 조건을 벗어나는 답까지 흉내 낸 것으로, 실제 모델은 온도 2에서도 조건을 지킴</li>
+              <li>한계: 측정은 하루 저녁, 요청 수십 건. 무료 등급은 시간대에 따라 속도와 실패율이 달라짐</li>
+              </ul>
+            </div>
+
+            <h3 className="sub-h">보안 점검</h3>
+            <div className="tablewrap">
+              <table className="stack fixes">
+                <thead>
+                  <tr>
+                    <th>항목</th>
+                    <th>확인한 것</th>
+                    <th>남은 한계</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SECURITY_CHECKS.map((c) => (
+                    <tr key={c.item}>
+                      <td data-label="항목">{c.item}</td>
+                      <td data-label="확인한 것">{c.result}</td>
+                      <td data-label="남은 한계">{c.limit}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
 

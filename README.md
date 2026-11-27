@@ -16,8 +16,10 @@ KAIST 디지털금융MBA 「금융빅데이터분석실습」 6조 팀 프로젝
 
 - 모든 주소가 로그인 없이 열림
 - 환각의 방을 뺀 네 방은 서버의 Gemini가 답변. 서버가 쉬는 중이거나 한도를 넘으면 `src/script/`의 정해진 대본으로 답변
+- 온도의 방만 Gemini 3.1 Flash-Lite 사용. 다른 방의 3.5 Flash-Lite는 temperature 값을 무시하기 때문 (2026-11-27 측정, `data/perf/temperature_models-1127.md`). 네 번 물어 먼저 온 세 답을 쓰고, 4초 안에 모이지 않으면 대본으로 답변
 - 예전 주소(끝에 `#game`)는 `/prototype`으로 이동
 - 주소별 화면 연결은 `vercel.json`의 rewrites 담당. 지우면 `/prototype`이 열리지 않음
+- 보안 헤더(CSP 등)도 `vercel.json`에 있음. 바깥 글꼴이나 서버 주소를 바꾸면 CSP의 허용 목록도 함께 수정
 
 | 방 | 푸는 방법 | 배우는 것 | 본뜬 게임 |
 |---|---|---|---|
@@ -81,7 +83,7 @@ npm run build    # 타입 검사 후 dist/ 생성
 | `backend/app/store.py` | Supabase(PostgreSQL + pgvector) 연결. 문서 벡터, 플레이 기록, 실험 기록 |
 | `backend/docs/room3/` | 서가의 방 문서 12건 |
 | `backend/tests/` | 가짜 모델로 서버 전체를 시험하는 테스트 |
-| `experiments/` | 문서 색인, 공격문 정제, 자동 실험 스크립트 |
+| `experiments/` | 문서 색인, 공격문 정제, 자동 실험, 응답 속도 측정, 온도 점검 스크립트 |
 | `.github/workflows/` | 위 스크립트를 GitHub 서버에서 돌리는 작업 |
 | `render.yaml` | Render 서버 설정 |
 
@@ -193,6 +195,8 @@ FAKE_LLM=1 python -m pytest -q   # 키 없이 테스트
 | 서가의 방 문서 색인 | 문서 12건 임베딩, pgvector 저장, 대표 검색어 점검 | `GEMINI_API_KEY`, `DATABASE_URL` | `data/room3/` |
 | 공격문 정제 | Lakera Mosscap(DEF CON 31) 약 27만 9천 건 내려받기, 정제, 수법 분류, 표본 687건 추출 | 없음 | `data/attacks/` |
 | 자동 실험 | 공격문을 도 씨에게 그대로 입력. 지금 게임의 도 씨, 허점 있는 지시, 한 줄 지시, 보강한 지시, 보강한 지시 + 검사의 유출률 비교. 공개 공격문 표본(영어)과 팀이 쓴 한국어 공격문 65건 | `GEMINI_API_KEY` | `data/experiment/` |
+| 응답 속도 측정 | 배포 서버에 실제 요청을 보내 방별 응답 시간을 구간(모델, 임베딩, DB)별로 측정. 별관 두 방의 실제 모델 답도 함께 기록. 측정 요청은 플레이 기록에서 제외 | 없음 | `data/perf/latency_*` |
+| 온도 점검 | temperature가 답을 바꾸는지 모델별로 측정. 온도의 방에 쓸 모델을 고른 근거 | `GEMINI_API_KEY` | `data/perf/temperature_*` |
 
 GitHub 저장소의 Actions 탭에서 작업을 고르고 Run workflow를 누르면 실행. 자동 실험은 조건 하나에 모델을 한 번 호출하므로 무료 등급에서는 한 번에 300회 이하 권장. `experiments/trigger/experiment.txt`에 옵션을 줄마다 적어 올려도 실행
 

@@ -80,6 +80,20 @@ function Tile({ label, value, sub }: { label: string; value: string; sub?: strin
   )
 }
 
+// 모델 대신 대본으로 답한 까닭. 서버가 기록하는 이름을 화면에 적을 말로 바꾼다
+const WHY: Record<string, string> = {
+  timeout: '시간 초과',
+  rate_limit: '모델 제공사의 한도',
+  llm_error: '모델 오류',
+  model_busy: '모델 붐빔',
+  daily_cap: '하루 한도',
+  presenter_reserve: '발표자 몫',
+  empty: '빈 답',
+  bad_json: '형식이 틀린 답',
+  leak_guard: '유출 방지',
+  answer_guard: '답 검증',
+}
+
 function Live({ live, state }: { live: LiveStats | null; state: 'loading' | 'done' }) {
   if (usingMock) return <p className="viz-empty">이 화면은 서버에 연결되지 않은 상태. 플레이 기록은 배포된 주소에서 확인 가능</p>
   if (state === 'loading') return <p className="viz-empty" role="status">서버에서 기록을 가져오는 중. 서버가 잠들어 있으면 1분쯤 걸림</p>
@@ -92,6 +106,10 @@ function Live({ live, state }: { live: LiveStats | null; state: 'loading' | 'don
   const byGemini = live.engine?.gemini ?? 0
   const clearMax = Math.max(1, ...rooms.map((r) => Math.max(r.started, r.cleared)))
   const few = (live.sessions ?? 0) < 10
+  // 구간별 시간을 기록하기 시작한 뒤의 요청이 다섯 건 넘게 쌓이면 그것으로 보여 준다
+  const recent = live.latency_recent && live.latency_recent.n >= 5 ? live.latency_recent : null
+  const latency = recent ?? live.latency_ms
+  const scripted = live.fallback?.script ?? 0
 
   return (
     <>
@@ -106,10 +124,26 @@ function Live({ live, state }: { live: LiveStats | null; state: 'loading' | 'don
         />
         <Tile
           label="응답 시간 중앙값"
-          value={live.latency_ms?.median != null ? `${(live.latency_ms.median / 1000).toFixed(1)}초` : '기록 없음'}
-          sub={live.latency_ms?.p90 != null ? `느린 쪽 10%는 ${(live.latency_ms.p90 / 1000).toFixed(1)}초 이상` : undefined}
+          value={latency?.median != null ? `${(latency.median / 1000).toFixed(1)}초` : '기록 없음'}
+          sub={
+            recent
+              ? `11월 27일 이후 ${num(recent.n)}건${recent.p90 != null ? `. 느린 쪽 10%는 ${(recent.p90 / 1000).toFixed(1)}초 이상` : ''}`
+              : latency?.p90 != null
+                ? `느린 쪽 10%는 ${(latency.p90 / 1000).toFixed(1)}초 이상. 자동 실험과 키를 나눠 쓰던 때의 기록 포함`
+                : undefined
+          }
         />
       </div>
+      {scripted > 0 && live.fallback && (
+        <p className="viz-note">
+          대본으로 답한 {num(scripted)}건의 까닭:{' '}
+          {Object.entries(live.fallback.why)
+            .sort((a, b) => b[1] - a[1])
+            .map(([k, n]) => `${WHY[k] ?? k} ${num(n)}건`)
+            .join(', ')}
+          . 배포 서버를 따로 불러 잰 속도는 <a href="/detail#quality">상세 자료</a>에 기록
+        </p>
+      )}
       {few && <p className="viz-note">참여가 10명 미만이라 아래 비율은 참고용. 반에 공개한 뒤의 숫자로 발표 예정</p>}
       {rooms.length === 0 ? (
         <p className="viz-empty">아직 퀴즈 응답과 방 통과 기록 없음. 게임을 한 판 하면 여기에 반영</p>

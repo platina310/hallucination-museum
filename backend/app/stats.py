@@ -98,6 +98,8 @@ def summarize(events: list[dict], plays: list[dict]) -> dict:
         },
         "engine": _count(p["engine"] for p in answered if p["engine"]),
         "latency_ms": {"n": len(ms), "median": int(statistics.median(ms)) if ms else None, "p90": int(sorted(ms)[int(len(ms) * 0.9) - 1]) if len(ms) >= 10 else None},
+        # 구간별 시간을 기록하기 시작한 11월 27일 이후의 요청만. 그 전 기록에는 자동 실험과 키를 나눠 쓰던 때가 섞여 있다
+        "latency_recent": _dist([int(p["extra"]["ms"]) for p in plays if p["engine"] == "gemini" and isinstance(p["extra"].get("ms"), (int, float)) and "llm_ms" in p["extra"]]),
         "latency_by": latency_by,
         # 대본으로 답한 수와 까닭. 까닭은 11월 27일부터 기록해서 그 전의 것은 '기록 없음'이다
         "fallback": {"answered": len(model_rows), "script": len(scripted), "why": _count(p["extra"].get("why") or "기록 없음" for p in scripted)},
@@ -106,6 +108,8 @@ def summarize(events: list[dict], plays: list[dict]) -> dict:
 
 def _dist(values: list[int]) -> dict:
     values = sorted(values)
+    if not values:
+        return {"n": 0, "median": None, "p90": None}
     return {"n": len(values), "median": int(statistics.median(values)), "p90": values[int(len(values) * 0.9) - 1] if len(values) >= 10 else None}
 
 

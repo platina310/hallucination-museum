@@ -4,7 +4,7 @@
 import { Pill } from '../components/Marks'
 import { DATASETS, IDEA_URL, PROTOTYPE_URL, REPO_URL, SCHEDULE, SCREENS, SWAGGER_URL, TEAM } from '../content/shared'
 import { EXPERIMENT_EN, EXPERIMENT_KO, experimentDay, experimentRows } from '../content/experiment'
-import { ATTACK_TYPES, CHECKED_ON, CLEANING, EXPERIMENT_NOTES, TRIALS, UX_FIXED_ON, UX_FIXES } from '../content/results'
+import { ATTACK_TYPES, CHECKED_ON, CLEANING, EXPERIMENT_NOTES, QA_CHECKED_ON, QA_FIXES, TRIALS, UX_FIXED_ON, UX_FIXES } from '../content/results'
 import { ROOMS } from '../game/rooms'
 
 const FLOW = ['수장고 지도', '입장 전 퀴즈', '방에서 AI와 겨루기', '배운 것과 같은 퀴즈', '정문 자물쇠', '탈출 결과와 별점', '분석 페이지']
@@ -527,6 +527,34 @@ export default function Idea() {
                     <tr key={f.target}>
                       <td data-label="대상">{f.target}</td>
                       <td data-label="불편했던 점">{f.problem}</td>
+                      <td data-label="고친 것">{f.fix}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <h3 className="sub-h" id="qa-fixes">
+              품질 점검 사례
+            </h3>
+            <p className="sub-note">
+              {QA_CHECKED_ON}에 배포한 서버를 실제로 불러 속도를 재고, 별관 두 방을 실제 모델로 돌려 보고, 화면 코드와 설정을 점검한 결과. 측정값과
+              보안 점검표는 <a href="/detail#quality">상세 자료</a>에 기록
+            </p>
+            <div className="tablewrap">
+              <table className="stack fixes">
+                <thead>
+                  <tr>
+                    <th>대상</th>
+                    <th>점검에서 나온 것</th>
+                    <th>고친 것</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {QA_FIXES.map((f) => (
+                    <tr key={f.target}>
+                      <td data-label="대상">{f.target}</td>
+                      <td data-label="나온 것">{f.found}</td>
                       <td data-label="고친 것">{f.fix}</td>
                     </tr>
                   ))}
