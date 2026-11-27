@@ -1,0 +1,118 @@
+{
+ "label": "candidates-1127",
+ "measured_at": "2026-11-27T13:22:26Z",
+ "samples": 4,
+ "temps": [
+  0.0,
+  1.0
+ ],
+ "cells": [
+  {
+   "model": "gemini-3.5-flash",
+   "kind": "title",
+   "temperature": 0.0,
+   "n": 3,
+   "distinct": 3,
+   "top_share": 0.33,
+   "on_topic": 3,
+   "answers": [
+    "스러지는 빛의 여운",
+    "흩어지는 빛의 잔영",
+    "빛이 멎은 자리"
+   ],
+   "median_ms": 5310,
+   "errors": [
+    "APITimeoutError: Request timed out."
+   ]
+  },
+  {
+   "model": "gemini-3.5-flash",
+   "kind": "title",
+   "temperature": 1.0,
+   "n": 2,
+   "distinct": 2,
+   "top_share": 0.5,
+   "on_topic": 2,
+   "answers": [
+    "빛의 잔상 속에 갇힌 기억",
+    "어둠을 켜는 빛의 잔상"
+   ],
+   "median_ms": 19755,
+   "errors": [
+    "APITimeoutError: Request timed out.",
+    "APITimeoutError: Request timed out."
+   ]
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "kind": "title",
+   "temperature": 0.0,
+   "n": 4,
+   "distinct": 1,
+   "top_share": 1.0,
+   "on_topic": 4,
+   "answers": [
+    "찰나의 빛 조각들",
+    "찰나의 빛 조각들",
+    "찰나의 빛 조각들",
+    "찰나의 빛 조각들"
+   ],
+   "median_ms": 674,
+   "errors": []
+  },
+  {
+   "model": "gemini-3-flash-preview",
+   "kind": "title",
+   "temperature": 1.0,
+   "n": 3,
+   "distinct": 3,
+   "top_share": 0.33,
+   "on_topic": 3,
+   "answers": [
+    "찰나의 빛 조각들",
+    "잔영이 머문 찰나의 빛",
+    "부서지는 빛의 잔상"
+   ],
+   "median_ms": 662,
+   "errors": [
+    "RateLimitError: Error code: 429"
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "kind": "title",
+   "temperature": 0.0,
+   "n": 3,
+   "distinct": 1,
+   "top_share": 1.0,
+   "on_topic": 3,
+   "answers": [
+    "빛의 잔상",
+    "빛의 잔상",
+    "빛의 잔상"
+   ],
+   "median_ms": 558,
+   "errors": [
+    "InternalServerError: Error code: 503"
+   ]
+  },
+  {
+   "model": "gemini-3.1-flash-lite",
+   "kind": "title",
+   "temperature": 1.0,
+   "n": 2,
+   "distinct": 2,
+   "top_share": 0.5,
+   "on_topic": 2,
+   "answers": [
+    "환각의 빛 속으로",
+    "빛의 잔상들"
+   ],
+   "median_ms": 3001,
+   "errors": [
+    "InternalServerError: Error code: 503",
+    "APITimeoutError: Request timed out."
+   ]
+  }
+ ]
+}
