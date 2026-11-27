@@ -16,7 +16,7 @@ export function pressLine(r: SearchResult): { ask: string; reply: string } {
   if (r.kind === 'partial') {
     return {
       ask: '개관 연도 정도는 그냥 아시잖아요?',
-      reply: '모릅니다. 받은 문서에 없는 것은 답하지 않습니다. 지어내면 사서가 아니라 도슨트입니다. 그 낱말로 다시 찾아 주십시오.',
+      reply: '모릅니다. 받은 문서에 없는 것은 답하지 않습니다. 지어내면 사서가 아니라 도슨트입니다. 개관 연도라면 연혁에 적혀 있을 법합니다. 그 낱말들로 다시 찾아 주십시오.',
     }
   }
   if (r.kind === 'correct') {
