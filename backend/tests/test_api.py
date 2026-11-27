@@ -258,12 +258,47 @@ def test_presenter_keeps_gemini_when_public_quota_is_used_up(monkeypatch):
     monkeypatch.setattr(config, "PRESENTER_KEY", "demo-key-for-tests")
     monkeypatch.setattr(config, "PUBLIC_LLM_PER_MINUTE", 2)
     body = {"question": "그날 밤 어디 계셨죠?", "admitted": False}
-    engines = [client.post("/interrogate", json=body).json()["engine"] for _ in range(4)]
-    assert engines == ["gemini", "gemini", "script", "script"]  # 방문자는 1분 2회까지만 Gemini
+    assert client.get("/health", headers=KEY).json()["presenting"]  # 발표자 화면이 접속해 발표가 시작됐다
+    r = [client.post("/interrogate", json=body) for _ in range(4)]
+    assert [x.json()["engine"] for x in r] == ["gemini", "gemini", "script", "script"]  # 발표 중 방문자는 1분 2회까지만 Gemini
+    assert 'fallback;desc="presenter_reserve"' in r[3].headers["server-timing"]  # 대본으로 답한 까닭이 응답 헤더에 남는다
     assert client.post("/interrogate", json=body, headers=KEY).json()["engine"] == "gemini"  # 발표자는 계속 Gemini
     assert client.post("/interrogate", json=body, headers={"X-Presenter-Key": "wrong"}).json()["engine"] == "script"
     h = client.get("/health", headers=KEY).json()
     assert h["presenter_mode"] and h["presenter"] and not client.get("/health").json()["presenter"]
+
+
+def test_public_minute_limit_applies_only_while_presenting(monkeypatch):
+    # 발표자 암호가 설정돼 있어도, 발표자 화면이 접속해 있지 않으면 방문자의 1분 한도는 걸지 않는다
+    monkeypatch.setattr(config, "PRESENTER_KEY", "demo-key-for-tests")
+    monkeypatch.setattr(config, "PUBLIC_LLM_PER_MINUTE", 2)
+    body = {"question": "그날 밤 어디 계셨죠?", "admitted": False}
+    assert not client.get("/health").json()["presenting"]
+    assert [client.post("/interrogate", json=body).json()["engine"] for _ in range(4)] == ["gemini"] * 4
+    # 온도의 방은 한 번에 세 번을 부른다. 평소에는 1분 한도에 걸리지 않는다
+    assert post("/rooms/4/ask", {"kind": "record", "temperature": 0})["engine"] == "gemini"
+    client.get("/health", headers=KEY)  # 발표 시작
+    assert post("/rooms/4/ask", {"kind": "record", "temperature": 0})["engine"] == "script"
+    # 발표자 화면의 요청이 한동안 없으면 발표가 끝난 것으로 본다
+    monkeypatch.setattr(config, "PRESENTER_HOLD_SECONDS", 0)
+    assert not client.get("/health").json()["presenting"]
+    assert post("/rooms/4/ask", {"kind": "record", "temperature": 0})["engine"] == "gemini"
+
+
+def test_timing_header_and_test_requests(monkeypatch):
+    # 응답에는 어디서 시간을 썼는지가 Server-Timing으로 실린다
+    r = client.post("/interrogate", json={"question": "그날 밤 어디 계셨죠?", "admitted": False})
+    assert "total;dur=" in r.headers["server-timing"] and "fallback" not in r.headers["server-timing"]
+    # 플레이 로그에는 걸린 시간이 함께 남고, X-Museum-Test를 보낸 시험 요청은 남지 않는다
+    seen = []
+    monkeypatch.setattr(store, "log_play", lambda room, event, **kw: seen.append((room, event, kw.get("extra", {}))))
+    client.post("/final/check", json={"code": "00000"})
+    client.post("/final/check", json={"code": "00000"}, headers={"X-Museum-Test": "perf"})
+    assert len(seen) == 1 and seen[0][:2] == (0, "final") and "ms" in seen[0][2] and seen[0][2]["correct"] is False
+    # 하루 몫이 바닥나면 까닭이 daily_cap으로 남는다
+    monkeypatch.setattr(config, "GAME_DAILY_LLM_CALLS", 0)
+    r = client.post("/interrogate", json={"question": "그날 밤 어디 계셨죠?", "admitted": False})
+    assert r.json()["engine"] == "script" and 'desc="daily_cap"' in r.headers["server-timing"]
 
 
 def test_public_daily_share_leaves_calls_for_presenter(monkeypatch):
@@ -287,6 +322,7 @@ def test_wrong_keys_never_lock_out_the_presenter(monkeypatch):
 def test_public_search_falls_back_to_keywords_when_embedding_share_is_used(monkeypatch):
     monkeypatch.setattr(config, "PRESENTER_KEY", "demo-key-for-tests")
     monkeypatch.setattr(config, "PUBLIC_EMBED_PER_MINUTE", 1)
+    client.get("/health", headers=KEY)  # 발표 중일 때만 방문자의 검색 몫을 줄인다
     assert post("/rooms/3/ask", {"query": "비상문 비밀번호"})["search"] == "memory"
     assert post("/rooms/3/ask", {"query": "비상문 비밀번호"})["search"] == "memory"  # 같은 검색어는 다시 임베딩하지 않는다
     assert post("/rooms/3/ask", {"query": "변경 개관"})["search"] == "keyword"

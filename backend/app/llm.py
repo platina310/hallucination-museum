@@ -9,11 +9,25 @@ import json
 import math
 import re
 
-from . import config
+from . import config, perf
 
 
 class LLMUnavailable(Exception):
-    """키가 없거나, 한도를 넘었거나, 모델이 응답하지 않을 때"""
+    """키가 없거나, 한도를 넘었거나, 모델이 응답하지 않을 때. kind에 까닭을 적는다"""
+
+    def __init__(self, message: str, kind: str = "llm_error"):
+        super().__init__(message)
+        self.kind = kind
+
+
+def _kind_of(e: Exception) -> str:
+    """모델 호출이 실패한 까닭: 시간 초과, 제공사의 분당·일일 한도, 그 밖의 오류"""
+    name, text = type(e).__name__, str(e)
+    if "Timeout" in name or "timed out" in text.lower():
+        return "timeout"
+    if "RateLimit" in name or "429" in text or "RESOURCE_EXHAUSTED" in text:
+        return "rate_limit"
+    return "llm_error"
 
 
 _chat_client = None
@@ -52,22 +66,26 @@ def chat(
             extra["reasoning_effort"] = effort
         if json_mode:
             extra["response_format"] = {"type": "json_object"}
-        resp = _chat_client.chat.completions.create(
-            model=config.LLM_MODEL,
-            messages=[
-                {"role": "system", "content": system},
-                *[m for q, a in (history or []) for m in ({"role": "user", "content": q}, {"role": "assistant", "content": a})],
-                {"role": "user", "content": user},
-            ],
-            max_tokens=max_tokens,
-            temperature=temperature,
-            **extra,
-        )
+        with perf.span("llm"):
+            resp = _chat_client.chat.completions.create(
+                model=config.LLM_MODEL,
+                messages=[
+                    {"role": "system", "content": system},
+                    *[m for q, a in (history or []) for m in ({"role": "user", "content": q}, {"role": "assistant", "content": a})],
+                    {"role": "user", "content": user},
+                ],
+                max_tokens=max_tokens,
+                temperature=temperature,
+                **extra,
+            )
         text = (resp.choices[0].message.content or "").strip()
-    except Exception as e:  # 한도 초과, 연결 실패, 잘못된 키를 모두 같은 방식으로 다룬다
-        raise LLMUnavailable(f"{type(e).__name__}: {str(e)[:200]}") from e
+    except Exception as e:  # 한도 초과, 연결 실패, 잘못된 키를 모두 대본으로 넘기되, 까닭은 구분해 적는다
+        kind = _kind_of(e)
+        perf.why(kind)
+        raise LLMUnavailable(f"{type(e).__name__}: {str(e)[:200]}", kind) from e
     if text == "":
-        raise LLMUnavailable("모델이 빈 답을 돌려줬습니다")
+        perf.why("empty")
+        raise LLMUnavailable("모델이 빈 답을 돌려줬습니다", "empty")
     return text
 
 
@@ -89,14 +107,15 @@ def embed(texts: list[str], kind: str) -> list[list[float]]:
         else:
             texts = [f"title: none | text: {t}" for t in texts]
         # 문자열 목록을 그대로 넘기면 벡터 하나로 합쳐지므로 하나씩 Content로 감싼다
-        resp = _embed_client.models.embed_content(
-            model=config.EMBED_MODEL,
-            contents=[types.Content(parts=[types.Part.from_text(text=t)]) for t in texts],
-            config=types.EmbedContentConfig(output_dimensionality=config.EMBED_DIM),
-        )
+        with perf.span("embed"):
+            resp = _embed_client.models.embed_content(
+                model=config.EMBED_MODEL,
+                contents=[types.Content(parts=[types.Part.from_text(text=t)]) for t in texts],
+                config=types.EmbedContentConfig(output_dimensionality=config.EMBED_DIM),
+            )
         vectors = [list(e.values) for e in resp.embeddings]
     except Exception as e:
-        raise LLMUnavailable(f"{type(e).__name__}: {str(e)[:200]}") from e
+        raise LLMUnavailable(f"{type(e).__name__}: {str(e)[:200]}", "embed_" + _kind_of(e)) from e
     if len(vectors) != len(texts):
         raise LLMUnavailable("임베딩 개수가 글 개수와 다릅니다")
     return vectors

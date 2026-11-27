@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from . import guard, llm
+from . import guard, llm, perf
 from .attacks import REFUSAL, input_blocked
 
 SECRET = "해무"
@@ -162,9 +162,10 @@ def run(player_prompt: str, wave: int, input_level: str = "off", output_check: b
             return re.sub(r"\s+", " ", llm.chat(system, items[i]["text"], max_tokens=400, temperature=0.7, reasoning="minimal")).strip()[:300]
 
         try:
-            with ThreadPoolExecutor(max_workers=4) as pool:
+            with perf.span("llm"), ThreadPoolExecutor(max_workers=4) as pool:
                 raw = dict(zip(todo, pool.map(one, todo)))
-        except llm.LLMUnavailable:
+        except llm.LLMUnavailable as e:
+            perf.why(e.kind)
             raw = None
     engine = "gemini" if raw is not None else "script"
     if raw is None:

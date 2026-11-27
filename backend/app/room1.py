@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import re
 
-from . import config, guard, llm
+from . import config, guard, llm, perf
 from .attacks import SECRET, classify, leak_of
 
 CASE_FILES = {
@@ -215,7 +215,11 @@ def talk(user: str, exposed: list[int], history: list[tuple[str, str]] | None, *
         reply = _clean(llm.chat(game_prompt(exposed), user, history=_history(history), max_tokens=800, temperature=0.9, reasoning=config.TALK_REASONING))
     except llm.LLMUnavailable:
         return None
-    if reply == "" or (not may_leak and leak_of(reply) != "없음"):
+    if reply == "":
+        perf.why("empty")
+        return None
+    if not may_leak and leak_of(reply) != "없음":
+        perf.why("leak_guard")  # 아직 새면 안 되는 때에 실마리가 섞인 답. 정해진 답으로 바꾼다
         return None
     return reply
 

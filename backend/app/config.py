@@ -40,7 +40,7 @@ GAME_DAILY_LLM_CALLS = int(_env("GAME_DAILY_LLM_CALLS", "250"))
 RATE_PER_MINUTE = int(_env("RATE_PER_MINUTE", "600"))
 
 # 발표자 우선 모드. PRESENTER_KEY를 넣어 두면, 같은 암호를 보낸 화면(발표자)의 요청에 Gemini 몫을 남겨 둔다.
-# 그 밖의 방문자는 하루 PUBLIC_DAILY_LLM_CALLS회, 1분 PUBLIC_LLM_PER_MINUTE회까지만 Gemini를 쓰고 넘으면 대본으로 답한다.
+# 그 밖의 방문자는 하루 PUBLIC_DAILY_LLM_CALLS회까지만 Gemini를 쓰고, 발표 중에는 1분 PUBLIC_LLM_PER_MINUTE회로 더 줄인다. 넘으면 대본으로 답한다.
 # 비워 두거나 12자보다 짧으면 이 모드는 꺼지고 모두가 같은 한도를 쓴다.
 PRESENTER_KEY = _env("PRESENTER_KEY")
 if len(PRESENTER_KEY) < 12:  # 짧은 암호는 맞히기 쉬우므로 받지 않는다
@@ -48,6 +48,8 @@ if len(PRESENTER_KEY) < 12:  # 짧은 암호는 맞히기 쉬우므로 받지 �
 PUBLIC_DAILY_LLM_CALLS = int(_env("PUBLIC_DAILY_LLM_CALLS", "150"))
 PUBLIC_LLM_PER_MINUTE = int(_env("PUBLIC_LLM_PER_MINUTE", "6"))
 PUBLIC_EMBED_PER_MINUTE = int(_env("PUBLIC_EMBED_PER_MINUTE", "20"))
+# 방문자의 1분 한도는 발표 중에만 건다. 발표자 화면의 요청이 이 시간(초) 안에 있었으면 발표 중으로 본다
+PRESENTER_HOLD_SECONDS = int(_env("PRESENTER_HOLD_SECONDS", "900"))
 
 ALLOWED_ORIGINS = [
     o.strip()

@@ -9,7 +9,7 @@ import logging
 import re
 import time
 
-from . import config
+from . import config, perf
 
 log = logging.getLogger("store")
 _down_until = 0.0  # 접속에 실패하면 잠깐 동안은 다시 시도하지 않는다
@@ -109,7 +109,7 @@ def doc_scores(qv: list[float]) -> list[tuple[str, float]] | None:
     if not enabled():
         return None
     try:
-        with _connect() as conn:
+        with perf.span("db"), _connect() as conn:
             rows = conn.execute(
                 f"SELECT id, 1 - (embedding <=> %s::extensions.vector) AS score FROM {config.DOC_TABLE} ORDER BY score DESC",
                 (str(qv),),

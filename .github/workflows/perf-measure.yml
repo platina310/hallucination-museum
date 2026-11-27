@@ -1,0 +1,57 @@
+name: 응답 속도 측정
+
+# 배포된 서버에 실제 요청을 보내 응답 속도를 재고, 별관 두 방을 실제 모델로 점검한다.
+# experiments/trigger/perf.txt 를 고쳐 올리면 그 파일의 줄마다 한 번씩 실행한다. 줄은 "이름표 [기다릴 서버 버전]"이다.
+on:
+  workflow_dispatch:
+    inputs:
+      args:
+        description: 이름표와 기다릴 서버 버전 (예 after 0.7.2)
+        default: "manual"
+  push:
+    branches: [main]
+    paths:
+      - experiments/trigger/perf.txt
+
+permissions:
+  contents: write
+
+concurrency:
+  group: data-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install httpx
+      - name: 측정
+        env:
+          PYTHONUNBUFFERED: "1"
+          MANUAL_ARGS: ${{ github.event.inputs.args }}
+        run: |
+          if [ -n "$MANUAL_ARGS" ]; then
+            python experiments/measure_latency.py $MANUAL_ARGS
+          else
+            # '#'으로 시작하지 않는 줄을 차례로 실행한다. 허용한 글자만 통과시킨다
+            grep -v '^#' experiments/trigger/perf.txt | grep -E '^[-A-Za-z0-9 ._]+$' | while read -r line; do
+              [ -z "$line" ] && continue
+              echo "== $line"
+              python experiments/measure_latency.py $line || true
+            done
+          fi
+      - name: 결과를 저장소에 기록
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          git diff --cached --quiet && exit 0
+          git commit -m "응답 속도 측정 결과 기록"
+          git pull --rebase origin main
+          git push

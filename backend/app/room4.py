@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from concurrent.futures import ThreadPoolExecutor
 
-from . import guard, llm
+from . import guard, llm, perf
 
 # 보존실 점검표에 적힌 값. 조절기는 점검표를 받지 못했다.
 # 실제 Gemini는 온도 0에서 18도를 되풀이했다 (2026-11-26). 우연히 맞히지 않도록 흔한 값에서 먼 저온 보존 값으로 둔다
@@ -85,11 +85,14 @@ def ask(kind: str, temperature: float, turn: int = 0) -> dict:
             return _clean(llm.chat(SYSTEMS[kind], QUESTIONS[kind], max_tokens=200, temperature=temperature, reasoning="minimal"))
 
         try:
-            with ThreadPoolExecutor(max_workers=SAMPLES) as pool:
+            # 세 번을 한꺼번에 묻는다. 걸린 시간은 가장 느린 한 건만큼이다
+            with perf.span("llm"), ThreadPoolExecutor(max_workers=SAMPLES) as pool:
                 answers = list(pool.map(one, range(SAMPLES)))
-        except llm.LLMUnavailable:
+        except llm.LLMUnavailable as e:
+            perf.why(e.kind)
             answers = None
         if answers and any(a == "" for a in answers):
+            perf.why("empty")
             answers = None
     engine = "gemini" if answers else "script"
     if answers is None:

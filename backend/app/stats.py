@@ -13,6 +13,16 @@ from . import store
 QUIZ_ANSWERS = {1: 1, 2: 1, 3: 1, 4: 1, 5: 2}
 ROOM_NAMES = {1: "지시의 방", 2: "환각의 방", 3: "서가의 방", 4: "온도의 방", 5: "문지기의 방"}
 
+# 모델을 부르는 주소 (방, 로그의 event)
+MODEL_CALLS = {
+    (1, "interrogate"): "도 씨에게 질문",
+    (1, "press"): "진술 더 캐묻기",
+    (1, "present"): "서류 내밀기",
+    (3, "ask"): "서가 검색과 답",
+    (4, "ask"): "온도의 방 (세 번 묻기)",
+    (5, "run"): "문지기의 방 (다섯 건 시험)",
+}
+
 _cache: tuple[float, dict] | None = None
 
 
@@ -63,6 +73,15 @@ def summarize(events: list[dict], plays: list[dict]) -> dict:
     asks = [p for p in plays if p["room"] == 3 and p["event"] == "ask"]
     answered = [p for p in plays if p["event"] in ("interrogate", "ask", "press", "present")]
     ms = [int(p["extra"]["ms"]) for p in talks + asks if isinstance(p["extra"].get("ms"), (int, float))]
+    # 모델을 부르는 주소별 응답 시간. Gemini가 답한 것만 센다. 대본으로 넘어간 것은 까닭별로 따로 센다
+    latency_by = []
+    for (room, event), what in MODEL_CALLS.items():
+        rows = [p for p in plays if p["room"] == room and p["event"] == event and p["engine"] == "gemini" and isinstance(p["extra"].get("ms"), (int, float))]
+        if rows:
+            llm_ms = [int(p["extra"]["llm_ms"]) for p in rows if isinstance(p["extra"].get("llm_ms"), (int, float))]
+            latency_by.append({"what": what, **_dist([int(p["extra"]["ms"]) for p in rows]), "llm_median": int(statistics.median(llm_ms)) if llm_ms else None})
+    model_rows = [p for p in plays if (p["room"], p["event"]) in MODEL_CALLS and p["engine"]]
+    scripted = [p for p in model_rows if p["engine"] == "script"]
     return {
         "db": True,
         "sessions": len(sessions),
@@ -79,7 +98,15 @@ def summarize(events: list[dict], plays: list[dict]) -> dict:
         },
         "engine": _count(p["engine"] for p in answered if p["engine"]),
         "latency_ms": {"n": len(ms), "median": int(statistics.median(ms)) if ms else None, "p90": int(sorted(ms)[int(len(ms) * 0.9) - 1]) if len(ms) >= 10 else None},
+        "latency_by": latency_by,
+        # 대본으로 답한 수와 까닭. 까닭은 11월 27일부터 기록해서 그 전의 것은 '기록 없음'이다
+        "fallback": {"answered": len(model_rows), "script": len(scripted), "why": _count(p["extra"].get("why") or "기록 없음" for p in scripted)},
     }
+
+
+def _dist(values: list[int]) -> dict:
+    values = sorted(values)
+    return {"n": len(values), "median": int(statistics.median(values)), "p90": values[int(len(values) * 0.9) - 1] if len(values) >= 10 else None}
 
 
 def _count(values) -> dict[str, int]:

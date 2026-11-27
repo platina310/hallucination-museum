@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import config, guard, llm, store
+from . import config, guard, llm, perf, store
 
 DOCS_DIR = Path(__file__).resolve().parent.parent / "docs" / "room3"
 
@@ -90,7 +90,8 @@ def rank(query: str) -> tuple[list[tuple[str, float]], str]:
         order = {d["id"]: i for i, d in enumerate(DOCS)}
         scores.sort(key=lambda x: (-x[1], order.get(x[0], 99)))
         return scores, engine
-    except llm.LLMUnavailable:
+    except llm.LLMUnavailable as e:
+        perf.why(e.kind)
         return _keyword_scores(query), "keyword"
 
 
@@ -205,12 +206,15 @@ def answer(query: str, ids: tuple[str, ...]) -> tuple[str, tuple[str, ...], str,
             if not isinstance(source_ids, list):
                 source_ids = []
             problem = check_answer(text, source_ids, docs) or ""
+            if problem:
+                perf.why("answer_guard")  # 받지 않은 문서를 근거로 대거나 문서에 없는 숫자를 말한 답
             if not problem:
                 if len(_answers) > 500:
                     _answers.clear()
                 _answers[(query, ids)] = (text.strip(), tuple(source_ids))
                 return text.strip(), tuple(source_ids), "gemini", ""
         except (llm.LLMUnavailable, ValueError) as e:
+            perf.why(getattr(e, "kind", "bad_json"))
             problem = f"모델 오류: {type(e).__name__}"
     s = scripted_answer(list(ids))
     return s["reply"], tuple(x["id"] for x in s["sources"]), "script", problem

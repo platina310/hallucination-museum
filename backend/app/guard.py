@@ -10,7 +10,7 @@ import time
 from collections import defaultdict, deque
 from contextvars import ContextVar
 
-from . import config
+from . import config, perf
 
 # 지금 처리 중인 요청이 발표자의 것인지. 요청마다 미들웨어가 정한다
 presenter: ContextVar[bool] = ContextVar("presenter", default=False)
@@ -21,6 +21,22 @@ _calls = 0  # 오늘 쓴 생성 호출 (전체)
 _public_calls = 0  # 그 가운데 발표자가 아닌 방문자가 쓴 것
 _public_chat: deque[float] = deque()
 _public_embed: deque[float] = deque()
+_presenter_seen = 0.0  # 발표자 암호를 보낸 요청이 마지막으로 온 때
+
+
+def note_presenter() -> None:
+    global _presenter_seen
+    _presenter_seen = time.time()
+
+
+def presenting() -> bool:
+    """지금 발표 중인지: 발표자 암호를 보낸 요청이 최근 PRESENTER_HOLD_SECONDS 안에 있었는지.
+
+    방문자의 1분 한도는 발표 중에만 건다. 발표자가 없을 때까지 걸어 두면, 평소 방문자가 Gemini 대신
+    대본으로 답을 받는 일이 잦아진다 (11월 27일 플레이 기록에서 확인).
+    하루 한도(PUBLIC_DAILY_LLM_CALLS)는 발표 전에 몫이 바닥나지 않게 늘 걸어 둔다.
+    """
+    return config.PRESENTER_KEY != "" and time.time() - _presenter_seen < config.PRESENTER_HOLD_SECONDS
 
 
 def _prune(q: deque[float], now: float) -> None:
@@ -60,19 +76,7 @@ def _today() -> None:
 
 def take_llm_call() -> bool:
     """오늘 쓸 수 있는 생성 호출이 남았으면 하나 쓰고 True. 발표자가 아니면 더 좁은 한도를 먼저 본다."""
-    global _calls, _public_calls
-    _today()
-    if _calls >= config.GAME_DAILY_LLM_CALLS:
-        return False
-    if config.PRESENTER_KEY and not presenter.get():
-        now = time.time()
-        _prune(_public_chat, now)
-        if _public_calls >= config.PUBLIC_DAILY_LLM_CALLS or len(_public_chat) >= config.PUBLIC_LLM_PER_MINUTE:
-            return False
-        _public_chat.append(now)
-        _public_calls += 1
-    _calls += 1
-    return True
+    return take_llm_calls(1)
 
 
 def take_llm_calls(n: int) -> bool:
@@ -82,11 +86,16 @@ def take_llm_calls(n: int) -> bool:
     if n <= 0:
         return True
     if _calls + n > config.GAME_DAILY_LLM_CALLS:
+        perf.why("daily_cap")
         return False
     if config.PRESENTER_KEY and not presenter.get():
         now = time.time()
         _prune(_public_chat, now)
-        if _public_calls + n > config.PUBLIC_DAILY_LLM_CALLS or len(_public_chat) + n > config.PUBLIC_LLM_PER_MINUTE:
+        if _public_calls + n > config.PUBLIC_DAILY_LLM_CALLS:
+            perf.why("daily_cap")
+            return False
+        if presenting() and len(_public_chat) + n > config.PUBLIC_LLM_PER_MINUTE:
+            perf.why("presenter_reserve")
             return False
         _public_chat.extend([now] * n)
         _public_calls += n
@@ -96,10 +105,11 @@ def take_llm_calls(n: int) -> bool:
 
 def take_embed_call() -> bool:
     """임베딩 호출을 해도 되는지. 발표자 우선 모드에서 방문자의 검색이 몰리면 낱말 검색으로 돌린다."""
-    if config.PRESENTER_KEY and not presenter.get():
+    if presenting() and not presenter.get():
         now = time.time()
         _prune(_public_embed, now)
         if len(_public_embed) >= config.PUBLIC_EMBED_PER_MINUTE:
+            perf.why("presenter_reserve")
             return False
         _public_embed.append(now)
     return True
@@ -115,8 +125,8 @@ def calls_left() -> int:
 
 
 def reset_for_tests() -> None:
-    global _day, _calls, _public_calls
-    _day, _calls, _public_calls = "", 0, 0
+    global _day, _calls, _public_calls, _presenter_seen
+    _day, _calls, _public_calls, _presenter_seen = "", 0, 0, 0.0
     _public_chat.clear()
     _public_embed.clear()
     _hits.clear()
