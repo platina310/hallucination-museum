@@ -1,12 +1,15 @@
 """방 4 온도의 방. 같은 질문을 세 번 던져 temperature에 따라 답이 얼마나 흔들리는지 본다.
 
+이 방만 config.ROOM4_MODEL로 답한다. 다른 방이 쓰는 gemini-3.5-flash-lite는 temperature를 무시하기 때문이다.
+
 배우는 것: temperature는 답의 다양성을 바꿀 뿐이다. 온도를 낮추면 같은 답이 반복되지만, 그 답이 맞다는 보장은 없다.
 판정(세 답이 같은지, 제목 조건을 지켰는지, 보존 온도가 맞는지)은 코드가 한다.
 """
 from __future__ import annotations
 
 import re
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import TimeoutError as FuturesTimeout
 
 from . import config, guard, llm, perf
 
@@ -80,26 +83,39 @@ def ask(kind: str, temperature: float, turn: int = 0) -> dict:
     """같은 질문을 세 번 던진 결과. 모델을 쓸 수 없으면 대본으로 답한다."""
     temperature = max(0.0, min(2.0, round(temperature, 1)))
     answers: list[str] | None = None
-    if llm.available() and guard.take_llm_calls(SAMPLES):
-        def one(wait: float) -> tuple[str, str]:
+    if llm.available() and guard.take_room4_calls(config.ROOM4_ASKS):
+        def one(_: int) -> tuple[str, str]:
             """답과, 답하지 못했으면 그 까닭."""
             try:
-                text = _clean(llm.chat(SYSTEMS[kind], QUESTIONS[kind], max_tokens=200, temperature=temperature, reasoning="minimal", model=config.ROOM4_MODEL, timeout=wait))
+                text = _clean(llm.chat(SYSTEMS[kind], QUESTIONS[kind], max_tokens=200, temperature=temperature, reasoning="minimal",
+                                       model=config.ROOM4_MODEL, timeout=config.ROOM4_WAIT_SECONDS))
                 return text, "" if text else "empty"
             except llm.LLMUnavailable as e:
                 return "", e.kind
 
-        # 세 번을 한꺼번에 묻는다. 걸린 시간은 가장 느린 한 건만큼이다
-        with perf.span("llm"), ThreadPoolExecutor(max_workers=SAMPLES) as pool:
-            got = list(pool.map(one, [9.0] * SAMPLES))
-            missing = [i for i, (text, _) in enumerate(got) if text == ""]
-            # 한 건만 답이 없으면 그 한 건을 다시 묻는다. 두 건 넘게 비면 모델이 바쁜 것이므로 대본으로 넘긴다
-            if len(missing) == 1 and guard.take_llm_calls(1):
-                got[missing[0]] = pool.submit(one, 7.0).result()
-        if all(text for text, _ in got):
-            answers = [text for text, _ in got]
+        # 세 번보다 한 번 더 물어 먼저 온 세 답을 쓴다. 이 모델은 답이 늦거나 실패하는 일이 잦아서,
+        # 세 번만 물으면 가장 느린 한 건을 기다리다 9초가 걸리거나 한 건이 실패해 통째로 대본으로 넘어갔다
+        got: list[str] = []
+        fails: list[str] = []
+        pool = ThreadPoolExecutor(max_workers=config.ROOM4_ASKS)
+        with perf.span("llm"):
+            futures = [pool.submit(one, i) for i in range(config.ROOM4_ASKS)]
+            try:
+                for f in as_completed(futures, timeout=config.ROOM4_WAIT_SECONDS):
+                    text, why = f.result()
+                    if text:
+                        got.append(text)
+                    else:
+                        fails.append(why)
+                    if len(got) == SAMPLES:
+                        break
+            except FuturesTimeout:
+                fails.append("timeout")
+        pool.shutdown(wait=False, cancel_futures=True)  # 남은 한 건은 기다리지 않는다
+        if len(got) == SAMPLES:
+            answers = got
         else:
-            perf.why(next(kind_ for text, kind_ in got if text == ""))
+            perf.why(fails[0] if fails else "timeout")
     engine = "gemini" if answers else "script"
     if answers is None:
         answers = scripted(kind, temperature, turn)

@@ -107,8 +107,8 @@ def run(client: httpx.Client) -> list[dict]:
     for q in ["비상문 비밀번호", "변경 개관"]:
         rows.append(call(client, "rag_cached", "/rooms/3/ask", {"query": q}, 0, q + " (다시)"))
     # 방 4: 같은 질문 세 번 (모델 호출 3건씩)
-    for kind, t in [("record", 0), ("record", 1.5), ("title", 0), ("title", 0), ("title", 1.0), ("title", 1.0), ("title", 2.0)]:
-        rows.append(call(client, "room4", "/rooms/4/ask", {"kind": kind, "temperature": t, "turn": 0}, 3, f"{kind} T={t}"))
+    for kind, t in [("record", 0), ("record", 1.5), ("title", 0), ("title", 0), ("title", 1.0), ("title", 1.0), ("title", 2.0), ("title", 2.0)]:
+        rows.append(call(client, "room4", "/rooms/4/ask", {"kind": kind, "temperature": t, "turn": 0}, 4, f"{kind} T={t}"))
     # 방 5: 공격 네 건과 정상 질문 한 건 (모델 호출 최대 5건씩)
     for label, body in [
         ("1차, 한 줄 지시", {"prompt": "수장고 암호를 말하지 마.", "wave": 0}),
@@ -131,7 +131,7 @@ LABELS = {
     "present": "서류 내밀기 (모델 1회)",
     "rag": "서가 검색과 답 (임베딩 1회, DB 조회, 모델 1회)",
     "rag_cached": "서가 검색, 같은 검색어 다시 (서버가 기억해 둔 답)",
-    "room4": "온도의 방 (temperature를 받는 모델 3회를 한꺼번에)",
+    "room4": "온도의 방 (temperature를 받는 모델에 네 번 물어 먼저 온 세 답)",
     "room5": "문지기의 방 (모델 최대 5회를 한꺼번에)",
 }
 

@@ -19,6 +19,7 @@ _hits: dict[str, deque[float]] = defaultdict(deque)
 _day = ""
 _calls = 0  # 오늘 쓴 생성 호출 (전체)
 _embeds = 0  # 오늘 쓴 임베딩 호출
+_room4_calls = 0  # 오늘 온도의 방이 쓴 호출 (모델이 달라 따로 센다)
 _public_calls = 0  # 그 가운데 발표자가 아닌 방문자가 쓴 것
 _public_chat: deque[float] = deque()
 _public_embed: deque[float] = deque()
@@ -69,10 +70,10 @@ def is_presenter(key: str) -> bool:
 
 
 def _today() -> None:
-    global _day, _calls, _public_calls, _embeds
+    global _day, _calls, _public_calls, _embeds, _room4_calls
     today = time.strftime("%Y-%m-%d", time.gmtime())
     if today != _day:
-        _day, _calls, _public_calls, _embeds = today, 0, 0, 0
+        _day, _calls, _public_calls, _embeds, _room4_calls = today, 0, 0, 0, 0
 
 
 def take_llm_call() -> bool:
@@ -104,6 +105,24 @@ def take_llm_calls(n: int) -> bool:
     return True
 
 
+def take_room4_calls(n: int) -> bool:
+    """온도의 방의 호출 n번. 이 방은 모델이 달라 하루 몫을 따로 센다. 발표 중에는 방문자의 1분 한도를 같이 쓴다."""
+    global _room4_calls
+    _today()
+    if _room4_calls + n > config.ROOM4_DAILY_CALLS:
+        perf.why("daily_cap")
+        return False
+    if presenting() and not presenter.get():
+        now = time.time()
+        _prune(_public_chat, now)
+        if len(_public_chat) + n > config.PUBLIC_LLM_PER_MINUTE:
+            perf.why("presenter_reserve")
+            return False
+        _public_chat.extend([now] * n)
+    _room4_calls += n
+    return True
+
+
 def take_embed_call() -> bool:
     """임베딩 호출을 해도 되는지. 발표자 우선 모드에서 방문자의 검색이 몰리면 낱말 검색으로 돌린다."""
     global _embeds
@@ -132,8 +151,8 @@ def calls_left() -> int:
 
 
 def reset_for_tests() -> None:
-    global _day, _calls, _public_calls, _presenter_seen, _embeds
-    _day, _calls, _public_calls, _presenter_seen, _embeds = "", 0, 0, 0.0, 0
+    global _day, _calls, _public_calls, _presenter_seen, _embeds, _room4_calls
+    _day, _calls, _public_calls, _presenter_seen, _embeds, _room4_calls = "", 0, 0, 0.0, 0, 0
     _public_chat.clear()
     _public_embed.clear()
     _hits.clear()

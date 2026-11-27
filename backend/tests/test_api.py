@@ -513,22 +513,27 @@ def test_responses_carry_nosniff():
     assert client.get("/health").headers["x-content-type-options"] == "nosniff"
 
 
-def test_room4_retries_one_missing_answer(monkeypatch):
-    """온도의 방: 세 번 가운데 한 번만 답이 없으면 그 한 번을 다시 묻고, 두 번 넘게 없으면 대본으로 답한다."""
+def test_room4_uses_first_three_answers(monkeypatch):
+    """온도의 방: 네 번을 한꺼번에 물어 먼저 온 세 답을 쓴다. 세 답이 모이지 않으면 대본으로 답한다."""
+    import threading
+
     from app import llm, room4
 
+    lock = threading.Lock()
     calls = {"n": 0}
 
     def flaky(system, user, **kw):
-        calls["n"] += 1
         assert kw["model"] == "gemini-3.1-flash-lite"
-        if calls["n"] == 2:
-            raise llm.LLMUnavailable("느림", "timeout")
+        with lock:
+            calls["n"] += 1
+            mine = calls["n"]
+        if mine == 2:
+            raise llm.LLMUnavailable("바쁨", "llm_error")
         return "빛의 정원"
 
     monkeypatch.setattr(llm, "chat", flaky)
     r = room4.ask("title", 0.0)
-    assert (r["engine"], r["model"], calls["n"]) == ("gemini", "gemini-3.1-flash-lite", 4)
+    assert (r["engine"], r["model"], r["answers"], r["same"]) == ("gemini", "gemini-3.1-flash-lite", ["빛의 정원"] * 3, 3)
 
     def down(system, user, **kw):
         raise llm.LLMUnavailable("한도", "rate_limit")
@@ -536,6 +541,28 @@ def test_room4_retries_one_missing_answer(monkeypatch):
     monkeypatch.setattr(llm, "chat", down)
     r = room4.ask("title", 0.0)
     assert r["engine"] == "script" and "model" not in r
+
+
+def test_room4_gives_up_after_the_wait(monkeypatch):
+    """세 답이 정해진 시간 안에 모이지 않으면 기다리지 않고 대본으로 답한다."""
+    import time
+
+    from app import llm, room4
+
+    monkeypatch.setattr("app.config.ROOM4_WAIT_SECONDS", 0.2)
+    monkeypatch.setattr(llm, "chat", lambda system, user, **kw: time.sleep(0.6) or "빛의 정원")
+    t0 = time.time()
+    r = room4.ask("record", 0.0)
+    assert r["engine"] == "script" and time.time() - t0 < 0.5
+
+
+def test_room4_calls_are_counted_apart(monkeypatch):
+    """온도의 방의 호출은 다른 방의 하루 몫을 쓰지 않는다."""
+    monkeypatch.setattr("app.config.ROOM4_DAILY_CALLS", 4)
+    before = client.get("/health").json()["calls_left_today"]
+    assert post("/rooms/4/ask", {"kind": "title", "temperature": 1.0})["engine"] == "gemini"
+    assert post("/rooms/4/ask", {"kind": "title", "temperature": 1.0})["engine"] == "script"
+    assert client.get("/health").json()["calls_left_today"] == before
 
 
 def test_room5_initials_given_one_by_one_count_as_a_leak():
